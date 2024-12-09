@@ -32,52 +32,73 @@ export default function Cursor() {
 
   return (
     <>
+      {/* Point central */}
       <motion.div
-        className="fixed top-0 left-0 w-3 h-3 rounded-full bg-gradient-to-r from-fuchsia-400 to-cyan-400 pointer-events-none z-50"
+        className="fixed top-0 left-0 w-2 h-2 rounded-full bg-white pointer-events-none z-50"
         animate={{
-          x: mousePosition.x - 6,
-          y: mousePosition.y - 6,
-          scale: isHovering ? 1.5 : 1,
+          x: mousePosition.x - 1,
+          y: mousePosition.y - 1,
+          scale: isHovering ? 2 : 1,
         }}
         transition={{
           type: "spring",
-          stiffness: 500,
-          damping: 28,
-          mass: 0.5,
+          stiffness: 1000,
+          damping: 50,
+          mass: 0.1,
         }}
       />
 
+      {/* Cercle principal */}
       <motion.div
-        className="fixed top-0 left-0 w-10 h-10 rounded-full border-2 border-fuchsia-400/30 pointer-events-none z-50"
+        className="fixed top-0 left-0 w-8 h-8 rounded-full border border-white/50 pointer-events-none z-50"
         animate={{
-          x: mousePosition.x - 20,
-          y: mousePosition.y - 20,
-          scale: isHovering ? 1.8 : 1,
-          borderColor: isHovering ? "rgba(217, 70, 239, 0.5)" : "rgba(217, 70, 239, 0.3)",
+          x: mousePosition.x - 16,
+          y: mousePosition.y - 16,
+          scale: isHovering ? 1.5 : 1,
+          opacity: isHovering ? 0.5 : 0.2,
         }}
         transition={{
           type: "spring",
           stiffness: 400,
-          damping: 28,
+          damping: 30,
           mass: 0.8,
         }}
       />
 
+      {/* Cercle d'effet */}
       <motion.div
-        className="fixed top-0 left-0 w-16 h-16 rounded-full pointer-events-none z-40"
+        className="fixed top-0 left-0 w-24 h-24 rounded-full pointer-events-none z-40"
         animate={{
-          x: mousePosition.x - 32,
-          y: mousePosition.y - 32,
-          scale: isHovering ? 1.5 : 1,
+          x: mousePosition.x - 48,
+          y: mousePosition.y - 48,
+          scale: isHovering ? 1.2 : 1,
+          opacity: isHovering ? 0.2 : 0.1,
         }}
         transition={{
           type: "spring",
           stiffness: 150,
-          damping: 15,
-          mass: 0.1,
+          damping: 20,
+          mass: 0.2,
         }}
       >
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-fuchsia-400/5 to-cyan-400/5" />
+        <div className="absolute inset-0 rounded-full border border-white/20" />
+      </motion.div>
+
+      {/* Effet de traînée */}
+      <motion.div
+        className="fixed top-0 left-0 w-4 h-4 rounded-full pointer-events-none z-40 opacity-20"
+        animate={{
+          x: mousePosition.x - 8,
+          y: mousePosition.y - 8,
+          scale: isHovering ? 2 : 1,
+        }}
+        transition={{
+          type: "tween",
+          duration: 0.5,
+          ease: "linear"
+        }}
+      >
+        <div className="absolute inset-0 rounded-full bg-white" />
       </motion.div>
     </>
   );
