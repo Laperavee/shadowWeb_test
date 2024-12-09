@@ -33,7 +33,7 @@ export default function Cursor() {
   return (
     <>
       <motion.div
-        className="fixed top-0 left-0 w-3 h-3 rounded-full bg-gradient-to-r from-fuchsia-400 to-cyan-400 pointer-events-none z-50 mix-blend-difference"
+        className="fixed top-0 left-0 w-3 h-3 rounded-full bg-gradient-to-r from-fuchsia-400 to-cyan-400 pointer-events-none z-50"
         animate={{
           x: mousePosition.x - 6,
           y: mousePosition.y - 6,
@@ -48,7 +48,7 @@ export default function Cursor() {
       />
 
       <motion.div
-        className="fixed top-0 left-0 w-10 h-10 rounded-full border-2 border-fuchsia-400/30 pointer-events-none z-50 backdrop-blur-sm"
+        className="fixed top-0 left-0 w-10 h-10 rounded-full border-2 border-fuchsia-400/30 pointer-events-none z-50"
         animate={{
           x: mousePosition.x - 20,
           y: mousePosition.y - 20,
@@ -61,9 +61,7 @@ export default function Cursor() {
           damping: 28,
           mass: 0.8,
         }}
-      >
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-fuchsia-400/10 to-cyan-400/10 blur-sm" />
-      </motion.div>
+      />
 
       <motion.div
         className="fixed top-0 left-0 w-16 h-16 rounded-full pointer-events-none z-40"
@@ -79,7 +77,7 @@ export default function Cursor() {
           mass: 0.1,
         }}
       >
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-fuchsia-400/5 to-cyan-400/5 blur-xl" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-fuchsia-400/5 to-cyan-400/5" />
       </motion.div>
     </>
   );
