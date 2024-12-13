@@ -28,19 +28,19 @@ export default function LoadingScreen() {
     const textInterval = setInterval(() => {
       currentStep = (currentStep + 1) % loadingSteps.length;
       setLoadingText(loadingSteps[currentStep]);
-    }, 2000);
+    }, 800);
 
     const timer = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
           clearInterval(timer);
           clearInterval(textInterval);
-          setTimeout(() => setIsLoading(false), 1000);
+          setTimeout(() => setIsLoading(false), 500);
           return 100;
         }
-        return prev + 0.5; // Ralenti la progression
+        return prev + 2;
       });
-    }, 30);
+    }, 20);
 
     return () => {
       clearInterval(timer);
