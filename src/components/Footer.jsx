@@ -10,8 +10,6 @@ export default function Footer() {
     ],
     social: [
       { name: 'Twitter', url: 'https://x.com/shadowagentbot' },
-      { name: 'Discord', url: 'https://discord.gg/shadow' },
-      { name: 'Telegram', url: 'https://telegram.org' },
     ]
   };
 
