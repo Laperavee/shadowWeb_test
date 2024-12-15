@@ -9,9 +9,9 @@ export default function Footer() {
       { name: 'How it Works', path: '/how-it-works' },
     ],
     social: [
-      { name: 'Twitter', url: 'https://twitter.com/shadow' },
+      { name: 'Twitter', url: 'https://x.com/shadowagentbot' },
       { name: 'Discord', url: 'https://discord.gg/shadow' },
-      { name: 'Telegram', url: 'https://t.me/shadow' },
+      { name: 'Telegram', url: 'https://telegram.org' },
     ]
   };
 
