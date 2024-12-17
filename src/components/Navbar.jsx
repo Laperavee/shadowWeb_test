@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSound } from '../context/SoundContext';
@@ -8,6 +8,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { playSound } = useSound();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,20 +71,20 @@ export default function Navbar() {
                 </motion.span>
               </Link>
             ))}
-            <motion.a
-              href="https://shadow.fun"
-              target="_blank"
-              rel="noopener noreferrer"
+            <motion.button
+              onClick={() => {
+                navigate('/shadow-fun');
+                playSound('click');
+              }}
               className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 backdrop-blur-sm border border-fuchsia-400/20 px-6 py-2 rounded-lg hover:border-fuchsia-400/50 transition-all interactive relative overflow-hidden group"
               onMouseEnter={() => playSound('hover')}
-              onClick={() => playSound('click')}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
                 Launch App
               </span>
-            </motion.a>
+            </motion.button>
           </div>
 
           {/* Mobile Menu Button */}
