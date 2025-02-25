@@ -30,7 +30,6 @@ export default function ShadowFun() {
   const [activeTab, setActiveTab] = useState('tokens');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   
-  // Form states
   const [formData, setFormData] = useState({
     name: '',
     symbol: '',
@@ -43,22 +42,19 @@ export default function ShadowFun() {
   const [isDeploying, setIsDeploying] = useState(false);
   const [deploymentStatus, setDeploymentStatus] = useState('');
 
-  // Connexion MetaMask
   const connectWallet = async () => {
     if (typeof window.ethereum !== 'undefined') {
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
   
-        // Vérifier la chaîne actuelle
         const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        if (chainId !== "0x2105") {  // 0x2105 = Base Mainnet, 0x14a33 = Base Sepolia
+        if (chainId !== "0x2105") {  
           try {
             await window.ethereum.request({
               method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x14a33' }] // 0x14a33 = Base Sepolia (testnet)
+              params: [{ chainId: '0x14a33' }] 
             });
           } catch (switchError) {
-            // Si la chaîne n'est pas ajoutée, l'ajouter
             if (switchError.code === 4902) {
               await window.ethereum.request({
                 method: 'wallet_addEthereumChain',
@@ -87,11 +83,9 @@ export default function ShadowFun() {
       alert("MetaMask is not installed!");
     }
   };
-  // Gestion de la création du token
   const handleCreateToken = async (e) => {
     e.preventDefault();
     
-    // Vérification des adresses des contrats
     if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
       alert("Contract addresses not configured. Please check environment variables.");
       return;
@@ -102,7 +96,6 @@ export default function ShadowFun() {
       return;
     }
 
-    // Validation des champs
     if (!formData.name || !formData.symbol || !formData.totalSupply || !formData.liquidity || !formData.maxWalletPercentage) {
       alert("Please fill all fields");
       return;
@@ -152,13 +145,11 @@ export default function ShadowFun() {
 
         console.log("Raw result:", result);
 
-        // Extraire le salt et l'adresse du token
         const [salt, predictedAddress] = result;
 
         console.log("Salt:", salt);
         console.log("Predicted token address:", predictedAddress);
 
-        // Déployer le token avec l'adresse validée
         setDeploymentStatus('Deploying token...');
         const tx = await shadow.deployToken(
           formData.name,
@@ -180,7 +171,6 @@ export default function ShadowFun() {
         
         const receipt = await tx.wait();
         
-        // Récupérer l'adresse du token depuis les logs
         const tokenCreatedEvent = receipt.logs.find(log => {
           try {
             return log.topics[0] === ethers.id(
@@ -200,7 +190,6 @@ export default function ShadowFun() {
           alert(`Token deployed! Check on Basescan: https://basescan.org/address/${tokenAddress}`);
         }
 
-        // Réinitialiser le formulaire
         setFormData({
           name: '',
           symbol: '',
