@@ -7,5 +7,8 @@ module.exports = defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     emptyOutDir: true,
+  },
+  define: {
+    'process.env': process.env
   }
 }) 
