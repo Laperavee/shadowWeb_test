@@ -1,35 +1,34 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { useScroll, useTransform } from 'framer-motion';
+import { useState } from 'react';
 import Footer from '../components/Footer';
-import { supabase } from '../lib/supabaseClient';
 import { ethers } from 'ethers';
+import ShadowArtifact from '../artifact/Shadow.json';
 
-// ABI mis à jour pour correspondre exactement au contrat
-const SHADOW_ABI = [
-  "function deployToken(string name, string symbol, uint256 totalSupply, int24 tick, uint24 fee, bytes32 salt, address owner, string fid, address rewardAddress, uint256 maxWalletPercentage) external payable",
-  "function generateSalt(address owner, string fid, string name, string symbol, uint256 totalSupply, uint256 maxWalletPercentage) external view returns (bytes32 salt, address token)",
-  "function shadowDeploymentFee() external view returns (uint256)"
-];
+// Récupération des ABI depuis les fichiers d'artefacts
+const SHADOW_ABI = ShadowArtifact.abi;
 
 const SHADOW_ADDRESS = import.meta.env.VITE_SHADOW_ADDRESS;
-if (!SHADOW_ADDRESS) {
-  console.error("Shadow contract address not found in environment variables");
+const SHADOW_TOKEN_ADDRESS = import.meta.env.VITE_SHADOW_TOKEN_ADDRESS;
+
+// Vérification des variables d'environnement
+if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
+  console.error("Missing environment variables:", {
+    SHADOW_ADDRESS: !!SHADOW_ADDRESS,
+    SHADOW_TOKEN_ADDRESS: !!SHADOW_TOKEN_ADDRESS
+  });
 }
 
-// Ajout de l'ABI pour le token SHADOW
-const SHADOW_TOKEN_ABI = [
-  "function approve(address spender, uint256 amount) external returns (bool)",
-  "function allowance(address owner, address spender) external view returns (uint256)",
-  "function balanceOf(address account) external view returns (uint256)"
-];
+// Au début du fichier, ajoutons un log pour vérifier l'ABI
+console.log("SHADOW_ABI generateSalt:", SHADOW_ABI.find(item => 
+  item.name === "generateSalt"
+));
 
-const SHADOW_TOKEN_ADDRESS = "0x1d008f50FB828eF9DEbBBEAe1B71FfFe929bf317";
+// Et vérifions que l'adresse du contrat est correcte
+console.log("SHADOW_ADDRESS:", SHADOW_ADDRESS);
 
 export default function ShadowFun() {
   const [activeTab, setActiveTab] = useState('tokens');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [tokens, setTokens] = useState([]);
   
   // Form states
   const [formData, setFormData] = useState({
@@ -38,7 +37,7 @@ export default function ShadowFun() {
     totalSupply: '',
     liquidity: '',
     maxWalletPercentage: '',
-    tokenImage: null
+    fullAccess: false
   });
 
   const [isDeploying, setIsDeploying] = useState(false);
@@ -49,6 +48,37 @@ export default function ShadowFun() {
     if (typeof window.ethereum !== 'undefined') {
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
+  
+        // Vérifier la chaîne actuelle
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        if (chainId !== "0x2105") {  // 0x2105 = Base Mainnet, 0x14a33 = Base Sepolia
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x14a33' }] // 0x14a33 = Base Sepolia (testnet)
+            });
+          } catch (switchError) {
+            // Si la chaîne n'est pas ajoutée, l'ajouter
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0x14a33',
+                  chainName: 'Base Sepolia',
+                  rpcUrls: ['https://sepolia.base.org'],
+                  nativeCurrency: {
+                    name: 'Ethereum',
+                    symbol: 'ETH',
+                    decimals: 18
+                  },
+                  blockExplorerUrls: ['https://sepolia.basescan.org']
+                }]
+              });
+            } else {
+              throw switchError;
+            }
+          }
+        }
         setIsWalletConnected(true);
       } catch (error) {
         console.error("Wallet connection error:", error);
@@ -57,12 +87,17 @@ export default function ShadowFun() {
       alert("MetaMask is not installed!");
     }
   };
-
   // Gestion de la création du token
   const handleCreateToken = async (e) => {
     e.preventDefault();
     
-    if (!isWalletConnected || !SHADOW_ADDRESS) {
+    // Vérification des adresses des contrats
+    if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
+      alert("Contract addresses not configured. Please check environment variables.");
+      return;
+    }
+
+    if (!isWalletConnected) {
       alert("Please connect your wallet first!");
       return;
     }
@@ -75,132 +110,131 @@ export default function ShadowFun() {
 
     setIsDeploying(true);
     setDeploymentStatus('Initializing deployment...');
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const userAddress = await signer.getAddress();
+
+    console.log("Wallet connecté :", userAddress);
+
+    const network = await provider.getNetwork();
+    console.log("Chaîne connectée:", network.chainId);
 
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const userAddress = await signer.getAddress();
+
 
       console.log("Connected address:", userAddress);
       
-      // Connexion au token SHADOW
-      const shadowToken = new ethers.Contract(
-        SHADOW_TOKEN_ADDRESS,
-        SHADOW_TOKEN_ABI,
-        signer
-      );
-
-      // Connexion au contrat Shadow
       const shadow = new ethers.Contract(
         SHADOW_ADDRESS,
         SHADOW_ABI,
         signer
       );
+    
+      const maxWalletPercentage = parseFloat(formData.maxWalletPercentage)*10;
 
-      // Vérifier la balance et l'allowance
-      setDeploymentStatus('Checking SHADOW balance and allowance...');
-      const shadowFee = await shadow.shadowDeploymentFee();
-      const balance = await shadowToken.balanceOf(userAddress);
-      const allowance = await shadowToken.allowance(userAddress, SHADOW_ADDRESS);
-
-      console.log("Shadow fee required:", ethers.formatEther(shadowFee), "SHADOW");
-      console.log("Current balance:", ethers.formatEther(balance), "SHADOW");
-      console.log("Current allowance:", ethers.formatEther(allowance), "SHADOW");
-
-      if (balance < shadowFee) {
-        throw new Error(`Insufficient SHADOW balance. You need ${ethers.formatEther(shadowFee)} SHADOW`);
-      }
-
-      // Approuver les tokens si nécessaire
-      if (allowance < shadowFee) {
-        setDeploymentStatus('Approving SHADOW tokens...');
-        const approveTx = await shadowToken.approve(
-          SHADOW_ADDRESS,
-          ethers.parseEther("1000") // Approuver une grande quantité
-        );
-        await approveTx.wait();
-        console.log("SHADOW tokens approved");
-      }
-
-      // Calcul du FID
-      const timestamp = Math.floor(Date.now() / 1000);
-      const symbolBinary = formData.symbol
-        .split('')
-        .map(char => char.charCodeAt(0).toString(2))
-        .join('');
-      const symbolBase10 = parseInt(symbolBinary, 2);
-      const fid = Math.floor(timestamp * Math.PI * symbolBase10).toString();
-
-      console.log("Generated FID:", fid);
-
-      // Conversion des valeurs
-      const totalSupplyWei = ethers.parseEther(formData.totalSupply.toString());
-      const maxWalletPercentage = Math.floor(parseFloat(formData.maxWalletPercentage) * 10);
-
-      // Générer le salt
       setDeploymentStatus('Generating salt...');
-      const saltResult = await shadow.generateSalt(
-        userAddress,
-        fid,
-        formData.name,
-        formData.symbol,
-        totalSupplyWei,
-        maxWalletPercentage
-      );
+      try {        
+        console.log("Calling generateSalt with params:", {
+          userAddress, 
+          name: formData.name,
+          symbol: formData.symbol,
+          supply: BigInt(ethers.parseEther(formData.totalSupply)),
+          maxWalletPercentage: maxWalletPercentage
+        });
 
-      const salt = saltResult.salt;
-      console.log("Generated salt:", salt);
+        const result = await shadow.generateSalt.staticCall(
+          userAddress, 
+          formData.name,
+          formData.symbol,
+          BigInt(ethers.parseEther(formData.totalSupply)),
+          maxWalletPercentage
+        );
 
-      // Calcul du tick
-      const price = parseFloat(formData.totalSupply) / parseFloat(formData.liquidity);
-      const tickSpacing = 200;
-      const sqrtPriceX96 = Math.sqrt(1/price) * Math.pow(2, 96);
-      const initialTick = Math.floor(Math.log(sqrtPriceX96 / Math.pow(2, 96)) / Math.log(Math.sqrt(1.0001)));
-      const validTick = Math.floor(initialTick / tickSpacing) * tickSpacing;
+        console.log("Raw result:", result);
 
-      console.log("Calculated tick:", validTick);
+        // Extraire le salt et l'adresse du token
+        const [salt, predictedAddress] = result;
 
-      // Déployer le token
-      setDeploymentStatus('Deploying token...');
-      const tx = await shadow.deployToken(
-        formData.name,
-        formData.symbol,
-        totalSupplyWei,
-        validTick,
-        10000, // 1% fee
-        salt,
-        userAddress,
-        fid,
-        userAddress,
-        maxWalletPercentage,
-        {
-          value: ethers.parseEther("0.001"),
-          gasLimit: 10000000
+        console.log("Salt:", salt);
+        console.log("Predicted token address:", predictedAddress);
+
+        // Déployer le token avec l'adresse validée
+        setDeploymentStatus('Deploying token...');
+        const tx = await shadow.deployToken(
+          formData.name,
+          formData.symbol,
+          BigInt(ethers.parseEther(formData.totalSupply)),
+          ethers.parseUnits(formData.liquidity),
+          10000, 
+          salt,
+          userAddress, 
+          parseInt(maxWalletPercentage),
+          { 
+            value: ethers.parseEther("0.00001"),
+            gasLimit: 8000000
+          }
+        );
+
+        setDeploymentStatus('Waiting for confirmation...');
+        console.log("Transaction sent:", tx.hash);
+        
+        const receipt = await tx.wait();
+        
+        // Récupérer l'adresse du token depuis les logs
+        const tokenCreatedEvent = receipt.logs.find(log => {
+          try {
+            return log.topics[0] === ethers.id(
+              "TokenCreated(address,uint256,address,string,string,uint256)"
+            );
+          } catch {
+            return false;
+          }
+        });
+
+        if (tokenCreatedEvent) {
+          const tokenAddress = tokenCreatedEvent.args ? 
+            tokenCreatedEvent.args[0] : 
+            `0x${tokenCreatedEvent.topics[1].slice(26)}`;
+          
+          setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
+          alert(`Token deployed! Check on Basescan: https://basescan.org/address/${tokenAddress}`);
         }
-      );
 
-      setDeploymentStatus('Waiting for confirmation...');
-      console.log("Transaction sent:", tx.hash);
-      
-      const receipt = await tx.wait();
-      console.log("Transaction confirmed:", receipt);
+        // Réinitialiser le formulaire
+        setFormData({
+          name: '',
+          symbol: '',
+          totalSupply: '',
+          liquidity: '',
+          maxWalletPercentage: '',
+        });
 
-      setDeploymentStatus('Token deployed successfully!');
-      alert(`Transaction confirmed! Check on Basescan: https://basescan.org/tx/${tx.hash}`);
-
-      // Réinitialiser le formulaire
-      setFormData({
-        name: '',
-        symbol: '',
-        totalSupply: '',
-        liquidity: '',
-        maxWalletPercentage: ''
-      });
+      } catch (error) {
+        console.error("Error details:", {
+          error,
+          params: {
+            deployer: userAddress,
+            name: formData.name,
+            symbol: formData.symbol,
+            supply: formData.totalSupply,
+            maxWalletPercentage: formData.maxWalletPercentage
+          }
+        });
+        throw error;
+      }
 
     } catch (error) {
-      console.error("Error creating token:", error);
-      setDeploymentStatus('Deployment failed: ' + error.message);
-      alert(`Error: ${error.message}`);
+      console.error("Error details:", {
+        error,
+        params: {
+          deployer: userAddress,
+          name: formData.name,
+          symbol: formData.symbol,
+          supply: formData.totalSupply,
+          maxWalletPercentage: formData.maxWalletPercentage
+        }
+      });
+      throw error;
     } finally {
       setIsDeploying(false);
     }
