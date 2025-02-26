@@ -1,46 +1,20 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Footer from '../components/Footer';
 import { ethers } from 'ethers';
 import ShadowArtifact from '../artifact/Shadow.json';
 import avaxLogo from '../../dist/assets/avax_logo.png';
 import baseLogo from '../../dist/assets/base_logo.png';
+import { CONTRACTS } from '../config/contracts';
 
 const SHADOW_ABI = ShadowArtifact.abi;
 
-const SHADOW_ADDRESS = import.meta.env.VITE_SHADOW_ADDRESS;
-const SHADOW_TOKEN_ADDRESS = import.meta.env.VITE_SHADOW_TOKEN_ADDRESS;
-
-if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
-  console.error("Missing environment variables:", {
-    SHADOW_ADDRESS: !!SHADOW_ADDRESS,
-    SHADOW_TOKEN_ADDRESS: !!SHADOW_TOKEN_ADDRESS
-  });
-}
-
-console.log("SHADOW_ABI generateSalt:", SHADOW_ABI.find(item => 
-  item.name === "generateSalt"
-));
-
-console.log("SHADOW_ADDRESS:", SHADOW_ADDRESS);
-
 const NETWORKS = {
-  BASE: {
-    chainId: "0x2105",
-    chainName: "Base",
-    logo: baseLogo,
-    nativeCurrency: {
-      name: "ETH",
-      symbol: "ETH",
-      decimals: 18
-    },
-    rpcUrls: ["https://mainnet.base.org"],
-    blockExplorerUrls: ["https://basescan.org"]
-  },
   AVAX: {
     chainId: "0xa86a",
     chainName: "Avalanche",
     logo: avaxLogo,
+    disabled: false,
     nativeCurrency: {
       name: "AVAX",
       symbol: "AVAX",
@@ -48,10 +22,45 @@ const NETWORKS = {
     },
     rpcUrls: ["https://api.avax.network/ext/bc/C/rpc"],
     blockExplorerUrls: ["https://snowtrace.io"]
+  },
+  BASE: {
+    chainId: "0x2105",
+    chainName: "Base",
+    logo: baseLogo,
+    disabled: true,
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18
+    },
+    rpcUrls: ["https://mainnet.base.org"],
+    blockExplorerUrls: ["https://basescan.org"]
   }
 };
 
-// Ajouter une fonction pour changer de réseau
+const NETWORK_LIMITS = {
+  AVAX: {
+    minLiquidity: 100,
+    maxLiquidity: 90000,
+    minSupply: 1,
+    maxSupply: 1000000000,
+    minWalletPercentage: 0.1,
+    maxWalletPercentage: 10,
+    minDeploymentFee: 0.00001,
+    currency: 'AVAX'
+  },
+  BASE: {
+    minLiquidity: 10,
+    maxLiquidity: 1000,
+    minSupply: 1,
+    maxSupply: 1000000000,
+    minWalletPercentage: 0.1,
+    maxWalletPercentage: 10,
+    minDeploymentFee: 0.00001,
+    currency: 'ETH'
+  }
+};
+
 const switchNetwork = async (chainId) => {
   if (typeof window.ethereum !== 'undefined') {
     try {
@@ -68,22 +77,20 @@ const switchNetwork = async (chainId) => {
             params: [NETWORKS[chainId]]
           });
         } catch (addError) {
-          console.error('Error adding network:', addError);
           throw addError;
         }
       } else {
-        console.error('Error switching network:', switchError);
         throw switchError;
       }
     }
   }
 };
 
-// Modifier le NetworkSelector pour utiliser switchNetwork
 const NetworkSelector = ({ selectedChain, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleNetworkChange = async (newChain) => {
+    if (NETWORKS[newChain].disabled) return;
     try {
       if (window.ethereum && window.ethereum.selectedAddress) {
         await switchNetwork(newChain);
@@ -91,8 +98,7 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
       onChange(newChain);
       setIsOpen(false);
     } catch (error) {
-      console.error("Failed to switch network:", error);
-      alert(`Failed to switch to ${NETWORKS[newChain].chainName}. Please try again.`);
+      addNotification(`Failed to switch to ${NETWORKS[newChain].chainName}. Please try again.`, "error");
     }
   };
 
@@ -100,7 +106,7 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
     <div className="relative">
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-2 rounded-lg bg-black border border-gray-800 cursor-pointer hover:border-fuchsia-500/50"
+        className="flex items-center justify-between w-20 h-10 px-3 gap-3 rounded-lg bg-black border border-gray-800 cursor-pointer hover:border-fuchsia-500/50"
       >
         <img
           src={NETWORKS[selectedChain].logo}
@@ -123,26 +129,76 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 bg-black border border-gray-800 rounded-lg overflow-hidden z-50">
+        <div className="absolute top-full left-0 mt-2 w-20 bg-black border border-gray-800 rounded-lg overflow-hidden z-50">
           {Object.entries(NETWORKS).map(([key, network]) => (
             <div
               key={key}
-              onClick={() => handleNetworkChange(key)}
-              className={`p-2 cursor-pointer hover:bg-gray-900 ${
-                selectedChain === key ? 'bg-gray-900' : ''
-              }`}
+              onClick={() => !network.disabled && handleNetworkChange(key)}
+              className={`relative flex items-center justify-center h-10 ${
+                network.disabled 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : 'cursor-pointer hover:bg-gray-900'
+              } ${selectedChain === key ? 'bg-gray-900' : ''}`}
             >
               <img
                 src={network.logo}
                 alt={network.chainName}
                 className="w-6 h-6"
               />
+              {network.disabled && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <span className="text-xs font-bold text-white">SOON</span>
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
     </div>
   );
+};
+
+const getLiquidityLabel = (chain) => {
+  const { minLiquidity, maxLiquidity, currency } = NETWORK_LIMITS[chain];
+  return `Initial Liquidity (${currency})`;
+};
+
+const getLiquidityPlaceholder = (chain) => {
+  const { minLiquidity, maxLiquidity, currency } = NETWORK_LIMITS[chain];
+  return `${formatNumber(minLiquidity)} to ${formatNumber(maxLiquidity)} ${currency}`;
+};
+
+const validateInput = (value, min, max, isInteger = false) => {
+  const numValue = parseFloat(value);
+  if (isNaN(numValue)) return false;
+  if (isInteger && !Number.isInteger(numValue)) return false;
+  return numValue >= min && numValue <= max;
+};
+
+const validateText = (value, field) => {
+  const patterns = {
+    name: /^[a-zA-Z0-9\s]{1,50}$/,
+    symbol: /^[a-zA-Z0-9]{1,10}$/
+  };
+  return patterns[field].test(value);
+};
+
+const getErrorMessage = (field, chain) => {
+  const limits = NETWORK_LIMITS[chain];
+  switch (field) {
+    case 'liquidity':
+      return `Liquidity must be between ${limits.minLiquidity} and ${limits.maxLiquidity} ${limits.currency}`;
+    case 'totalSupply':
+      return `Total supply must be between ${limits.minSupply} and ${limits.maxSupply/10**9} Billion`;
+    case 'maxWalletPercentage':
+      return `Max wallet percentage must be between ${limits.minWalletPercentage}% and ${limits.maxWalletPercentage}%`;
+    default:
+      return 'Invalid input';
+  }
+};
+
+const formatNumber = (num) => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
 };
 
 export default function ShadowFun() {
@@ -155,6 +211,7 @@ export default function ShadowFun() {
     totalSupply: '',
     liquidity: '',
     maxWalletPercentage: '',
+    deploymentFee: '0.00001',
     fullAccess: false
   });
 
@@ -163,13 +220,22 @@ export default function ShadowFun() {
 
   const [selectedChain, setSelectedChain] = useState('AVAX');
 
+  const [notifications, setNotifications] = useState([]);
+
+  const addNotification = (message, type = 'info') => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(notif => notif.id !== id));
+    }, 5000);
+  };
+
   const connectWallet = async () => {
     if (typeof window.ethereum !== 'undefined') {
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
   
         const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        console.log("Current chain ID:", chainId);
         
         const targetNetwork = NETWORKS[selectedChain];
         
@@ -186,35 +252,58 @@ export default function ShadowFun() {
                 params: [targetNetwork]
               });
             } else {
-              console.error('Error switching network:', switchError);
               throw switchError;
             }
           }
         }
         setIsWalletConnected(true);
       } catch (error) {
-        console.error("Wallet connection error:", error);
-        alert(`Please make sure you're connected to ${NETWORKS[selectedChain].chainName}`);
+        addNotification(`Please make sure you're connected to ${NETWORKS[selectedChain].chainName}`, "error");
       }
     } else {
-      alert("MetaMask is not installed!");
+      addNotification("MetaMask is not installed!", "error");
     }
   };
+
+  useEffect(() => {
+    const updateContracts = async () => {
+      if (window.ethereum && isWalletConnected) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        
+        const shadowAddress = CONTRACTS[selectedChain].SHADOW_ADDRESS;
+        const shadowTokenAddress = CONTRACTS[selectedChain].SHADOW_TOKEN_ADDRESS;
+        
+        const shadow = new ethers.Contract(
+          shadowAddress,
+          SHADOW_ABI,
+          signer
+        );
+        
+        setShadowContract(shadow);
+      }
+    };
+
+    updateContracts();
+  }, [selectedChain, isWalletConnected]);
+
   const handleCreateToken = async (e) => {
     e.preventDefault();
     
+    const { SHADOW_ADDRESS, SHADOW_TOKEN_ADDRESS } = CONTRACTS[selectedChain];
+    
     if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
-      alert("Contract addresses not configured. Please check environment variables.");
+      addNotification("Contract addresses not configured for this network", "error");
       return;
     }
 
     if (!isWalletConnected) {
-      alert("Please connect your wallet first!");
+      addNotification("Please connect your wallet first!", "error");
       return;
     }
 
     if (!formData.name || !formData.symbol || !formData.totalSupply || !formData.liquidity || !formData.maxWalletPercentage) {
-      alert("Please fill all fields");
+      addNotification("Please fill all fields", "error");
       return;
     }
 
@@ -224,16 +313,9 @@ export default function ShadowFun() {
     const signer = await provider.getSigner();
     const userAddress = await signer.getAddress();
 
-    console.log("Wallet connecté :", userAddress);
-
     const network = await provider.getNetwork();
-    console.log("Chaîne connectée:", network.chainId);
 
     try {
-
-
-      console.log("Connected address:", userAddress);
-      
       const shadow = new ethers.Contract(
         SHADOW_ADDRESS,
         SHADOW_ABI,
@@ -244,14 +326,6 @@ export default function ShadowFun() {
 
       setDeploymentStatus('Generating salt...');
       try {        
-        console.log("Calling generateSalt with params:", {
-          userAddress, 
-          name: formData.name,
-          symbol: formData.symbol,
-          supply: BigInt(ethers.parseEther(formData.totalSupply)),
-          maxWalletPercentage: maxWalletPercentage
-        });
-
         const result = await shadow.generateSalt.staticCall(
           userAddress, 
           formData.name,
@@ -260,12 +334,7 @@ export default function ShadowFun() {
           maxWalletPercentage
         );
 
-        console.log("Raw result:", result);
-
         const [salt, predictedAddress] = result;
-
-        console.log("Salt:", salt);
-        console.log("Predicted token address:", predictedAddress);
 
         setDeploymentStatus('Deploying token...');
         const tx = await shadow.deployToken(
@@ -273,18 +342,17 @@ export default function ShadowFun() {
           formData.symbol,
           BigInt(ethers.parseEther(formData.totalSupply)),
           ethers.parseUnits(formData.liquidity),
-          10000, 
+          10000,
           salt,
-          userAddress, 
+          userAddress,
           parseInt(maxWalletPercentage),
-          { 
-            value: ethers.parseEther("0.00001"),
+          {
+            value: ethers.parseEther(formData.deploymentFee),
             gasLimit: 8000000
           }
         );
 
         setDeploymentStatus('Waiting for confirmation...');
-        console.log("Transaction sent:", tx.hash);
         
         const receipt = await tx.wait();
         
@@ -304,7 +372,9 @@ export default function ShadowFun() {
             `0x${tokenCreatedEvent.topics[1].slice(26)}`;
           
           setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
-          alert(`Token deployed! Check on Basescan: https://basescan.org/address/${tokenAddress}`);
+          addNotification("Token deployed successfully!", "success");
+          // TO DO : Redirect to the token page when created
+          // window.location.href = `/token/${tokenAddress}`;
         }
 
         setFormData({
@@ -316,30 +386,10 @@ export default function ShadowFun() {
         });
 
       } catch (error) {
-        console.error("Error details:", {
-          error,
-          params: {
-            deployer: userAddress,
-            name: formData.name,
-            symbol: formData.symbol,
-            supply: formData.totalSupply,
-            maxWalletPercentage: formData.maxWalletPercentage
-          }
-        });
         throw error;
       }
 
     } catch (error) {
-      console.error("Error details:", {
-        error,
-        params: {
-          deployer: userAddress,
-          name: formData.name,
-          symbol: formData.symbol,
-          supply: formData.totalSupply,
-          maxWalletPercentage: formData.maxWalletPercentage
-        }
-      });
       throw error;
     } finally {
       setIsDeploying(false);
@@ -348,14 +398,12 @@ export default function ShadowFun() {
 
   return (
     <main className="min-h-screen bg-black">
-      {/* Background with Shadow style */}
       <div className="fixed inset-0">
         <div className="grid-animation opacity-5" />
         <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-900/10 to-black" />
       </div>
 
       <div className="relative z-10">
-        {/* Header with connect button */}
         <header className="py-6 px-4">
           <div className="container mx-auto flex justify-between items-center">
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
@@ -380,7 +428,6 @@ export default function ShadowFun() {
           </div>
         </header>
 
-        {/* Navigation Tabs */}
         <div className="flex justify-center mt-8 mb-12">
           <div className="flex gap-2 p-1 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-800">
             <motion.button
@@ -431,12 +478,9 @@ export default function ShadowFun() {
           </div>
         </div>
 
-        {/* Content */}
         <section className="container mx-auto px-4 py-12">
           {activeTab === 'tokens' ? (
-            // Liste des tokens existante
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {/* Token card example */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -484,7 +528,6 @@ export default function ShadowFun() {
               </motion.div>
             </div>
           ) : (
-            // Formulaire de création
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -496,7 +539,6 @@ export default function ShadowFun() {
                     Create New Token
                   </h2>
                   
-                  {/* Image Upload */}
                   <div className="mb-6">
                     <label className="block text-gray-400 mb-2">Token Image</label>
                     <div className="flex items-center justify-center w-full">
@@ -517,15 +559,21 @@ export default function ShadowFun() {
                     </div>
                   </div>
 
-                  {/* Token Details */}
                   <div className="space-y-4">
                     <div>
                       <label className="block text-gray-400 mb-2">Token Name</label>
                       <input
                         type="text"
-                        className="w-full px-4 py-2 bg-black/30 border border-gray-700 rounded-lg focus:border-fuchsia-500/50 focus:outline-none"
+                        className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                          formData.name && !validateText(formData.name, 'name')
+                            ? 'border-red-500/50 focus:border-red-500/75' 
+                            : 'border-gray-700 focus:border-fuchsia-500/50'
+                        }`}
                         value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, '');
+                          setFormData({...formData, name: value});
+                        }}
                         placeholder="e.g. Shadow Token"
                       />
                     </div>
@@ -534,9 +582,16 @@ export default function ShadowFun() {
                       <label className="block text-gray-400 mb-2">Token Symbol</label>
                       <input
                         type="text"
-                        className="w-full px-4 py-2 bg-black/30 border border-gray-700 rounded-lg focus:border-fuchsia-500/50 focus:outline-none"
+                        className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                          formData.symbol && !validateText(formData.symbol, 'symbol')
+                            ? 'border-red-500/50 focus:border-red-500/75' 
+                            : 'border-gray-700 focus:border-fuchsia-500/50'
+                        }`}
                         value={formData.symbol}
-                        onChange={(e) => setFormData({...formData, symbol: e.target.value})}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                          setFormData({...formData, symbol: value});
+                        }}
                         placeholder="e.g. SHDW"
                       />
                     </div>
@@ -545,33 +600,143 @@ export default function ShadowFun() {
                       <label className="block text-gray-400 mb-2">Total Supply</label>
                       <input
                         type="number"
-                        className="w-full px-4 py-2 bg-black/30 border border-gray-700 rounded-lg focus:border-fuchsia-500/50 focus:outline-none"
+                        className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                          formData.totalSupply && !validateInput(formData.totalSupply, NETWORK_LIMITS[selectedChain].minSupply, NETWORK_LIMITS[selectedChain].maxSupply, true)
+                            ? 'border-red-500/50 focus:border-red-500/75' 
+                            : 'border-gray-700 focus:border-fuchsia-500/50'
+                        }`}
                         value={formData.totalSupply}
-                        onChange={(e) => setFormData({...formData, totalSupply: e.target.value})}
-                        placeholder="1 to 1B"
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, '');
+                          setFormData({...formData, totalSupply: value});
+                        }}
+                        placeholder={`${formatNumber(NETWORK_LIMITS[selectedChain].minSupply)} to ${formatNumber(NETWORK_LIMITS[selectedChain].maxSupply)}`}
                       />
+                      {formData.totalSupply && !validateInput(formData.totalSupply, NETWORK_LIMITS[selectedChain].minSupply, NETWORK_LIMITS[selectedChain].maxSupply, true) && (
+                        <motion.p 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-2 text-sm text-red-400 flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          {getErrorMessage('totalSupply', selectedChain)}
+                        </motion.p>
+                      )}
                     </div>
 
                     <div>
-                      <label className="block text-gray-400 mb-2">Initial Liquidity (ETH)</label>
+                      <label className="block text-gray-400 mb-2">
+                        {getLiquidityLabel(selectedChain)}
+                      </label>
                       <input
                         type="number"
-                        className="w-full px-4 py-2 bg-black/30 border border-gray-700 rounded-lg focus:border-fuchsia-500/50 focus:outline-none"
+                        className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                          formData.liquidity && (
+                            parseFloat(formData.liquidity) < NETWORK_LIMITS[selectedChain].minLiquidity ||
+                            parseFloat(formData.liquidity) > NETWORK_LIMITS[selectedChain].maxLiquidity
+                          ) 
+                            ? 'border-red-500/50 focus:border-red-500/75' 
+                            : 'border-gray-700 focus:border-fuchsia-500/50'
+                        }`}
                         value={formData.liquidity}
-                        onChange={(e) => setFormData({...formData, liquidity: e.target.value})}
-                        placeholder="10 to 200"
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          const { minLiquidity, maxLiquidity } = NETWORK_LIMITS[selectedChain];
+                          
+                          setFormData({
+                            ...formData, 
+                            liquidity: e.target.value
+                          });
+                        }}
+                        placeholder={getLiquidityPlaceholder(selectedChain)}
                       />
+                      {formData.liquidity && (
+                        parseFloat(formData.liquidity) < NETWORK_LIMITS[selectedChain].minLiquidity ||
+                        parseFloat(formData.liquidity) > NETWORK_LIMITS[selectedChain].maxLiquidity
+                      ) && (
+                        <motion.p 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-2 text-sm text-red-400 flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          Liquidity must be between {formatNumber(NETWORK_LIMITS[selectedChain].minLiquidity)} and {formatNumber(NETWORK_LIMITS[selectedChain].maxLiquidity)} {NETWORK_LIMITS[selectedChain].currency}
+                        </motion.p>
+                      )}
                     </div>
 
                     <div>
                       <label className="block text-gray-400 mb-2">Max Wallet Percentage</label>
                       <input
                         type="number"
-                        className="w-full px-4 py-2 bg-black/30 border border-gray-700 rounded-lg focus:border-fuchsia-500/50 focus:outline-none"
+                        step="0.1"
+                        className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                          formData.maxWalletPercentage && !validateInput(formData.maxWalletPercentage, NETWORK_LIMITS[selectedChain].minWalletPercentage, NETWORK_LIMITS[selectedChain].maxWalletPercentage)
+                            ? 'border-red-500/50 focus:border-red-500/75' 
+                            : 'border-gray-700 focus:border-fuchsia-500/50'
+                        }`}
                         value={formData.maxWalletPercentage}
-                        onChange={(e) => setFormData({...formData, maxWalletPercentage: e.target.value})}
-                        placeholder="0.1 to 10%"
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9.]/g, '');
+                          setFormData({...formData, maxWalletPercentage: value});
+                        }}
+                        placeholder={`${NETWORK_LIMITS[selectedChain].minWalletPercentage} to ${NETWORK_LIMITS[selectedChain].maxWalletPercentage}%`}
                       />
+                      {formData.maxWalletPercentage && !validateInput(formData.maxWalletPercentage, NETWORK_LIMITS[selectedChain].minWalletPercentage, NETWORK_LIMITS[selectedChain].maxWalletPercentage) && (
+                        <motion.p 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-2 text-sm text-red-400 flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          {getErrorMessage('maxWalletPercentage', selectedChain)}
+                        </motion.p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-400 mb-2">
+                        Developer First Buy ({NETWORKS[selectedChain].nativeCurrency.symbol})
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                          formData.deploymentFee && (
+                            parseFloat(formData.deploymentFee) < NETWORK_LIMITS[selectedChain].minDeploymentFee ||
+                            parseFloat(formData.deploymentFee) > (parseFloat(formData.liquidity) * 0.2)
+                          ) 
+                            ? 'border-red-500/50 focus:border-red-500/75' 
+                            : 'border-gray-700 focus:border-fuchsia-500/50'
+                        }`}
+                        value={formData.deploymentFee}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9.]/g, '');
+                          setFormData({...formData, deploymentFee: value});
+                        }}
+                        placeholder={`${NETWORK_LIMITS[selectedChain].minDeploymentFee} to ${(parseFloat(formData.liquidity || 0) * 0.2).toFixed(2)} ${NETWORK_LIMITS[selectedChain].currency}`}
+                      />
+                      {formData.deploymentFee && (
+                        parseFloat(formData.deploymentFee) < NETWORK_LIMITS[selectedChain].minDeploymentFee ||
+                        parseFloat(formData.deploymentFee) > (parseFloat(formData.liquidity) * 0.2)
+                      ) && (
+                        <motion.p 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-2 text-sm text-red-400 flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          Fee must be between ${NETWORK_LIMITS[selectedChain].minDeploymentFee} and ${(parseFloat(formData.liquidity || 0) * 0.2).toFixed(2)} ${NETWORK_LIMITS[selectedChain].currency}
+                        </motion.p>
+                      )}
                     </div>
                   </div>
 
@@ -580,7 +745,12 @@ export default function ShadowFun() {
                     className="w-full mt-6 px-6 py-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    disabled={!isWalletConnected}
+                    onClick={(e) => {
+                      if (!isWalletConnected) {
+                        e.preventDefault();
+                        connectWallet();
+                      }
+                    }}
                   >
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
                       {!isWalletConnected 
@@ -596,7 +766,6 @@ export default function ShadowFun() {
         </section>
       </div>
 
-      {/* Ajout d'un indicateur de statut */}
       {isDeploying && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gray-900 p-6 rounded-xl border border-fuchsia-500/20">
@@ -606,7 +775,53 @@ export default function ShadowFun() {
         </div>
       )}
 
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+        {notifications.map(({ id, message, type }) => (
+          <motion.div
+            key={id}
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            className={`p-4 rounded-lg shadow-lg backdrop-blur-sm flex items-center gap-3 ${
+              type === 'error' 
+                ? 'bg-red-500/10 border border-red-500/50 text-red-400'
+                : type === 'success'
+                ? 'bg-green-500/10 border border-green-500/50 text-green-400'
+                : 'bg-gray-900/50 border border-fuchsia-500/50 text-fuchsia-400'
+            }`}
+          >
+            {type === 'error' ? (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ) : type === 'success' ? (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            {message}
+          </motion.div>
+        ))}
+      </div>
+
       <Footer />
     </main>
   );
-} 
+}
+
+<style>
+  {`
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+  `}
+</style> 
