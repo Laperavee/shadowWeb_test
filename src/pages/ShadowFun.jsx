@@ -3,14 +3,14 @@ import { useState } from 'react';
 import Footer from '../components/Footer';
 import { ethers } from 'ethers';
 import ShadowArtifact from '../artifact/Shadow.json';
+import avaxLogo from '../../dist/assets/avax_logo.png';
+import baseLogo from '../../dist/assets/base_logo.png';
 
-// Récupération des ABI depuis les fichiers d'artefacts
 const SHADOW_ABI = ShadowArtifact.abi;
 
 const SHADOW_ADDRESS = import.meta.env.VITE_SHADOW_ADDRESS;
 const SHADOW_TOKEN_ADDRESS = import.meta.env.VITE_SHADOW_TOKEN_ADDRESS;
 
-// Vérification des variables d'environnement
 if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
   console.error("Missing environment variables:", {
     SHADOW_ADDRESS: !!SHADOW_ADDRESS,
@@ -18,13 +18,132 @@ if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
   });
 }
 
-// Au début du fichier, ajoutons un log pour vérifier l'ABI
 console.log("SHADOW_ABI generateSalt:", SHADOW_ABI.find(item => 
   item.name === "generateSalt"
 ));
 
-// Et vérifions que l'adresse du contrat est correcte
 console.log("SHADOW_ADDRESS:", SHADOW_ADDRESS);
+
+const NETWORKS = {
+  BASE: {
+    chainId: "0x2105",
+    chainName: "Base",
+    logo: baseLogo,
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18
+    },
+    rpcUrls: ["https://mainnet.base.org"],
+    blockExplorerUrls: ["https://basescan.org"]
+  },
+  AVAX: {
+    chainId: "0xa86a",
+    chainName: "Avalanche",
+    logo: avaxLogo,
+    nativeCurrency: {
+      name: "AVAX",
+      symbol: "AVAX",
+      decimals: 18
+    },
+    rpcUrls: ["https://api.avax.network/ext/bc/C/rpc"],
+    blockExplorerUrls: ["https://snowtrace.io"]
+  }
+};
+
+// Ajouter une fonction pour changer de réseau
+const switchNetwork = async (chainId) => {
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      const targetNetwork = NETWORKS[chainId];
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: targetNetwork.chainId }]
+      });
+    } catch (switchError) {
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [NETWORKS[chainId]]
+          });
+        } catch (addError) {
+          console.error('Error adding network:', addError);
+          throw addError;
+        }
+      } else {
+        console.error('Error switching network:', switchError);
+        throw switchError;
+      }
+    }
+  }
+};
+
+// Modifier le NetworkSelector pour utiliser switchNetwork
+const NetworkSelector = ({ selectedChain, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleNetworkChange = async (newChain) => {
+    try {
+      if (window.ethereum && window.ethereum.selectedAddress) {
+        await switchNetwork(newChain);
+      }
+      onChange(newChain);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Failed to switch network:", error);
+      alert(`Failed to switch to ${NETWORKS[newChain].chainName}. Please try again.`);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 p-2 rounded-lg bg-black border border-gray-800 cursor-pointer hover:border-fuchsia-500/50"
+      >
+        <img
+          src={NETWORKS[selectedChain].logo}
+          alt={NETWORKS[selectedChain].chainName}
+          className="w-6 h-6"
+        />
+        <svg 
+          className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-2 bg-black border border-gray-800 rounded-lg overflow-hidden z-50">
+          {Object.entries(NETWORKS).map(([key, network]) => (
+            <div
+              key={key}
+              onClick={() => handleNetworkChange(key)}
+              className={`p-2 cursor-pointer hover:bg-gray-900 ${
+                selectedChain === key ? 'bg-gray-900' : ''
+              }`}
+            >
+              <img
+                src={network.logo}
+                alt={network.chainName}
+                className="w-6 h-6"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function ShadowFun() {
   const [activeTab, setActiveTab] = useState('tokens');
@@ -42,35 +161,32 @@ export default function ShadowFun() {
   const [isDeploying, setIsDeploying] = useState(false);
   const [deploymentStatus, setDeploymentStatus] = useState('');
 
+  const [selectedChain, setSelectedChain] = useState('AVAX');
+
   const connectWallet = async () => {
     if (typeof window.ethereum !== 'undefined') {
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
   
         const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        if (chainId !== "0x2105") {  
+        console.log("Current chain ID:", chainId);
+        
+        const targetNetwork = NETWORKS[selectedChain];
+        
+        if (chainId !== targetNetwork.chainId) {  
           try {
             await window.ethereum.request({
               method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x14a33' }] 
+              params: [{ chainId: targetNetwork.chainId }]
             });
           } catch (switchError) {
             if (switchError.code === 4902) {
               await window.ethereum.request({
                 method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: '0x14a33',
-                  chainName: 'Base Sepolia',
-                  rpcUrls: ['https://sepolia.base.org'],
-                  nativeCurrency: {
-                    name: 'Ethereum',
-                    symbol: 'ETH',
-                    decimals: 18
-                  },
-                  blockExplorerUrls: ['https://sepolia.basescan.org']
-                }]
+                params: [targetNetwork]
               });
             } else {
+              console.error('Error switching network:', switchError);
               throw switchError;
             }
           }
@@ -78,6 +194,7 @@ export default function ShadowFun() {
         setIsWalletConnected(true);
       } catch (error) {
         console.error("Wallet connection error:", error);
+        alert(`Please make sure you're connected to ${NETWORKS[selectedChain].chainName}`);
       }
     } else {
       alert("MetaMask is not installed!");
@@ -244,16 +361,22 @@ export default function ShadowFun() {
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
               Shadow Protocol
             </h1>
-            <motion.button
-              onClick={connectWallet}
-              className="px-6 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                {isWalletConnected ? "Connected" : "Connect Wallet"}
-              </span>
-            </motion.button>
+            <div className="flex items-center gap-4">
+              <NetworkSelector
+                selectedChain={selectedChain}
+                onChange={setSelectedChain}
+              />
+              <motion.button
+                onClick={connectWallet}
+                className="px-6 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                  {isWalletConnected ? "Connected" : "Connect Wallet"}
+                </span>
+              </motion.button>
+            </div>
           </div>
         </header>
 
