@@ -222,6 +222,11 @@ export default function ShadowFun() {
 
   const [notifications, setNotifications] = useState([]);
 
+  const [tokenPrices, setTokenPrices] = useState({
+    AVAX: 0,
+    ETH: 0
+  });
+
   const addNotification = (message, type = 'info') => {
     const id = Date.now();
     setNotifications(prev => [...prev, { id, message, type }]);
@@ -286,6 +291,26 @@ export default function ShadowFun() {
 
     updateContracts();
   }, [selectedChain, isWalletConnected]);
+
+  useEffect(() => {
+    const fetchTokenPrices = async () => {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2,ethereum&vs_currencies=usd');
+        const data = await response.json();
+        setTokenPrices({
+          AVAX: data['avalanche-2'].usd,
+          ETH: data.ethereum.usd
+        });
+      } catch (error) {
+        console.error('Failed to fetch token prices:', error);
+      }
+    };
+
+    fetchTokenPrices();
+    const interval = setInterval(fetchTokenPrices, 60000); 
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleCreateToken = async (e) => {
     e.preventDefault();
@@ -599,7 +624,7 @@ export default function ShadowFun() {
                     <div>
                       <label className="block text-gray-400 mb-2">Total Supply</label>
                       <input
-                        type="number"
+                        type="text"
                         className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
                           formData.totalSupply && !validateInput(formData.totalSupply, NETWORK_LIMITS[selectedChain].minSupply, NETWORK_LIMITS[selectedChain].maxSupply, true)
                             ? 'border-red-500/50 focus:border-red-500/75' 
@@ -630,28 +655,30 @@ export default function ShadowFun() {
                       <label className="block text-gray-400 mb-2">
                         {getLiquidityLabel(selectedChain)}
                       </label>
-                      <input
-                        type="number"
-                        className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
-                          formData.liquidity && (
-                            parseFloat(formData.liquidity) < NETWORK_LIMITS[selectedChain].minLiquidity ||
-                            parseFloat(formData.liquidity) > NETWORK_LIMITS[selectedChain].maxLiquidity
-                          ) 
-                            ? 'border-red-500/50 focus:border-red-500/75' 
-                            : 'border-gray-700 focus:border-fuchsia-500/50'
-                        }`}
-                        value={formData.liquidity}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value);
-                          const { minLiquidity, maxLiquidity } = NETWORK_LIMITS[selectedChain];
-                          
-                          setFormData({
-                            ...formData, 
-                            liquidity: e.target.value
-                          });
-                        }}
-                        placeholder={getLiquidityPlaceholder(selectedChain)}
-                      />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                            formData.liquidity && (
+                              parseFloat(formData.liquidity) < NETWORK_LIMITS[selectedChain].minLiquidity ||
+                              parseFloat(formData.liquidity) > NETWORK_LIMITS[selectedChain].maxLiquidity
+                            ) 
+                              ? 'border-red-500/50 focus:border-red-500/75' 
+                              : 'border-gray-700 focus:border-fuchsia-500/50'
+                          }`}
+                          value={formData.liquidity}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9.]/g, '');
+                            setFormData({...formData, liquidity: value});
+                          }}
+                          placeholder={getLiquidityPlaceholder(selectedChain)}
+                        />
+                        {formData.liquidity && tokenPrices[NETWORKS[selectedChain].nativeCurrency.symbol] > 0 && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                            ≈ ${(parseFloat(formData.liquidity) * tokenPrices[NETWORKS[selectedChain].nativeCurrency.symbol]).toLocaleString('en-US', {maximumFractionDigits: 2})}
+                          </div>
+                        )}
+                      </div>
                       {formData.liquidity && (
                         parseFloat(formData.liquidity) < NETWORK_LIMITS[selectedChain].minLiquidity ||
                         parseFloat(formData.liquidity) > NETWORK_LIMITS[selectedChain].maxLiquidity
@@ -672,8 +699,7 @@ export default function ShadowFun() {
                     <div>
                       <label className="block text-gray-400 mb-2">Max Wallet Percentage</label>
                       <input
-                        type="number"
-                        step="0.1"
+                        type="text"
                         className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
                           formData.maxWalletPercentage && !validateInput(formData.maxWalletPercentage, NETWORK_LIMITS[selectedChain].minWalletPercentage, NETWORK_LIMITS[selectedChain].maxWalletPercentage)
                             ? 'border-red-500/50 focus:border-red-500/75' 
@@ -705,8 +731,7 @@ export default function ShadowFun() {
                         Developer First Buy ({NETWORKS[selectedChain].nativeCurrency.symbol})
                       </label>
                       <input
-                        type="number"
-                        step="0.01"
+                        type="text"
                         className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
                           formData.deploymentFee && (
                             parseFloat(formData.deploymentFee) < NETWORK_LIMITS[selectedChain].minDeploymentFee ||
@@ -811,17 +836,4 @@ export default function ShadowFun() {
       <Footer />
     </main>
   );
-}
-
-<style>
-  {`
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    input[type=number] {
-      -moz-appearance: textfield;
-    }
-  `}
-</style> 
+} 
