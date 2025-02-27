@@ -646,34 +646,32 @@ export default function ShadowFun() {
         </div>
 
         {activeTab === 'create' && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center z-[100] overflow-y-auto py-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="max-w-2xl w-full mx-6"
+              className="max-w-2xl w-full mx-6 my-10"
             >
               <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-8 shadow-[0_0_25px_rgba(255,0,255,0.1)] hover:shadow-[0_0_35px_rgba(255,0,255,0.2)] transition-all">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400">
                     Create New Token
                   </h2>
-                  <button 
+                  <motion.button 
                     onClick={() => setActiveTab('tokens')}
-                    className="text-gray-400 hover:text-white"
+                    className="p-2 rounded-full bg-gray-800/50 hover:bg-fuchsia-500/20 text-gray-400 hover:text-white transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                   >
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                  </button>
+                  </motion.button>
                 </div>
                 
                 <form onSubmit={handleCreateToken} className="space-y-6">
-                  <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-8">
-                    <h2 className="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                      Create New Token
-                    </h2>
-                    
+                  <div className="space-y-4">
                     <div className="mb-6">
                       <label className="block text-gray-400 mb-2">Token Image</label>
                       <div className="flex items-center justify-center w-full">
@@ -874,27 +872,27 @@ export default function ShadowFun() {
                         )}
                       </div>
                     </div>
-
-                    <motion.button
-                      type="submit"
-                      className="w-full mt-6 px-6 py-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={(e) => {
-                        if (!isWalletConnected) {
-                          e.preventDefault();
-                          connectWallet();
-                        }
-                      }}
-                    >
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                        {!isWalletConnected 
-                          ? "Connect Wallet to Create"
-                          : "Create Token"
-                        }
-                      </span>
-                    </motion.button>
                   </div>
+
+                  <motion.button
+                    type="submit"
+                    className="w-full mt-6 px-6 py-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={(e) => {
+                      if (!isWalletConnected) {
+                        e.preventDefault();
+                        connectWallet();
+                      }
+                    }}
+                  >
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                      {!isWalletConnected 
+                        ? "Connect Wallet to Create"
+                        : "Create Token"
+                      }
+                    </span>
+                  </motion.button>
                 </form>
               </div>
             </motion.div>
