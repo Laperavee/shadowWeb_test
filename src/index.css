@@ -2,6 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .grid-animation {
+    background-size: 50px 50px;
+    background-image: 
+      linear-gradient(to right, rgba(255, 0, 255, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 0, 255, 0.1) 1px, transparent 1px);
+    animation: grid 20s linear infinite;
+  }
+
+  .animate-gradient-slow {
+    animation: gradient 15s ease infinite;
+    background-size: 400% 400%;
+  }
+
+  @keyframes grid {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(50px);
+    }
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .hover-glow {
+    transition: all 0.3s ease;
+  }
+
+  .hover-glow:hover {
+    filter: drop-shadow(0 0 15px rgba(255, 0, 255, 0.5));
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, rgba(255, 0, 255, 0.3), rgba(0, 255, 255, 0.3));
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, rgba(255, 0, 255, 0.5), rgba(0, 255, 255, 0.5));
+}
+
 :root {
   --primary: #8B5CF6;
   --secondary: #3B82F6;
@@ -175,5 +241,53 @@ body {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
+}
+
+@keyframes spin-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 1s linear infinite;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 20s linear infinite;
+  min-width: max-content;
+}
+
+/* Dupliquer le contenu pour un défilement continu */
+.animate-scroll {
+  display: flex;
+}
+
+.animate-scroll > * {
+  margin-right: 2rem;
+}
+
+.animate-scroll > *:last-child {
+  margin-right: 0;
+}
+
+/* Ajouter un effet de fondu sur les bords */
+.overflow-hidden {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
 }
   

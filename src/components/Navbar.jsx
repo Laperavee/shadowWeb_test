@@ -19,9 +19,8 @@ export default function Navbar() {
   }, []);
 
   const menuItems = [
-    { title: "Platform", path: "/platform" },
     { title: "How it Works", path: "/how-it-works" },
-    { title: "Features", path: "/features" },
+    { title: "Features", path: "/features" }
   ];
 
   return (

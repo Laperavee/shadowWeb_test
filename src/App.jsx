@@ -5,15 +5,11 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Features from './pages/Features';
-import Platform from './pages/Platform';
 import HowItWorks from './pages/HowItWorks';
-import SuccessStories from './pages/SuccessStories';
-import FAQ from './pages/FAQ';
 import ShadowFun from './pages/ShadowFun';
 
 // Components for managing effects
 import SoundProvider from './context/SoundContext';
-import Cursor from './components/Cursor';
 import LoadingScreen from './components/LoadingScreen';
 
 // Créer un composant wrapper pour gérer l'affichage conditionnel de la Navbar
@@ -22,7 +18,7 @@ function AppContent() {
   const hideNavbar = location.pathname === '/shadow-fun';
 
   return (
-    <div className="app relative min-h-screen bg-black text-white overflow-hidden">
+    <div className="app relative min-h-screen bg-black text-white overflow-hidden flex flex-col">
       {/* Background amélioré */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Grille cyberpunk */}
@@ -50,24 +46,22 @@ function AppContent() {
       </div>
 
       {/* Contenu principal */}
-      <div className="relative z-10">
+      <div className="relative z-10 flex flex-col min-h-screen">
         {!hideNavbar && <Navbar />}
-        <main className="min-h-screen pb-96">
+        <main className="flex-grow">
           <AnimatePresence mode="wait">
-            <Routes>
+            <Routes location={location} key={location.pathname}>
               <Route path="/" element={<Home />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/features" element={<Features />} />
-              <Route path="/platform" element={<Platform />} />
               <Route path="/shadow-fun" element={<ShadowFun />} />
             </Routes>
           </AnimatePresence>
         </main>
-        {!hideNavbar && <Footer />}
+        {!hideNavbar && <Footer className="mt-auto" />}
       </div>
 
       {/* Effets globaux */}
-      <Cursor />
       <LoadingScreen />
     </div>
   );

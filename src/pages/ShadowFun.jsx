@@ -1,464 +1,948 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { useScroll, useTransform } from 'framer-motion';
 import Footer from '../components/Footer';
-import { supabase } from '../lib/supabaseClient';
 import { ethers } from 'ethers';
+import ShadowArtifact from '../artifact/Shadow.json';
+import TransactionBanner from '../components/TransactionBanner';
+import avaxLogo from '../../dist/assets/avax_logo.png';
+import baseLogo from '../../dist/assets/base_logo.png';
+import { CONTRACTS } from '../config/contracts';
+import { tokenService } from '../services/tokenService';
 
-// ABI mis à jour pour correspondre exactement au contrat
-const SHADOW_ABI = [
-  "function deployToken(string name, string symbol, uint256 totalSupply, int24 tick, uint24 fee, bytes32 salt, address owner, string fid, address rewardAddress, uint256 maxWalletPercentage) external payable",
-  "function generateSalt(address owner, string fid, string name, string symbol, uint256 totalSupply, uint256 maxWalletPercentage) external view returns (bytes32 salt, address token)",
-  "function shadowDeploymentFee() external view returns (uint256)"
-];
+const SHADOW_ABI = ShadowArtifact.abi;
 
-const SHADOW_ADDRESS = import.meta.env.VITE_SHADOW_ADDRESS;
-if (!SHADOW_ADDRESS) {
-  console.error("Shadow contract address not found in environment variables");
-}
+const NETWORKS = {
+  AVAX: {
+    chainId: "0xa86a",
+    chainName: "Avalanche",
+    logo: avaxLogo,
+    disabled: false,
+    nativeCurrency: {
+      name: "AVAX",
+      symbol: "AVAX",
+      decimals: 18
+    },
+    rpcUrls: ["https://api.avax.network/ext/bc/C/rpc"],
+    blockExplorerUrls: ["https://snowtrace.io"]
+  },
+  BASE: {
+    chainId: "0x2105",
+    chainName: "Base",
+    logo: baseLogo,
+    disabled: true,
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18
+    },
+    rpcUrls: ["https://mainnet.base.org"],
+    blockExplorerUrls: ["https://basescan.org"]
+  }
+};
 
-// Ajout de l'ABI pour le token SHADOW
-const SHADOW_TOKEN_ABI = [
-  "function approve(address spender, uint256 amount) external returns (bool)",
-  "function allowance(address owner, address spender) external view returns (uint256)",
-  "function balanceOf(address account) external view returns (uint256)"
-];
+const NETWORK_LIMITS = {
+  AVAX: {
+    minLiquidity: 100,
+    maxLiquidity: 90000,
+    minSupply: 1,
+    maxSupply: 1000000000,
+    minWalletPercentage: 0.1,
+    maxWalletPercentage: 10,
+    minDeploymentFee: 0.00001,
+    currency: 'AVAX'
+  },
+  BASE: {
+    minLiquidity: 10,
+    maxLiquidity: 1000,
+    minSupply: 1,
+    maxSupply: 1000000000,
+    minWalletPercentage: 0.1,
+    maxWalletPercentage: 10,
+    minDeploymentFee: 0.00001,
+    currency: 'ETH'
+  }
+};
 
-const SHADOW_TOKEN_ADDRESS = "0x1d008f50FB828eF9DEbBBEAe1B71FfFe929bf317";
+const switchNetwork = async (chainId) => {
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      const targetNetwork = NETWORKS[chainId];
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: targetNetwork.chainId }]
+      });
+    } catch (switchError) {
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [NETWORKS[chainId]]
+          });
+        } catch (addError) {
+          throw addError;
+        }
+      } else {
+        throw switchError;
+      }
+    }
+  }
+};
+
+const NetworkSelector = ({ selectedChain, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleNetworkChange = async (newChain) => {
+    if (NETWORKS[newChain].disabled) return;
+    try {
+      if (window.ethereum && window.ethereum.selectedAddress) {
+        await switchNetwork(newChain);
+      }
+      onChange(newChain);
+      setIsOpen(false);
+    } catch (error) {
+      addNotification(`Failed to switch to ${NETWORKS[newChain].chainName}. Please try again.`, "error");
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between w-20 h-10 px-3 gap-3 rounded-lg bg-black border border-gray-800 cursor-pointer hover:border-fuchsia-500/50"
+      >
+        <img
+          src={NETWORKS[selectedChain].logo}
+          alt={NETWORKS[selectedChain].chainName}
+          className="w-6 h-6"
+        />
+        <svg 
+          className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-2 w-20 bg-black border border-gray-800 rounded-lg overflow-hidden z-50">
+          {Object.entries(NETWORKS).map(([key, network]) => (
+            <div
+              key={key}
+              onClick={() => !network.disabled && handleNetworkChange(key)}
+              className={`relative flex items-center justify-center h-10 ${
+                network.disabled 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : 'cursor-pointer hover:bg-gray-900'
+              } ${selectedChain === key ? 'bg-gray-900' : ''}`}
+            >
+              <img
+                src={network.logo}
+                alt={network.chainName}
+                className="w-6 h-6"
+              />
+              {network.disabled && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <span className="text-xs font-bold text-white">SOON</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const getLiquidityLabel = (chain) => {
+  const { minLiquidity, maxLiquidity, currency } = NETWORK_LIMITS[chain];
+  return `Initial Liquidity (${currency})`;
+};
+
+const getLiquidityPlaceholder = (chain) => {
+  const { minLiquidity, maxLiquidity, currency } = NETWORK_LIMITS[chain];
+  return `${formatNumber(minLiquidity)} to ${formatNumber(maxLiquidity)} ${currency}`;
+};
+
+const validateInput = (value, min, max, isInteger = false) => {
+  const numValue = parseFloat(value);
+  if (isNaN(numValue)) return false;
+  if (isInteger && !Number.isInteger(numValue)) return false;
+  return numValue >= min && numValue <= max;
+};
+
+const validateText = (value, field) => {
+  const patterns = {
+    name: /^[a-zA-Z0-9\s]{1,50}$/,
+    symbol: /^[a-zA-Z0-9]{1,10}$/
+  };
+  return patterns[field].test(value);
+};
+
+const getErrorMessage = (field, chain) => {
+  const limits = NETWORK_LIMITS[chain];
+  switch (field) {
+    case 'liquidity':
+      return `Liquidity must be between ${limits.minLiquidity} and ${limits.maxLiquidity} ${limits.currency}`;
+    case 'totalSupply':
+      return `Total supply must be between ${limits.minSupply} and ${limits.maxSupply/10**9} Billion`;
+    case 'maxWalletPercentage':
+      return `Max wallet percentage must be between ${limits.minWalletPercentage}% and ${limits.maxWalletPercentage}%`;
+    default:
+      return 'Invalid input';
+  }
+};
+
+const formatNumber = (num) => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+};
 
 export default function ShadowFun() {
   const [activeTab, setActiveTab] = useState('tokens');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [tokens, setTokens] = useState([]);
   
-  // Form states
   const [formData, setFormData] = useState({
     name: '',
     symbol: '',
     totalSupply: '',
     liquidity: '',
     maxWalletPercentage: '',
-    tokenImage: null
+    deploymentFee: '0.00001',
+    fullAccess: false
   });
 
   const [isDeploying, setIsDeploying] = useState(false);
   const [deploymentStatus, setDeploymentStatus] = useState('');
 
-  // Connexion MetaMask
+  const [selectedChain, setSelectedChain] = useState('AVAX');
+
+  const [notifications, setNotifications] = useState([]);
+
+  const [tokenPrices, setTokenPrices] = useState({
+    AVAX: 0,
+    ETH: 0
+  });
+
+  const [tokens, setTokens] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const addNotification = (message, type = 'info') => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(notif => notif.id !== id));
+    }, 5000);
+  };
+
   const connectWallet = async () => {
     if (typeof window.ethereum !== 'undefined') {
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
+  
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        
+        const targetNetwork = NETWORKS[selectedChain];
+        
+        if (chainId !== targetNetwork.chainId) {  
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: targetNetwork.chainId }]
+            });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [targetNetwork]
+              });
+            } else {
+              throw switchError;
+            }
+          }
+        }
         setIsWalletConnected(true);
       } catch (error) {
-        console.error("Wallet connection error:", error);
+        addNotification(`Please make sure you're connected to ${NETWORKS[selectedChain].chainName}`, "error");
       }
     } else {
-      alert("MetaMask is not installed!");
+      addNotification("MetaMask is not installed!", "error");
     }
   };
 
-  // Gestion de la création du token
+  useEffect(() => {
+    const updateContracts = async () => {
+      if (window.ethereum && isWalletConnected) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        
+        const shadowAddress = CONTRACTS[selectedChain].SHADOW_ADDRESS;
+        const shadowTokenAddress = CONTRACTS[selectedChain].SHADOW_TOKEN_ADDRESS;
+        
+        const shadow = new ethers.Contract(
+          shadowAddress,
+          SHADOW_ABI,
+          signer
+        );
+        
+        setShadowContract(shadow);
+      }
+    };
+
+    updateContracts();
+  }, [selectedChain, isWalletConnected]);
+
+  useEffect(() => {
+    const fetchTokenPrices = async () => {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2,ethereum&vs_currencies=usd');
+        const data = await response.json();
+        setTokenPrices({
+          AVAX: data['avalanche-2'].usd,
+          ETH: data.ethereum.usd
+        });
+      } catch (error) {
+        console.error('Failed to fetch token prices:', error);
+      }
+    };
+
+    fetchTokenPrices();
+    const interval = setInterval(fetchTokenPrices, 60000); 
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadTokens = async () => {
+    try {
+      setIsLoading(true);
+      const result = await tokenService.getTokens(currentPage, 8, selectedChain);
+      setTokens(result.tokens);
+      setTotalPages(result.pages);
+    } catch (error) {
+      console.error("Error loading tokens:", error);
+      addNotification("Failed to load tokens", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTokens();
+  }, [selectedChain, currentPage]);
+
   const handleCreateToken = async (e) => {
     e.preventDefault();
     
-    if (!isWalletConnected || !SHADOW_ADDRESS) {
-      alert("Please connect your wallet first!");
+    const { SHADOW_ADDRESS, SHADOW_TOKEN_ADDRESS } = CONTRACTS[selectedChain];
+    
+    if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
+      addNotification("Contract addresses not configured for this network", "error");
       return;
     }
 
-    // Validation des champs
+    if (!isWalletConnected) {
+      addNotification("Please connect your wallet first!", "error");
+      return;
+    }
+
     if (!formData.name || !formData.symbol || !formData.totalSupply || !formData.liquidity || !formData.maxWalletPercentage) {
-      alert("Please fill all fields");
+      addNotification("Please fill all fields", "error");
       return;
     }
 
     setIsDeploying(true);
     setDeploymentStatus('Initializing deployment...');
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const userAddress = await signer.getAddress();
+
+    const network = await provider.getNetwork();
 
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const userAddress = await signer.getAddress();
-
-      console.log("Connected address:", userAddress);
-      
-      // Connexion au token SHADOW
-      const shadowToken = new ethers.Contract(
-        SHADOW_TOKEN_ADDRESS,
-        SHADOW_TOKEN_ABI,
-        signer
-      );
-
-      // Connexion au contrat Shadow
       const shadow = new ethers.Contract(
         SHADOW_ADDRESS,
         SHADOW_ABI,
         signer
       );
+    
+      const maxWalletPercentage = parseFloat(formData.maxWalletPercentage)*10;
 
-      // Vérifier la balance et l'allowance
-      setDeploymentStatus('Checking SHADOW balance and allowance...');
-      const shadowFee = await shadow.shadowDeploymentFee();
-      const balance = await shadowToken.balanceOf(userAddress);
-      const allowance = await shadowToken.allowance(userAddress, SHADOW_ADDRESS);
-
-      console.log("Shadow fee required:", ethers.formatEther(shadowFee), "SHADOW");
-      console.log("Current balance:", ethers.formatEther(balance), "SHADOW");
-      console.log("Current allowance:", ethers.formatEther(allowance), "SHADOW");
-
-      if (balance < shadowFee) {
-        throw new Error(`Insufficient SHADOW balance. You need ${ethers.formatEther(shadowFee)} SHADOW`);
-      }
-
-      // Approuver les tokens si nécessaire
-      if (allowance < shadowFee) {
-        setDeploymentStatus('Approving SHADOW tokens...');
-        const approveTx = await shadowToken.approve(
-          SHADOW_ADDRESS,
-          ethers.parseEther("1000") // Approuver une grande quantité
-        );
-        await approveTx.wait();
-        console.log("SHADOW tokens approved");
-      }
-
-      // Calcul du FID
-      const timestamp = Math.floor(Date.now() / 1000);
-      const symbolBinary = formData.symbol
-        .split('')
-        .map(char => char.charCodeAt(0).toString(2))
-        .join('');
-      const symbolBase10 = parseInt(symbolBinary, 2);
-      const fid = Math.floor(timestamp * Math.PI * symbolBase10).toString();
-
-      console.log("Generated FID:", fid);
-
-      // Conversion des valeurs
-      const totalSupplyWei = ethers.parseEther(formData.totalSupply.toString());
-      const maxWalletPercentage = Math.floor(parseFloat(formData.maxWalletPercentage) * 10);
-
-      // Générer le salt
       setDeploymentStatus('Generating salt...');
-      const saltResult = await shadow.generateSalt(
-        userAddress,
-        fid,
-        formData.name,
-        formData.symbol,
-        totalSupplyWei,
-        maxWalletPercentage
-      );
+      try {        
+        const result = await shadow.generateSalt.staticCall(
+          userAddress, 
+          formData.name,
+          formData.symbol,
+          BigInt(ethers.parseEther(formData.totalSupply)),
+          maxWalletPercentage
+        );
 
-      const salt = saltResult.salt;
-      console.log("Generated salt:", salt);
+        const [salt, predictedAddress] = result;
 
-      // Calcul du tick
-      const price = parseFloat(formData.totalSupply) / parseFloat(formData.liquidity);
-      const tickSpacing = 200;
-      const sqrtPriceX96 = Math.sqrt(1/price) * Math.pow(2, 96);
-      const initialTick = Math.floor(Math.log(sqrtPriceX96 / Math.pow(2, 96)) / Math.log(Math.sqrt(1.0001)));
-      const validTick = Math.floor(initialTick / tickSpacing) * tickSpacing;
+        setDeploymentStatus('Deploying token...');
+        const tx = await shadow.deployToken(
+          formData.name,
+          formData.symbol,
+          BigInt(ethers.parseEther(formData.totalSupply)),
+          ethers.parseUnits(formData.liquidity),
+          10000,
+          salt,
+          userAddress,
+          parseInt(maxWalletPercentage),
+          {
+            value: ethers.parseEther(formData.deploymentFee),
+            gasLimit: 8000000
+          }
+        );
 
-      console.log("Calculated tick:", validTick);
+        setDeploymentStatus('Waiting for confirmation...');
+        
+        const receipt = await tx.wait();
+        
+        const tokenCreatedEvent = receipt.logs.find(log => {
+          try {
+            return log.topics[0] === ethers.id(
+              "TokenCreated(address,uint256,address,string,string,uint256)"
+            );
+          } catch {
+            return false;
+          }
+        });
 
-      // Déployer le token
-      setDeploymentStatus('Deploying token...');
-      const tx = await shadow.deployToken(
-        formData.name,
-        formData.symbol,
-        totalSupplyWei,
-        validTick,
-        10000, // 1% fee
-        salt,
-        userAddress,
-        fid,
-        userAddress,
-        maxWalletPercentage,
-        {
-          value: ethers.parseEther("0.001"),
-          gasLimit: 10000000
+        if (tokenCreatedEvent) {
+          const tokenAddress = tokenCreatedEvent.args ? 
+            tokenCreatedEvent.args[0] : 
+            `0x${tokenCreatedEvent.topics[1].slice(26)}`;
+          
+          setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
+          addNotification("Token deployed successfully!", "success");
+          // TO DO : Redirect to the token page when created
+          // window.location.href = `/token/${tokenAddress}`;
         }
-      );
 
-      setDeploymentStatus('Waiting for confirmation...');
-      console.log("Transaction sent:", tx.hash);
-      
-      const receipt = await tx.wait();
-      console.log("Transaction confirmed:", receipt);
+        setFormData({
+          name: '',
+          symbol: '',
+          totalSupply: '',
+          liquidity: '',
+          maxWalletPercentage: '',
+        });
 
-      setDeploymentStatus('Token deployed successfully!');
-      alert(`Transaction confirmed! Check on Basescan: https://basescan.org/tx/${tx.hash}`);
+        loadTokens();
 
-      // Réinitialiser le formulaire
-      setFormData({
-        name: '',
-        symbol: '',
-        totalSupply: '',
-        liquidity: '',
-        maxWalletPercentage: ''
-      });
+      } catch (error) {
+        throw error;
+      }
 
     } catch (error) {
-      console.error("Error creating token:", error);
-      setDeploymentStatus('Deployment failed: ' + error.message);
-      alert(`Error: ${error.message}`);
+      throw error;
     } finally {
       setIsDeploying(false);
     }
   };
 
+  const formatAddress = (address) => {
+    if (!address) return '';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  };
+
   return (
     <main className="min-h-screen bg-black">
-      {/* Background with Shadow style */}
       <div className="fixed inset-0">
         <div className="grid-animation opacity-5" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-900/10 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-fuchsia-900/20 to-cyan-900/30 animate-gradient-slow" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)]" />
       </div>
 
       <div className="relative z-10">
-        {/* Header with connect button */}
-        <header className="py-6 px-4">
-          <div className="container mx-auto flex justify-between items-center">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+        <header className="bg-black/30 backdrop-blur-sm border-b border-fuchsia-500/20">
+          <div className="container mx-auto flex justify-between items-center py-4 px-6">
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400 hover:scale-105 transition-transform cursor-default">
               Shadow Protocol
             </h1>
+            <div className="flex items-center gap-4">
+              <NetworkSelector
+                selectedChain={selectedChain}
+                onChange={setSelectedChain}
+              />
+              <motion.button
+                onClick={connectWallet}
+                className="px-6 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all shadow-[0_0_15px_rgba(255,0,255,0.3)] hover:shadow-[0_0_25px_rgba(255,0,255,0.5)]"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                  {isWalletConnected ? "Connected" : "Connect Wallet"}
+                </span>
+              </motion.button>
+            </div>
+          </div>
+        </header>
+
+        <TransactionBanner />
+
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+              Featured Tokens
+            </h2>
             <motion.button
-              onClick={connectWallet}
-              className="px-6 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all"
+              onClick={() => setActiveTab('create')}
+              className="px-6 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all shadow-[0_0_15px_rgba(255,0,255,0.3)] hover:shadow-[0_0_25px_rgba(255,0,255,0.5)]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                {isWalletConnected ? "Connected" : "Connect Wallet"}
-              </span>
-            </motion.button>
-          </div>
-        </header>
-
-        {/* Navigation Tabs */}
-        <div className="flex justify-center mt-8 mb-12">
-          <div className="flex gap-2 p-1 rounded-xl bg-gray-900/50 backdrop-blur-sm border border-gray-800">
-            <motion.button
-              onClick={() => setActiveTab('tokens')}
-              className={`
-                px-6 py-2.5 rounded-lg transition-all duration-300
-                ${activeTab === 'tokens' 
-                  ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/50' 
-                  : 'hover:bg-gray-800/50'
-                }
-              `}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <span className={`
-                text-sm font-medium
-                ${activeTab === 'tokens'
-                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400'
-                  : 'text-gray-400 hover:text-gray-300'
-                }
-              `}>
-                My Tokens
-              </span>
-            </motion.button>
-
-            <motion.button
-              onClick={() => setActiveTab('create')}
-              className={`
-                px-6 py-2.5 rounded-lg transition-all duration-300
-                ${activeTab === 'create' 
-                  ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/50' 
-                  : 'hover:bg-gray-800/50'
-                }
-              `}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <span className={`
-                text-sm font-medium
-                ${activeTab === 'create'
-                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400'
-                  : 'text-gray-400 hover:text-gray-300'
-                }
-              `}>
                 Create Token
               </span>
             </motion.button>
           </div>
-        </div>
 
-        {/* Content */}
-        <section className="container mx-auto px-4 py-12">
-          {activeTab === 'tokens' ? (
-            // Liste des tokens existante
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {/* Token card example */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6 hover:border-fuchsia-500/50 transition-all duration-300"
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fuchsia-500"></div>
+            </div>
+          ) : tokens.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-gray-400 mb-4">No tokens found on {NETWORKS[selectedChain].chainName}</p>
+              <motion.button
+                onClick={() => setActiveTab('create')}
+                className="px-6 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <img 
-                    src="/placeholder-token.png" 
-                    alt="Token" 
-                    className="w-16 h-16 rounded-full"
-                  />
-                  <div>
-                    <h3 className="text-xl font-bold text-white">$SHADOW</h3>
-                    <p className="text-gray-400">Shadow Protocol</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-fuchsia-400" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
-                    </svg>
-                    <a href="#" className="text-fuchsia-400 hover:text-fuchsia-300">@ShadowToken</a>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-cyan-400" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c-4.97 0-9-4.03-9-9m9 9a9 9 0 0 0 9-9m-9 9c4.97 0 9-4.03 9-9"/>
-                    </svg>
-                    <a href="#" className="text-cyan-400 hover:text-cyan-300">shadow.com</a>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-400">Created on 03/01/2024</span>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-4 py-1 rounded-lg bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 border border-fuchsia-500/20 hover:border-fuchsia-500/50"
-                  >
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                      View
-                    </span>
-                  </motion.button>
-                </div>
-              </motion.div>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                  Create the first token
+                </span>
+              </motion.button>
             </div>
           ) : (
-            // Formulaire de création
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {tokens.map((token, i) => (
+                  <motion.div
+                    key={token.address}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6 hover:border-fuchsia-500/50 transition-all duration-300 shadow-[0_0_25px_rgba(255,0,255,0.1)] hover:shadow-[0_0_35px_rgba(255,0,255,0.2)]"
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      {token.imageUrl ? (
+                        <img 
+                          src={token.imageUrl} 
+                          alt={token.name} 
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 animate-pulse-glow"></div>
+                      )}
+                      <div>
+                        <h3 className="text-xl font-bold text-white">${token.symbol}</h3>
+                        <p className="text-gray-400">{token.name}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4 mb-6">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Price</span>
+                        <span className={token.priceChange24h >= 0 ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
+                          ${token.price ? token.price.toFixed(8) : '0.00000000'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">24h Change</span>
+                        <span className={token.priceChange24h >= 0 ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
+                          {token.priceChange24h ? `${token.priceChange24h > 0 ? '+' : ''}${token.priceChange24h.toFixed(2)}%` : '0.00%'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400">Market Cap</span>
+                        <span className="text-white font-bold">
+                          ${token.marketCap ? token.marketCap.toLocaleString() : '0'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-400">
+                        {new Date(token.createdAt).toLocaleDateString()}
+                      </span>
+                      <motion.a
+                        href={`${NETWORKS[token.network].blockExplorerUrls[0]}/address/${token.address}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-4 py-1 rounded-lg bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 border border-fuchsia-500/20 hover:border-fuchsia-500/50"
+                      >
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                          Trade
+                        </span>
+                      </motion.a>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-8">
+                  <div className="flex gap-2">
+                    <motion.button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1 rounded-lg ${
+                        currentPage === 1 
+                          ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed' 
+                          : 'bg-gray-800/50 hover:bg-fuchsia-500/20 text-gray-300'
+                      }`}
+                      whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
+                      whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
+                    >
+                      Previous
+                    </motion.button>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <motion.button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-8 h-8 rounded-lg ${
+                          currentPage === page
+                            ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/50'
+                            : 'bg-gray-800/50 hover:bg-fuchsia-500/20'
+                        }`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {page}
+                      </motion.button>
+                    ))}
+                    
+                    <motion.button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-1 rounded-lg ${
+                        currentPage === totalPages
+                          ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed'
+                          : 'bg-gray-800/50 hover:bg-fuchsia-500/20 text-gray-300'
+                      }`}
+                      whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
+                      whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
+                    >
+                      Next
+                    </motion.button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {activeTab === 'create' && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-2xl mx-auto"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="max-w-2xl w-full mx-6"
             >
-              <form onSubmit={handleCreateToken} className="space-y-6">
-                <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-8">
-                  <h2 className="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+              <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-8 shadow-[0_0_25px_rgba(255,0,255,0.1)] hover:shadow-[0_0_35px_rgba(255,0,255,0.2)] transition-all">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400">
                     Create New Token
                   </h2>
-                  
-                  {/* Image Upload */}
-                  <div className="mb-6">
-                    <label className="block text-gray-400 mb-2">Token Image</label>
-                    <div className="flex items-center justify-center w-full">
-                      <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50">
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                          </svg>
-                          <p className="mb-2 text-sm text-gray-500">Click to upload token image</p>
-                        </div>
-                        <input 
-                          type="file" 
-                          className="hidden" 
-                          accept="image/*"
-                          onChange={(e) => setFormData({...formData, tokenImage: e.target.files[0]})}
-                        />
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Token Details */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-gray-400 mb-2">Token Name</label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-2 bg-black/30 border border-gray-700 rounded-lg focus:border-fuchsia-500/50 focus:outline-none"
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        placeholder="e.g. Shadow Token"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-400 mb-2">Token Symbol</label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-2 bg-black/30 border border-gray-700 rounded-lg focus:border-fuchsia-500/50 focus:outline-none"
-                        value={formData.symbol}
-                        onChange={(e) => setFormData({...formData, symbol: e.target.value})}
-                        placeholder="e.g. SHDW"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-400 mb-2">Total Supply</label>
-                      <input
-                        type="number"
-                        className="w-full px-4 py-2 bg-black/30 border border-gray-700 rounded-lg focus:border-fuchsia-500/50 focus:outline-none"
-                        value={formData.totalSupply}
-                        onChange={(e) => setFormData({...formData, totalSupply: e.target.value})}
-                        placeholder="1 to 1B"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-400 mb-2">Initial Liquidity (ETH)</label>
-                      <input
-                        type="number"
-                        className="w-full px-4 py-2 bg-black/30 border border-gray-700 rounded-lg focus:border-fuchsia-500/50 focus:outline-none"
-                        value={formData.liquidity}
-                        onChange={(e) => setFormData({...formData, liquidity: e.target.value})}
-                        placeholder="10 to 200"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-400 mb-2">Max Wallet Percentage</label>
-                      <input
-                        type="number"
-                        className="w-full px-4 py-2 bg-black/30 border border-gray-700 rounded-lg focus:border-fuchsia-500/50 focus:outline-none"
-                        value={formData.maxWalletPercentage}
-                        onChange={(e) => setFormData({...formData, maxWalletPercentage: e.target.value})}
-                        placeholder="0.1 to 10%"
-                      />
-                    </div>
-                  </div>
-
-                  <motion.button
-                    type="submit"
-                    className="w-full mt-6 px-6 py-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    disabled={!isWalletConnected}
+                  <button 
+                    onClick={() => setActiveTab('tokens')}
+                    className="text-gray-400 hover:text-white"
                   >
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                      {!isWalletConnected 
-                        ? "Connect Wallet to Create"
-                        : "Create Token"
-                      }
-                    </span>
-                  </motion.button>
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
-              </form>
+                
+                <form onSubmit={handleCreateToken} className="space-y-6">
+                  <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-8">
+                    <h2 className="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                      Create New Token
+                    </h2>
+                    
+                    <div className="mb-6">
+                      <label className="block text-gray-400 mb-2">Token Image</label>
+                      <div className="flex items-center justify-center w-full">
+                        <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50">
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                            </svg>
+                            <p className="mb-2 text-sm text-gray-500">Click to upload token image</p>
+                          </div>
+                          <input 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/*"
+                            onChange={(e) => setFormData({...formData, tokenImage: e.target.files[0]})}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-gray-400 mb-2">Token Name</label>
+                        <input
+                          type="text"
+                          className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                            formData.name && !validateText(formData.name, 'name')
+                              ? 'border-red-500/50 focus:border-red-500/75' 
+                              : 'border-gray-700 focus:border-fuchsia-500/50'
+                          }`}
+                          value={formData.name}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, '');
+                            setFormData({...formData, name: value});
+                          }}
+                          placeholder="e.g. Shadow Token"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-gray-400 mb-2">Token Symbol</label>
+                        <input
+                          type="text"
+                          className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                            formData.symbol && !validateText(formData.symbol, 'symbol')
+                              ? 'border-red-500/50 focus:border-red-500/75' 
+                              : 'border-gray-700 focus:border-fuchsia-500/50'
+                          }`}
+                          value={formData.symbol}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                            setFormData({...formData, symbol: value});
+                          }}
+                          placeholder="e.g. SHDW"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-gray-400 mb-2">Total Supply</label>
+                        <input
+                          type="text"
+                          className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                            formData.totalSupply && !validateInput(formData.totalSupply, NETWORK_LIMITS[selectedChain].minSupply, NETWORK_LIMITS[selectedChain].maxSupply, true)
+                              ? 'border-red-500/50 focus:border-red-500/75' 
+                              : 'border-gray-700 focus:border-fuchsia-500/50'
+                          }`}
+                          value={formData.totalSupply}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            setFormData({...formData, totalSupply: value});
+                          }}
+                          placeholder={`${formatNumber(NETWORK_LIMITS[selectedChain].minSupply)} to ${formatNumber(NETWORK_LIMITS[selectedChain].maxSupply)}`}
+                        />
+                        {formData.totalSupply && !validateInput(formData.totalSupply, NETWORK_LIMITS[selectedChain].minSupply, NETWORK_LIMITS[selectedChain].maxSupply, true) && (
+                          <motion.p 
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-2 text-sm text-red-400 flex items-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            {getErrorMessage('totalSupply', selectedChain)}
+                          </motion.p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-gray-400 mb-2">
+                          {getLiquidityLabel(selectedChain)}
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                              formData.liquidity && (
+                                parseFloat(formData.liquidity) < NETWORK_LIMITS[selectedChain].minLiquidity ||
+                                parseFloat(formData.liquidity) > NETWORK_LIMITS[selectedChain].maxLiquidity
+                              ) 
+                                ? 'border-red-500/50 focus:border-red-500/75' 
+                                : 'border-gray-700 focus:border-fuchsia-500/50'
+                            }`}
+                            value={formData.liquidity}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^0-9.]/g, '');
+                              setFormData({...formData, liquidity: value});
+                            }}
+                            placeholder={getLiquidityPlaceholder(selectedChain)}
+                          />
+                          {formData.liquidity && tokenPrices[NETWORKS[selectedChain].nativeCurrency.symbol] > 0 && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                              ≈ ${(parseFloat(formData.liquidity) * tokenPrices[NETWORKS[selectedChain].nativeCurrency.symbol]).toLocaleString('en-US', {maximumFractionDigits: 2})}
+                            </div>
+                          )}
+                        </div>
+                        {formData.liquidity && (
+                          parseFloat(formData.liquidity) < NETWORK_LIMITS[selectedChain].minLiquidity ||
+                          parseFloat(formData.liquidity) > NETWORK_LIMITS[selectedChain].maxLiquidity
+                        ) && (
+                          <motion.p 
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-2 text-sm text-red-400 flex items-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Liquidity must be between {formatNumber(NETWORK_LIMITS[selectedChain].minLiquidity)} and {formatNumber(NETWORK_LIMITS[selectedChain].maxLiquidity)} {NETWORK_LIMITS[selectedChain].currency}
+                          </motion.p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-gray-400 mb-2">Max Wallet Percentage</label>
+                        <input
+                          type="text"
+                          className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                            formData.maxWalletPercentage && !validateInput(formData.maxWalletPercentage, NETWORK_LIMITS[selectedChain].minWalletPercentage, NETWORK_LIMITS[selectedChain].maxWalletPercentage)
+                              ? 'border-red-500/50 focus:border-red-500/75' 
+                              : 'border-gray-700 focus:border-fuchsia-500/50'
+                          }`}
+                          value={formData.maxWalletPercentage}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9.]/g, '');
+                            setFormData({...formData, maxWalletPercentage: value});
+                          }}
+                          placeholder={`${NETWORK_LIMITS[selectedChain].minWalletPercentage} to ${NETWORK_LIMITS[selectedChain].maxWalletPercentage}%`}
+                        />
+                        {formData.maxWalletPercentage && !validateInput(formData.maxWalletPercentage, NETWORK_LIMITS[selectedChain].minWalletPercentage, NETWORK_LIMITS[selectedChain].maxWalletPercentage) && (
+                          <motion.p 
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-2 text-sm text-red-400 flex items-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            {getErrorMessage('maxWalletPercentage', selectedChain)}
+                          </motion.p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-gray-400 mb-2">
+                          Developer First Buy ({NETWORKS[selectedChain].nativeCurrency.symbol})
+                        </label>
+                        <input
+                          type="text"
+                          className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
+                            formData.deploymentFee && (
+                              parseFloat(formData.deploymentFee) < NETWORK_LIMITS[selectedChain].minDeploymentFee ||
+                              parseFloat(formData.deploymentFee) > (parseFloat(formData.liquidity) * 0.2)
+                            ) 
+                              ? 'border-red-500/50 focus:border-red-500/75' 
+                              : 'border-gray-700 focus:border-fuchsia-500/50'
+                          }`}
+                          value={formData.deploymentFee}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9.]/g, '');
+                            setFormData({...formData, deploymentFee: value});
+                          }}
+                          placeholder={`${NETWORK_LIMITS[selectedChain].minDeploymentFee} to ${(parseFloat(formData.liquidity || 0) * 0.2).toFixed(2)} ${NETWORK_LIMITS[selectedChain].currency}`}
+                        />
+                        {formData.deploymentFee && (
+                          parseFloat(formData.deploymentFee) < NETWORK_LIMITS[selectedChain].minDeploymentFee ||
+                          parseFloat(formData.deploymentFee) > (parseFloat(formData.liquidity) * 0.2)
+                        ) && (
+                          <motion.p 
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-2 text-sm text-red-400 flex items-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Fee must be between ${NETWORK_LIMITS[selectedChain].minDeploymentFee} and ${(parseFloat(formData.liquidity || 0) * 0.2).toFixed(2)} ${NETWORK_LIMITS[selectedChain].currency}
+                          </motion.p>
+                        )}
+                      </div>
+                    </div>
+
+                    <motion.button
+                      type="submit"
+                      className="w-full mt-6 px-6 py-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={(e) => {
+                        if (!isWalletConnected) {
+                          e.preventDefault();
+                          connectWallet();
+                        }
+                      }}
+                    >
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                        {!isWalletConnected 
+                          ? "Connect Wallet to Create"
+                          : "Create Token"
+                        }
+                      </span>
+                    </motion.button>
+                  </div>
+                </form>
+              </div>
             </motion.div>
-          )}
-        </section>
+          </div>
+        )}
       </div>
 
-      {/* Ajout d'un indicateur de statut */}
       {isDeploying && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gray-900 p-6 rounded-xl border border-fuchsia-500/20">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-fuchsia-500/20 rounded-xl p-8">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fuchsia-500 mx-auto mb-4"></div>
             <p className="text-fuchsia-400 text-center">{deploymentStatus}</p>
           </div>
         </div>
       )}
+
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+        {notifications.map(({ id, message, type }) => (
+          <motion.div
+            key={id}
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            className={`p-4 rounded-lg shadow-lg backdrop-blur-sm flex items-center gap-3 ${
+              type === 'error' 
+                ? 'bg-red-500/10 border border-red-500/50 text-red-400'
+                : type === 'success'
+                ? 'bg-green-500/10 border border-green-500/50 text-green-400'
+                : 'bg-gray-900/50 border border-fuchsia-500/50 text-fuchsia-400'
+            }`}
+          >
+            {type === 'error' ? (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ) : type === 'success' ? (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            {message}
+          </motion.div>
+        ))}
+      </div>
 
       <Footer />
     </main>

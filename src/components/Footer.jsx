@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-export default function Footer() {
+export default function Footer({ className = "" }) {
   const links = {
     product: [
       { name: 'Platform', path: '/platform' },
@@ -14,7 +14,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="absolute bottom-0 w-full z-10 bg-transparent">
+    <footer className={`relative z-10 bg-black/30 backdrop-blur-sm py-16 ${className}`}>
       <div className="container mx-auto px-4 py-12 bg-transparent">
         <div className="flex flex-col md:flex-row justify-between">
           {/* Brand */}
