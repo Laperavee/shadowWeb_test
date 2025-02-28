@@ -606,7 +606,16 @@ export default function ShadowFun() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                    dexscreener.com/base/0x0E2338661eC3E7ea8ffb8035b2bA8c385187926D?embed=1&theme=dark&trades=0&info=0&interval=1D:19 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+                      <motion.a
+                        href={`${NETWORKS[token.network].blockExplorerUrls[0]}/address/${token.token_address}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block px-4 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all text-sm text-gray-300"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        View on Explorer
+                      </motion.a>
                       <Link
                         to={`/token/${token.token_address}`}
                         className="inline-block px-4 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all text-sm text-gray-300"

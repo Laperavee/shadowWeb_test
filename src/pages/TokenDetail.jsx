@@ -53,7 +53,8 @@ const TokenDetail = () => {
       console.log('TokenDetail - Fetching DexScreener data for:', tokenAddress);
       setDexLoading(true);
       
-      setDexScreenerUrl(`https://dexscreener.com/${network}/${tokenAddress}?embed=1&theme=dark&trades=0&info=0`);
+      const dexNetwork = network.toUpperCase() === 'AVAX' ? 'avalanche' : network.toLowerCase();
+      setDexScreenerUrl(`https://dexscreener.com/${dexNetwork}/${tokenAddress}?embed=1&theme=dark&trades=0&info=0`);
       
       const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
       const data = await response.json();
@@ -117,9 +118,9 @@ const TokenDetail = () => {
   // Update DexScreener URL when timeframe changes
   useEffect(() => {
     if (token && token.token_address) {
-      const chainId = token.network === 'AVAX' ? 'avalanche' : 'base';
-      const timeframeParam = timeframe === '24h' ? '1D' : timeframe === '7d' ? '1W' : '1M';
-      setDexScreenerUrl(`https://dexscreener.com/${chainId}/${token.token_address}?embed=1&theme=dark&trades=0&info=0&interval=${timeframeParam}`);
+      const timeframeParam = timeframe === '24h' ? '1m' : timeframe === '7d' ? '1W' : '1M';
+      const dexNetwork = token.network.toUpperCase() === 'AVAX' ? 'avalanche' : token.network.toLowerCase();
+      setDexScreenerUrl(`https://dexscreener.com/${dexNetwork}/${token.token_address}?embed=1&theme=dark&trades=0&info=0&interval=${timeframeParam}`);
     }
   }, [timeframe, token]);
 
@@ -161,8 +162,8 @@ const TokenDetail = () => {
   // Function to open DexScreener
   const openDexScreener = () => {
     if (token && token.token_address) {
-      const network = token.network === 'AVAX' ? 'avalanche' : 'base';
-      window.open(`https://dexscreener.com/${network}/${token.token_address}`, '_blank');
+      const dexNetwork = token.network.toUpperCase() === 'AVAX' ? 'avalanche' : token.network.toLowerCase();
+      window.open(`https://dexscreener.com/${dexNetwork}/${token.token_address}`, '_blank');
     }
   };
 
@@ -244,7 +245,7 @@ const TokenDetail = () => {
                 className="px-4 py-2 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 rounded-lg text-sm transition-colors"
               >
                 <a 
-                  href={`https://dexscreener.com/${token.network === 'AVAX' ? 'avalanche' : token.network}/${token.token_address}`}
+                  href={`https://dexscreener.com/${token.network.toUpperCase() === 'AVAX' ? 'avalanche' : token.network.toLowerCase()}/${token.token_address}`}
                   target="_blank" 
                   rel="noopener noreferrer"
                 >
