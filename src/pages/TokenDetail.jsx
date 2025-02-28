@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ethers } from 'ethers';
 import { tokenService } from '../services/tokenService';
 
 const TokenDetail = () => {
@@ -22,7 +20,8 @@ const TokenDetail = () => {
         setLoading(true);
         setError(null);
         
-        const tokenData = await tokenService.getTokenByAddress(address);
+        const datareturned = await tokenService.getTokenByAddress(address);
+        const tokenData = datareturned.data;
         console.log('TokenDetail - Token data received:', tokenData);
         
         if (!tokenData) {
@@ -32,9 +31,11 @@ const TokenDetail = () => {
           return;
         }
         
-        setToken(tokenData);
+        if (tokenData.network === 'AVAX') {
+          tokenData.network = 'avalanche';
+        }
         
-        // Try to fetch data from DexScreener
+        setToken(tokenData);
         fetchDexScreenerData(tokenData.token_address, tokenData.network);
       } catch (err) {
         console.error('TokenDetail - Error in fetchToken:', err);
@@ -51,12 +52,9 @@ const TokenDetail = () => {
     try {
       console.log('TokenDetail - Fetching DexScreener data for:', tokenAddress);
       setDexLoading(true);
-      const chainId = network === 'AVAX' ? 'avalanche' : 'base';
       
-      // Set DexScreener URL for iframe
-      setDexScreenerUrl(`https://dexscreener.com/${chainId}/${tokenAddress}?embed=1&theme=dark&trades=0&info=0`);
+      setDexScreenerUrl(`https://dexscreener.com/${network}/${tokenAddress}?embed=1&theme=dark&trades=0&info=0`);
       
-      // Use a CORS proxy or backend API for this request in production
       const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
       const data = await response.json();
       
@@ -74,26 +72,25 @@ const TokenDetail = () => {
         
         // Update token with market information
         if (mainPair) {
+          const marketData = {
+            price: parseFloat(mainPair.priceUsd || 0),
+            marketCap: parseFloat(mainPair.marketCap || mainPair.fdv || 0),
+            priceChange24h: parseFloat(mainPair.priceChange?.h24 || 0),
+            volume24h: parseFloat(mainPair.volume?.h24 || 0),
+            liquidity: parseFloat(mainPair.liquidity?.usd || 0) / 1000
+          };
+
+          console.log('TokenDetail - Previous token data:', token);
           const updatedToken = {
             ...token,
-            price: parseFloat(mainPair.priceUsd || 0),
-            marketCap: parseFloat(mainPair.fdv || 0),
-            priceChange24h: parseFloat(mainPair.priceChange24h || 0),
-            volume24h: parseFloat(mainPair.volume24h || 0),
-            liquidity: parseFloat(mainPair.liquidity?.usd || 0) / 1000, // Convert to thousands for display
+            market_data: marketData
           };
+          console.log('TokenDetail - Updated token data:', updatedToken);
           
           setToken(updatedToken);
           
           // Update data in database
           try {
-            const marketData = {
-              price: parseFloat(mainPair.priceUsd || 0),
-              marketCap: parseFloat(mainPair.fdv || 0),
-              priceChange24h: parseFloat(mainPair.priceChange24h || 0),
-              volume24h: parseFloat(mainPair.volume24h || 0)
-            };
-            
             console.log('TokenDetail - Updating token market data in database:', marketData);
             const result = await tokenService.updateTokenMarketData(tokenAddress, marketData);
             
@@ -244,10 +241,15 @@ const TokenDetail = () => {
             
             <div className="flex flex-wrap gap-2">
               <button 
-                onClick={openDexScreener}
                 className="px-4 py-2 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 rounded-lg text-sm transition-colors"
               >
-                View on DexScreener
+                <a 
+                  href={`https://dexscreener.com/${token.network === 'AVAX' ? 'avalanche' : token.network}/${token.token_address}`}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  View on DexScreener
+                </a>
               </button>
               <a 
                 href={`https://snowtrace.io/address/${token.token_address}`} 
@@ -273,31 +275,31 @@ const TokenDetail = () => {
           <div className="mt-6 flex flex-wrap gap-6">
             <div>
               <p className="text-gray-400 text-sm">Price</p>
-              <p className="text-2xl font-bold">{formatPrice(token.price)}</p>
+              <p className="text-2xl font-bold">{formatPrice(token.market_data?.price)}</p>
             </div>
             
-            {token.priceChange24h !== undefined && (
+            {token.market_data?.priceChange24h !== undefined && (
               <div>
                 <p className="text-gray-400 text-sm">24h Change</p>
                 <p className={`text-xl font-bold ${
-                  parseFloat(token.priceChange24h) >= 0 ? 'text-green-400' : 'text-red-400'
+                  parseFloat(token.market_data.priceChange24h) >= 0 ? 'text-green-400' : 'text-red-400'
                 }`}>
-                  {formatPercentage(token.priceChange24h)}
+                  {formatPercentage(token.market_data.priceChange24h)}
                 </p>
               </div>
             )}
             
-            {token.volume24h !== undefined && (
+            {token.market_data?.volume24h !== undefined && (
               <div>
                 <p className="text-gray-400 text-sm">24h Volume</p>
-                <p className="text-xl font-bold">${parseInt(token.volume24h || 0).toLocaleString()}</p>
+                <p className="text-xl font-bold">${parseInt(token.market_data.volume24h || 0).toLocaleString()}</p>
               </div>
             )}
             
-            {token.marketCap !== undefined && (
+            {token.market_data?.marketCap !== undefined && (
               <div>
                 <p className="text-gray-400 text-sm">Market Cap</p>
-                <p className="text-xl font-bold">${parseInt(token.marketCap || 0).toLocaleString()}</p>
+                <p className="text-xl font-bold">${parseInt(token.market_data.marketCap || 0).toLocaleString()}</p>
               </div>
             )}
           </div>
@@ -314,12 +316,12 @@ const TokenDetail = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-gray-800">
                 <span className="text-gray-400">Price</span>
-                <span className="font-bold">{formatPrice(token.price)}</span>
+                <span className="font-bold">{formatPrice(token.market_data?.price)}</span>
               </div>
               
               <div className="flex justify-between items-center py-2 border-b border-gray-800">
                 <span className="text-gray-400">Market Cap</span>
-                <span className="font-bold">${parseInt(token.marketCap || 0).toLocaleString()}</span>
+                <span className="font-bold">${parseInt(token.market_data?.marketCap || 0).toLocaleString()}</span>
               </div>
               
               <div className="flex justify-between items-center py-2 border-b border-gray-800">
@@ -329,7 +331,7 @@ const TokenDetail = () => {
               
               <div className="flex justify-between items-center py-2 border-b border-gray-800">
                 <span className="text-gray-400">Initial Liquidity</span>
-                <span className="font-bold">{token.liquidity} {token.network === 'AVAX' ? 'AVAX' : 'ETH'}</span>
+                <span className="font-bold">{token.liquidity} {token.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH'}</span>
               </div>
               
               <div className="flex justify-between items-center py-2 border-b border-gray-800">

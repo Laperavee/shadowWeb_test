@@ -17,7 +17,6 @@ async function uploadTokenImage(file) {
       .from('images')
       .createSignedUrl(fileName, 365 * 24 * 60 * 60); 
 
-    console.log('Image uploaded successfully, URL:', signedUrl);
     return signedUrl;
   } catch (error) {
     console.error('Error in uploadTokenImage:', error);
@@ -27,7 +26,6 @@ async function uploadTokenImage(file) {
 
 export const tokenService = {
   async getTokens(network) {
-    console.log('TokenService - getTokens called with network:', network);
     const { data: tokens, error } = await supabase
       .from('tokens')
       .select('*, token_address')
@@ -48,7 +46,6 @@ export const tokenService = {
       }
     }, []);
 
-    console.log('TokenService - Fetched unique tokens:', uniqueTokens);
     return uniqueTokens || [];
   },
 
@@ -92,23 +89,12 @@ export const tokenService = {
         return null;
       }
       
-      // If no data is found, return null
       if (!data) {
         console.error('TokenService - No token found with address:', address);
         return null;
       }
       
-      console.log('TokenService - Token data retrieved:', data);
-      
-      return {
-        ...data,
-        // Default values for market data
-        price: data.price || 0.000001,
-        marketCap: data.market_cap || (data.supply * 0.000001),
-        priceChange24h: data.price_change_24h || 0,
-        volume24h: data.volume_24h || 0,
-        transactions: []
-      };
+      return {data};
     } catch (error) {
       console.error('TokenService - Error fetching token:', error);
       return null;
@@ -118,10 +104,6 @@ export const tokenService = {
   // Update token price and market data
   async updateTokenMarketData(address, marketData) {
     try {
-      console.log('TokenService - updateTokenMarketData called with address:', address);
-      console.log('TokenService - Market data to update:', marketData);
-      
-      // First check if the token exists
       const { data: tokenExists, error: checkError } = await supabase
         .from('tokens')
         .select('id')
@@ -138,7 +120,6 @@ export const tokenService = {
         return null;
       }
       
-      // Now update the token
       const { data, error } = await supabase
         .from('tokens')
         .update({
@@ -154,7 +135,6 @@ export const tokenService = {
         return null;
       }
       
-      console.log('TokenService - Token market data updated successfully');
       return data;
     } catch (error) {
       console.error('TokenService - Error updating token market data:', error);
@@ -197,7 +177,6 @@ export const tokenService = {
         throw error;
       }
 
-      console.log('Token inserted successfully:', data);
       return { success: true, data };
     } catch (error) {
       console.error('Error in insertToken:', error);
@@ -207,7 +186,6 @@ export const tokenService = {
 
   async addTestToken() {
     try {
-      // Convertir l'image AVAX en Blob puis en File
       const response = await fetch(avaxLogo);
       const blob = await response.blob();
       const imageFile = new File([blob], 'avax_logo.png', { type: 'image/png' });
@@ -224,10 +202,7 @@ export const tokenService = {
         token_image: imageFile
       };
 
-      console.log('Inserting test token with data:', tokenData);
-      const result = await this.insertToken(tokenData);
-      console.log('Test token insertion result:', result);
-      return result;
+      return await this.insertToken(tokenData);
     } catch (error) {
       console.error('Error in addTestToken:', error);
       throw error;
