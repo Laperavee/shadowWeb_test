@@ -78,48 +78,86 @@ export const tokenService = {
 
   async getTokenByAddress(address) {
     try {
+      console.log('TokenService - getTokenByAddress called with address:', address);
+      
       const { data, error } = await supabase
         .from('tokens')
         .select('*')
-        .eq('address', address)
+        .eq('token_address', address)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('TokenService - Error in getTokenByAddress:', error);
+        return null;
+      }
+      
+      // If no data is found, return null
+      if (!data) {
+        console.error('TokenService - No token found with address:', address);
+        return null;
+      }
+      
+      console.log('TokenService - Token data retrieved:', data);
       
       return {
         ...data,
-        totalSupply: data.total_supply,
-        initialLiquidity: data.initial_liquidity,
-        maxWalletPercentage: data.max_wallet_percentage,
-        imageUrl: data.image_url,
-        priceChange24h: data.price_change_24h,
-        volume24h: data.volume_24h,
-        createdAt: data.created_at
+        // Default values for market data
+        price: data.price || 0.000001,
+        marketCap: data.market_cap || (data.supply * 0.000001),
+        priceChange24h: data.price_change_24h || 0,
+        volume24h: data.volume_24h || 0,
+        transactions: []
       };
     } catch (error) {
-      console.error('Error fetching token:', error);
-      throw error;
+      console.error('TokenService - Error fetching token:', error);
+      return null;
     }
   },
 
   // Update token price and market data
   async updateTokenMarketData(address, marketData) {
     try {
+      console.log('TokenService - updateTokenMarketData called with address:', address);
+      console.log('TokenService - Market data to update:', marketData);
+      
+      // First check if the token exists
+      const { data: tokenExists, error: checkError } = await supabase
+        .from('tokens')
+        .select('id')
+        .eq('token_address', address)
+        .single();
+      
+      if (checkError) {
+        console.error('TokenService - Error checking token existence:', checkError);
+        return null;
+      }
+      
+      if (!tokenExists) {
+        console.error('TokenService - Token not found with address:', address);
+        return null;
+      }
+      
+      // Now update the token
       const { data, error } = await supabase
         .from('tokens')
         .update({
-          price: marketData.price,
-          market_cap: marketData.marketCap,
-          price_change_24h: marketData.priceChange24h,
-          volume_24h: marketData.volume24h
+          price: marketData.price || 0,
+          market_cap: marketData.marketCap || 0,
+          price_change_24h: marketData.priceChange24h || 0,
+          volume_24h: marketData.volume24h || 0
         })
-        .eq('address', address);
+        .eq('token_address', address);
       
-      if (error) throw error;
+      if (error) {
+        console.error('TokenService - Error updating token market data:', error);
+        return null;
+      }
+      
+      console.log('TokenService - Token market data updated successfully');
       return data;
     } catch (error) {
-      console.error('Error updating token market data:', error);
-      throw error;
+      console.error('TokenService - Error updating token market data:', error);
+      return null;
     }
   },
 

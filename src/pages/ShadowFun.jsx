@@ -1,14 +1,13 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import Footer from '../components/Footer';
 import { ethers } from 'ethers';
 import ShadowArtifact from '../artifact/Shadow.json';
-import TransactionBanner from '../components/TransactionBanner';
 import avaxLogo from '../../dist/assets/avax_logo.png';
 import baseLogo from '../../dist/assets/base_logo.png';
 import { CONTRACTS } from '../config/contracts';
 import { tokenService } from '../services/tokenService';
 import { supabase } from '../utils/supabase';
+import { Link } from 'react-router-dom';
 
 const SHADOW_ABI = ShadowArtifact.abi;
 
@@ -533,8 +532,6 @@ export default function ShadowFun() {
           </div>
         </header>
 
-        <TransactionBanner />
-
         <div className="container mx-auto px-6 py-8">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
@@ -592,16 +589,24 @@ export default function ShadowFun() {
                         </p>
                       </div>
                     </div>
-                    <motion.a
-                      href={`${NETWORKS[token.network].blockExplorerUrls[0]}/address/${token.token_address}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block px-4 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all text-sm text-gray-300"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      View on Explorer
-                    </motion.a>
+                    <div className="flex gap-2">
+                      <motion.a
+                        href={`${NETWORKS[token.network].blockExplorerUrls[0]}/address/${token.token_address}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block px-4 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all text-sm text-gray-300"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        View on Explorer
+                      </motion.a>
+                      <Link
+                        to={`/token/${token.token_address}`}
+                        className="inline-block px-4 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all text-sm text-gray-300"
+                      >
+                        View Details
+                      </Link>
+                    </div>
                   </motion.div>
                 ))}
               </div>
@@ -955,8 +960,6 @@ export default function ShadowFun() {
           </motion.div>
         ))}
       </div>
-
-      <Footer />
     </main>
   );
 } 
