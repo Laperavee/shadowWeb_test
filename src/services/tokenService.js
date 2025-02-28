@@ -1,27 +1,41 @@
 import { supabase, authenticateSystemUser } from '../utils/supabase';
+import avaxLogo from '../../dist/assets/avax_logo.png';
 
-const formatNumber = (num) => {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
-};
+async function uploadTokenImage(file) {
+  if (!file) return null;
 
-async function insertData(table, data) {
-  const session = await authenticateSystemUser();
-  if (!session) return;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.error('User is not authenticated');
+      return null;
+    }
+    if (session) {
+      console.log('User is authenticated', session);
+    }
 
-  const { error } = await supabase
-    .from(table)
-    .insert(data, { returning: "minimal" });
+    const fileName = `${Date.now()}_${file.name}`; 
+    const { data, error } = await supabase.storage.from('images').upload(fileName, file);
 
-  if (error) {
-    console.error("Insertion failed:", error.message);
-    throw error;
-  } else {
-    console.log("Data inserted successfully");
+    if (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+
+    // Obtenir l'URL publique de l'image
+    const { data: { publicUrl } } = supabase.storage
+      .from('images')
+      .getPublicUrl(fileName);
+
+    console.log('Image uploaded successfully, URL:', publicUrl);
+    return publicUrl;
+  } catch (error) {
+    console.error('Error in uploadTokenImage:', error);
+    return null;
   }
 }
 
 export const tokenService = {
-  // Get all tokens with pagination
   async getTokens(network) {
     console.log('TokenService - getTokens called with network:', network);
     const { data: tokens, error } = await supabase
@@ -35,7 +49,6 @@ export const tokenService = {
       return [];
     }
 
-    // Dédupliquer les tokens par token_address
     const uniqueTokens = tokens?.reduce((acc, current) => {
       const x = acc.find(item => item.token_address === current.token_address);
       if (!x) {
@@ -78,8 +91,6 @@ export const tokenService = {
 
   async getTokenByAddress(address) {
     try {
-      console.log('TokenService - getTokenByAddress called with address:', address);
-      
       const { data, error } = await supabase
         .from('tokens')
         .select('*')
@@ -170,39 +181,66 @@ export const tokenService = {
     deployer_address,
     max_wallet_percentage,
     token_name,
-    token_symbol
+    token_symbol,
+    token_image
   }) {
     try {
-      await insertData('tokens', {
-        token_address,
-        liquidity,
-        supply,
-        network,
-        deployer_address,
-        created_at: new Date().toISOString(),
-        max_wallet_percentage,
-        token_name,
-        token_symbol
-      });
+      const imgUrl = token_image ? await uploadTokenImage(token_image) : null;
 
-      return { success: true };
+      const { data, error } = await supabase
+        .from('tokens')
+        .insert([{
+          token_address,
+          liquidity,
+          supply,
+          network,
+          deployer_address,
+          created_at: new Date(),
+          max_wallet_percentage,
+          token_name,
+          token_symbol,
+          image_url: imgUrl
+        }]);
+
+      if (error) {
+        console.error('Error inserting token:', error);
+        throw error;
+      }
+
+      console.log('Token inserted successfully:', data);
+      return { success: true, data };
     } catch (error) {
       console.error('Error in insertToken:', error);
       throw error;
     }
   },
 
-  // Test function to add a sample token
   async addTestToken() {
-    return this.insertToken({
-      token_address: '0x1234567890123456789012345678901234567890',
-      token_name: 'Test Token',
-      token_symbol: 'TEST',
-      supply: 1000000,
-      liquidity: 1000,
-      max_wallet_percentage: 5,
-      network: 'AVAX',
-      deployer_address: '0x0000000000000000000000000000000000000000'
-    });
+    try {
+      // Convertir l'image AVAX en Blob puis en File
+      const response = await fetch(avaxLogo);
+      const blob = await response.blob();
+      const imageFile = new File([blob], 'avax_logo.png', { type: 'image/png' });
+
+      const tokenData = {
+        token_address: '0x1234567890123456789012345678901234567890',
+        token_name: 'Test Token',
+        token_symbol: 'TEST',
+        supply: 1000000,
+        liquidity: 1000,
+        max_wallet_percentage: 5,
+        network: 'AVAX',
+        deployer_address: '0x0000000000000000000000000000000000000000',
+        token_image: imageFile
+      };
+
+      console.log('Inserting test token with data:', tokenData);
+      const result = await this.insertToken(tokenData);
+      console.log('Test token insertion result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error in addTestToken:', error);
+      throw error;
+    }
   }
 }; 

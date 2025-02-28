@@ -460,7 +460,8 @@ export default function ShadowFun() {
         liquidity: parseFloat(formData.liquidity),
         max_wallet_percentage: parseFloat(formData.maxWalletPercentage),
         network: selectedChain,
-        deployer_address: userAddress
+        deployer_address: userAddress,
+        token_image: formData.tokenImage
       });
 
       addNotification("Token saved to database", "success");
@@ -578,9 +579,24 @@ export default function ShadowFun() {
                     className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6"
                   >
                     <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-white">{token.token_name}</h3>
-                        <p className="text-gray-400">{token.token_symbol}</p>
+                      <div className="flex items-center gap-4">
+                        {token.image_url ? (
+                          <img
+                            src={token.image_url}
+                            alt={token.token_name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 flex items-center justify-center">
+                            <span className="text-xl font-bold text-white">
+                              {token.token_symbol.charAt(0)}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="text-xl font-bold text-white">{token.token_name}</h3>
+                          <p className="text-gray-400">{token.token_symbol}</p>
+                        </div>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-400">Supply: {token.supply}</p>
