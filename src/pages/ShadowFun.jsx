@@ -8,6 +8,7 @@ import avaxLogo from '../../dist/assets/avax_logo.png';
 import baseLogo from '../../dist/assets/base_logo.png';
 import { CONTRACTS } from '../config/contracts';
 import { tokenService } from '../services/tokenService';
+import { supabase } from '../utils/supabase';
 
 const SHADOW_ABI = ShadowArtifact.abi;
 
@@ -319,23 +320,25 @@ export default function ShadowFun() {
     return () => clearInterval(interval);
   }, []);
 
-  const loadTokens = async () => {
-    try {
-      setIsLoading(true);
-      const result = await tokenService.getTokens(currentPage, 8, selectedChain);
-      setTokens(result.tokens);
-      setTotalPages(result.pages);
-    } catch (error) {
-      console.error("Error loading tokens:", error);
-      addNotification("Failed to load tokens", "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
+    async function loadTokens() {
+      try {
+        console.log('ShadowFun - Loading tokens for network:', selectedChain);
+        setIsLoading(true);
+        const tokens = await tokenService.getTokens(selectedChain);
+        console.log('ShadowFun - Received tokens:', tokens);
+        if (Array.isArray(tokens)) {
+          setTokens(tokens);
+        }
+      } catch (error) {
+        console.error('ShadowFun - Error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
     loadTokens();
-  }, [selectedChain, currentPage]);
+  }, [selectedChain]);
 
   const handleCreateToken = async (e) => {
     e.preventDefault();
@@ -423,19 +426,19 @@ export default function ShadowFun() {
           
           setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
           addNotification("Token deployed successfully!", "success");
-          // TO DO : Redirect to the token page when created
-          // window.location.href = `/token/${tokenAddress}`;
+          
+          await saveTokenToDatabase(tokenAddress, userAddress);
+          
+          setFormData({
+            name: '',
+            symbol: '',
+            totalSupply: '',
+            liquidity: '',
+            maxWalletPercentage: '',
+          });
+
+          loadTokens();
         }
-
-        setFormData({
-          name: '',
-          symbol: '',
-          totalSupply: '',
-          liquidity: '',
-          maxWalletPercentage: '',
-        });
-
-        loadTokens();
 
       } catch (error) {
         throw error;
@@ -448,9 +451,47 @@ export default function ShadowFun() {
     }
   };
 
-  const formatAddress = (address) => {
-    if (!address) return '';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  const saveTokenToDatabase = async (tokenAddress, userAddress) => {
+    try {
+      await tokenService.insertToken({
+        token_address: tokenAddress,
+        token_name: formData.name,
+        token_symbol: formData.symbol,
+        supply: parseFloat(formData.totalSupply),
+        liquidity: parseFloat(formData.liquidity),
+        max_wallet_percentage: parseFloat(formData.maxWalletPercentage),
+        network: selectedChain,
+        deployer_address: userAddress
+      });
+
+      addNotification("Token saved to database", "success");
+      
+      // Recharger la liste des tokens
+      const tokens = await tokenService.getTokens(selectedChain);
+      if (Array.isArray(tokens)) {
+        setTokens(tokens);
+      }
+    } catch (error) {
+      console.error('Error saving token:', error);
+      addNotification("Failed to save token to database", "error");
+    }
+  };
+
+  // Fonction pour ajouter un token de test
+  const handleAddTestToken = async () => {
+    try {
+      setIsLoading(true);
+      await tokenService.addTestToken();
+      // Recharger les tokens après l'ajout
+      const tokens = await tokenService.getTokens(selectedChain);
+      if (Array.isArray(tokens)) {
+        setTokens(tokens);
+      }
+    } catch (error) {
+      console.error('Error adding test token:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -468,6 +509,12 @@ export default function ShadowFun() {
               Shadow Protocol
             </h1>
             <div className="flex items-center gap-4">
+              <button
+                onClick={handleAddTestToken}
+                className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg"
+              >
+                Add Test Token
+              </button>
               <NetworkSelector
                 selectedChain={selectedChain}
                 onChange={setSelectedChain}
@@ -526,68 +573,35 @@ export default function ShadowFun() {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {tokens.map((token, i) => (
+                {tokens.map((token) => (
                   <motion.div
-                    key={token.address}
+                    key={token.token_address}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6 hover:border-fuchsia-500/50 transition-all duration-300 shadow-[0_0_25px_rgba(255,0,255,0.1)] hover:shadow-[0_0_35px_rgba(255,0,255,0.2)]"
+                    className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6"
                   >
-                    <div className="flex items-center gap-4 mb-4">
-                      {token.imageUrl ? (
-                        <img 
-                          src={token.imageUrl} 
-                          alt={token.name} 
-                          className="w-16 h-16 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 animate-pulse-glow"></div>
-                      )}
+                    <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="text-xl font-bold text-white">${token.symbol}</h3>
-                        <p className="text-gray-400">{token.name}</p>
+                        <h3 className="text-xl font-bold text-white">{token.token_name}</h3>
+                        <p className="text-gray-400">{token.token_symbol}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-400">Supply: {token.supply}</p>
+                        <p className="text-sm text-gray-400">
+                          Liquidity: {token.liquidity} {NETWORKS[token.network].nativeCurrency.symbol}
+                        </p>
                       </div>
                     </div>
-                    
-                    <div className="space-y-4 mb-6">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-400">Price</span>
-                        <span className={token.priceChange24h >= 0 ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
-                          ${token.price ? token.price.toFixed(8) : '0.00000000'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-400">24h Change</span>
-                        <span className={token.priceChange24h >= 0 ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
-                          {token.priceChange24h ? `${token.priceChange24h > 0 ? '+' : ''}${token.priceChange24h.toFixed(2)}%` : '0.00%'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-400">Market Cap</span>
-                        <span className="text-white font-bold">
-                          ${token.marketCap ? token.marketCap.toLocaleString() : '0'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-400">
-                        {new Date(token.createdAt).toLocaleDateString()}
-                      </span>
-                      <motion.a
-                        href={`${NETWORKS[token.network].blockExplorerUrls[0]}/address/${token.address}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-4 py-1 rounded-lg bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 border border-fuchsia-500/20 hover:border-fuchsia-500/50"
-                      >
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                          Trade
-                        </span>
-                      </motion.a>
-                    </div>
+                    <motion.a
+                      href={`${NETWORKS[token.network].blockExplorerUrls[0]}/address/${token.token_address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block px-4 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all text-sm text-gray-300"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      View on Explorer
+                    </motion.a>
                   </motion.div>
                 ))}
               </div>
