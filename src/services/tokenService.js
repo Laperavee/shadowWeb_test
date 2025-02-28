@@ -1,19 +1,10 @@
-import { supabase, authenticateSystemUser } from '../utils/supabase';
+import { supabase } from '../utils/supabase';
 import avaxLogo from '../../dist/assets/avax_logo.png';
 
 async function uploadTokenImage(file) {
   if (!file) return null;
 
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.error('User is not authenticated');
-      return null;
-    }
-    if (session) {
-      console.log('User is authenticated', session);
-    }
-
     const fileName = `${Date.now()}_${file.name}`; 
     const { data, error } = await supabase.storage.from('images').upload(fileName, file);
 
@@ -22,13 +13,12 @@ async function uploadTokenImage(file) {
       return null;
     }
 
-    // Obtenir l'URL publique de l'image
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { signedUrl } } = await supabase.storage
       .from('images')
-      .getPublicUrl(fileName);
+      .createSignedUrl(fileName, 365 * 24 * 60 * 60); 
 
-    console.log('Image uploaded successfully, URL:', publicUrl);
-    return publicUrl;
+    console.log('Image uploaded successfully, URL:', signedUrl);
+    return signedUrl;
   } catch (error) {
     console.error('Error in uploadTokenImage:', error);
     return null;
