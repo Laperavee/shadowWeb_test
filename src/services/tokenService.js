@@ -101,47 +101,6 @@ export const tokenService = {
     }
   },
 
-  // Update token price and market data
-  async updateTokenMarketData(address, marketData) {
-    try {
-      const { data: tokenExists, error: checkError } = await supabase
-        .from('tokens')
-        .select('id')
-        .eq('token_address', address)
-        .single();
-      
-      if (checkError) {
-        console.error('TokenService - Error checking token existence:', checkError);
-        return null;
-      }
-      
-      if (!tokenExists) {
-        console.error('TokenService - Token not found with address:', address);
-        return null;
-      }
-      
-      const { data, error } = await supabase
-        .from('tokens')
-        .update({
-          price: marketData.price || 0,
-          market_cap: marketData.marketCap || 0,
-          price_change_24h: marketData.priceChange24h || 0,
-          volume_24h: marketData.volume24h || 0
-        })
-        .eq('token_address', address);
-      
-      if (error) {
-        console.error('TokenService - Error updating token market data:', error);
-        return null;
-      }
-      
-      return data;
-    } catch (error) {
-      console.error('TokenService - Error updating token market data:', error);
-      return null;
-    }
-  },
-
   // Insert a new token
   async insertToken({
     token_address,

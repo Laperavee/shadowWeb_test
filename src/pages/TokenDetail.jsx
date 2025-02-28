@@ -53,7 +53,7 @@ const TokenDetail = () => {
       console.log('TokenDetail - Fetching DexScreener data for:', tokenAddress);
       setDexLoading(true);
       
-      const dexNetwork = network.toUpperCase() === 'AVAX' ? 'avalanche' : network.toLowerCase();
+      const dexNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
       setDexScreenerUrl(`https://dexscreener.com/${dexNetwork}/${tokenAddress}?embed=1&theme=dark&trades=0&info=0`);
       
       const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
@@ -75,35 +75,17 @@ const TokenDetail = () => {
         if (mainPair) {
           const marketData = {
             price: parseFloat(mainPair.priceUsd || 0),
-            marketCap: parseFloat(mainPair.marketCap || mainPair.fdv || 0),
+            marketCap: parseFloat(mainPair.fdv || 0),
             priceChange24h: parseFloat(mainPair.priceChange?.h24 || 0),
             volume24h: parseFloat(mainPair.volume?.h24 || 0),
             liquidity: parseFloat(mainPair.liquidity?.usd || 0) / 1000
           };
 
           console.log('TokenDetail - Previous token data:', token);
-          const updatedToken = {
-            ...token,
+          setToken(prevToken => ({
+            ...prevToken,
             market_data: marketData
-          };
-          console.log('TokenDetail - Updated token data:', updatedToken);
-          
-          setToken(updatedToken);
-          
-          // Update data in database
-          try {
-            console.log('TokenDetail - Updating token market data in database:', marketData);
-            const result = await tokenService.updateTokenMarketData(tokenAddress, marketData);
-            
-            if (result === null) {
-              console.log('TokenDetail - Token market data update skipped or failed, but continuing with UI update');
-            } else {
-              console.log('TokenDetail - Token market data updated in database successfully');
-            }
-          } catch (err) {
-            console.error('TokenDetail - Failed to update token market data:', err);
-            // Continue with UI update even if database update fails
-          }
+          }));
         }
       } else {
         console.log('TokenDetail - No trading pairs found on DexScreener');
@@ -119,7 +101,7 @@ const TokenDetail = () => {
   useEffect(() => {
     if (token && token.token_address) {
       const timeframeParam = timeframe === '24h' ? '1m' : timeframe === '7d' ? '1W' : '1M';
-      const dexNetwork = token.network.toUpperCase() === 'AVAX' ? 'avalanche' : token.network.toLowerCase();
+      const dexNetwork = token.network?.toUpperCase() === 'AVAX' ? 'avalanche' : token.network?.toLowerCase();
       setDexScreenerUrl(`https://dexscreener.com/${dexNetwork}/${token.token_address}?embed=1&theme=dark&trades=0&info=0&interval=${timeframeParam}`);
     }
   }, [timeframe, token]);
@@ -162,8 +144,8 @@ const TokenDetail = () => {
   // Function to open DexScreener
   const openDexScreener = () => {
     if (token && token.token_address) {
-      const dexNetwork = token.network.toUpperCase() === 'AVAX' ? 'avalanche' : token.network.toLowerCase();
-      window.open(`https://dexscreener.com/${dexNetwork}/${token.token_address}`, '_blank');
+      const network = token.network === 'AVAX' ? 'avalanche' : 'base';
+      window.open(`https://dexscreener.com/${network}/${token.token_address}`, '_blank');
     }
   };
 
@@ -245,7 +227,7 @@ const TokenDetail = () => {
                 className="px-4 py-2 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 rounded-lg text-sm transition-colors"
               >
                 <a 
-                  href={`https://dexscreener.com/${token.network.toUpperCase() === 'AVAX' ? 'avalanche' : token.network.toLowerCase()}/${token.token_address}`}
+                  href={`https://dexscreener.com/${token.network === 'AVAX' ? 'avalanche' : token.network}${console.log(token)}/${token.token_address}`}
                   target="_blank" 
                   rel="noopener noreferrer"
                 >
@@ -332,7 +314,7 @@ const TokenDetail = () => {
               
               <div className="flex justify-between items-center py-2 border-b border-gray-800">
                 <span className="text-gray-400">Initial Liquidity</span>
-                <span className="font-bold">{token.liquidity} {token.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH'}</span>
+                <span className="font-bold">{token.liquidity} {token.network?.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH'}</span>
               </div>
               
               <div className="flex justify-between items-center py-2 border-b border-gray-800">
