@@ -227,7 +227,7 @@ const TokenDetail = () => {
                 className="px-4 py-2 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 rounded-lg text-sm transition-colors"
               >
                 <a 
-                  href={`https://dexscreener.com/${token.network === 'AVAX' ? 'avalanche' : token.network}${console.log(token)}/${token.token_address}`}
+                  href={`https://dexscreener.com/${token.network === 'AVAX' ? 'avalanche' : token.network}/${token.token_address}`}
                   target="_blank" 
                   rel="noopener noreferrer"
                 >
