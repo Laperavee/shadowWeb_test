@@ -26,6 +26,9 @@ async function uploadTokenImage(file) {
 
 export const tokenService = {
   async getTokens(network) {
+    console.log('TokenService - Fetching tokens for network:', network);
+    console.log('TokenService - Using Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+    
     const { data: tokens, error } = await supabase
       .from('tokens')
       .select('*, token_address')
@@ -34,8 +37,11 @@ export const tokenService = {
 
     if (error) {
       console.error('TokenService - Error fetching tokens:', error);
+      console.error('TokenService - Full error details:', JSON.stringify(error, null, 2));
       return [];
     }
+
+    console.log('TokenService - Raw tokens data:', tokens);
 
     const uniqueTokens = tokens?.reduce((acc, current) => {
       const x = acc.find(item => item.token_address === current.token_address);
@@ -45,6 +51,8 @@ export const tokenService = {
         return acc;
       }
     }, []);
+
+    console.log('TokenService - Processed unique tokens:', uniqueTokens);
 
     return uniqueTokens || [];
   },
