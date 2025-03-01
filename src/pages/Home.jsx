@@ -90,17 +90,25 @@ export default function Home() {
                     </svg>
                     <span className="relative text-white font-semibold">Create Token</span>
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 text-xs text-center text-white/70 pb-1">
-                    Deploy your own token
-                  </div>
                 </Link>
-                <a
+                <motion.a
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('features').scrollIntoView({ 
+                      behavior: 'smooth',
+                      block: 'start',
+                      duration: 2000
+                    });
+                  }}
                   href="#features"
-                  className="relative px-8 py-3 rounded-xl overflow-hidden group"
+                  className="relative px-8 py-3 rounded-xl overflow-hidden group cursor-pointer"
+                  initial={{ opacity: 1 }}
+                  whileHover={{ opacity: 0.7 }}
+                  transition={{ duration: 1 }}
                 >
-                  <div className="absolute inset-0 bg-white/5 group-hover:bg-white/10 transition-colors" />
+                  <div className="absolute inset-0 bg-white/5 group-hover:bg-white/10 transition-all duration-1000 ease-in-out" />
                   <span className="relative text-white font-semibold">Learn More</span>
-                </a>
+                </motion.a>
               </motion.div>
             </motion.div>
           </div>

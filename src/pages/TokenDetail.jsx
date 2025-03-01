@@ -144,8 +144,7 @@ const TokenDetail = () => {
   // Function to open DexScreener
   const openDexScreener = () => {
     if (token && token.token_address) {
-      const network = token.network === 'AVAX' ? 'avalanche' : 'base';
-      window.open(`https://dexscreener.com/${network}/${token.token_address}`, '_blank');
+      window.open(`https://dexscreener.com/${token.network}/${token.token_address}`, '_blank');
     }
   };
 

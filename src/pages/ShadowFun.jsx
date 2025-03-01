@@ -518,13 +518,15 @@ export default function ShadowFun() {
             transition={{ type: "spring", stiffness: 100 }}
             className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-4 px-6 gap-4"
           >
-            <motion.h1 
-              className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400 cursor-default"
+            <motion.div
+              className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400 }}
             >
-              Shadow Protocol
-            </motion.h1>
+              <Link to="/" className="cursor-pointer">
+                Shadow Protocol
+              </Link>
+            </motion.div>
             <div className="flex items-center gap-4 flex-wrap justify-center">
               <NetworkSelector
                 selectedChain={selectedChain}
