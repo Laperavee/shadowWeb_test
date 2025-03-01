@@ -180,313 +180,360 @@ const TokenDetail = () => {
         <div className="grid-animation opacity-5" />
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-fuchsia-900/20 to-cyan-900/30 animate-gradient-slow" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.8),transparent_50%,rgba(0,0,0,0.8))]" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* Navigation */}
-        <div className="mb-8">
-          <Link 
-            to="/shadow-fun" 
-            className="inline-flex items-center text-fuchsia-400 hover:text-fuchsia-300"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to tokens
-          </Link>
-        </div>
+      <div className="relative z-10">
+        {/* Header with blur effect */}
+        <header className="sticky top-0 z-50 bg-black/30 backdrop-blur-xl border-b border-fuchsia-500/20 mb-8">
+          <div className="container mx-auto px-6 py-4">
+            <Link 
+              to="/shadow-fun" 
+              className="inline-flex items-center text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to tokens
+            </Link>
+          </div>
+        </header>
 
-        {/* Token header */}
-        <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6 mb-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div className="flex items-center gap-4">
-              {token.imageUrl ? (
-                <img 
-                  src={token.imageUrl} 
-                  alt={token.token_name} 
-                  className="w-16 h-16 rounded-full border border-gray-700"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-cyan-500/30 border border-gray-700 flex items-center justify-center">
-                  <span className="text-2xl font-bold">{token.token_symbol?.charAt(0)}</span>
+        <div className="container mx-auto px-4 py-8">
+          {/* Token header with glass effect */}
+          <div className="bg-gradient-to-r from-gray-900/50 via-black/30 to-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-8 mb-8 shadow-[0_0_25px_rgba(255,0,255,0.1)]">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              <div className="flex items-center gap-6">
+                {token.imageUrl ? (
+                  <img 
+                    src={token.imageUrl} 
+                    alt={token.token_name} 
+                    className="w-20 h-20 rounded-2xl border-2 border-fuchsia-500/20 shadow-[0_0_15px_rgba(255,0,255,0.2)]"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fuchsia-500/30 to-cyan-500/30 border-2 border-fuchsia-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(255,0,255,0.2)]">
+                    <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-fuchsia-400 to-cyan-400">
+                      {token.token_symbol?.charAt(0)}
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white via-fuchsia-200 to-white">
+                    {token.token_name}
+                  </h1>
+                  <div className="flex items-center gap-3">
+                    <span className="px-3 py-1 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/30 text-fuchsia-400 font-semibold">
+                      ${token.token_symbol}
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-gray-800/50 text-gray-400 text-sm">
+                      on {token.network}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-3">
+                <button 
+                  onClick={openDexScreener}
+                  className="px-4 py-2 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all duration-300 text-sm font-medium group flex items-center gap-2 hover:shadow-[0_0_15px_rgba(255,0,255,0.3)]"
+                >
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                    View on DexScreener
+                  </span>
+                  <svg className="w-4 h-4 text-fuchsia-400 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </button>
+                
+                <a 
+                  href={`https://snowtrace.io/address/${token.token_address}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl border border-gray-700 hover:border-fuchsia-500/30 transition-all duration-300 text-sm font-medium group flex items-center gap-2"
+                >
+                  <span>View on Explorer</span>
+                  <svg className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+                
+                <button 
+                  onClick={() => copyToClipboard(token.token_address)}
+                  className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl border border-gray-700 hover:border-fuchsia-500/30 transition-all duration-300 text-sm font-medium flex items-center gap-2"
+                >
+                  <span>{copySuccess || 'Copy Address'}</span>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            {/* Market stats with glass cards */}
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-xl rounded-xl border border-gray-800 p-4 hover:border-fuchsia-500/30 transition-all duration-300">
+                <p className="text-gray-400 text-sm mb-1">Price</p>
+                <p className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-200">
+                  {formatPrice(token.market_data?.price)}
+                </p>
+              </div>
+              
+              {token.market_data?.priceChange24h !== undefined && (
+                <div className="bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-xl rounded-xl border border-gray-800 p-4 hover:border-fuchsia-500/30 transition-all duration-300">
+                  <p className="text-gray-400 text-sm mb-1">24h Change</p>
+                  <p className={`text-2xl font-bold ${
+                    parseFloat(token.market_data.priceChange24h) >= 0 
+                      ? 'text-green-400' 
+                      : 'text-red-400'
+                  }`}>
+                    {formatPercentage(token.market_data.priceChange24h)}
+                  </p>
                 </div>
               )}
-              <div>
-                <h1 className="text-2xl font-bold">{token.token_name}</h1>
-                <div className="flex items-center gap-2">
-                  <span className="text-fuchsia-400 font-bold">${token.token_symbol}</span>
-                  <span className="text-gray-400 text-sm">
-                    on {token.network}
+              
+              {token.market_data?.volume24h !== undefined && (
+                <div className="bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-xl rounded-xl border border-gray-800 p-4 hover:border-fuchsia-500/30 transition-all duration-300">
+                  <p className="text-gray-400 text-sm mb-1">24h Volume</p>
+                  <p className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-200">
+                    ${parseInt(token.market_data.volume24h || 0).toLocaleString()}
+                  </p>
+                </div>
+              )}
+              
+              {token.market_data?.marketCap !== undefined && (
+                <div className="bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-xl rounded-xl border border-gray-800 p-4 hover:border-fuchsia-500/30 transition-all duration-300">
+                  <p className="text-gray-400 text-sm mb-1">Market Cap</p>
+                  <p className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-200">
+                    ${parseInt(token.market_data.marketCap || 0).toLocaleString()}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Token stats and chart */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Stats with improved styling */}
+            <div className="bg-gradient-to-r from-gray-900/50 via-black/30 to-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:shadow-[0_0_25px_rgba(255,0,255,0.1)] transition-all duration-300">
+              <h2 className="text-xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                Token Info
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
+                  <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Price</span>
+                  <span className="font-bold group-hover:text-white transition-colors">
+                    {formatPrice(token.market_data?.price)}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
+                  <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Market Cap</span>
+                  <span className="font-bold group-hover:text-white transition-colors">
+                    ${parseInt(token.market_data?.marketCap || 0).toLocaleString()}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
+                  <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Total Supply</span>
+                  <span className="font-bold group-hover:text-white transition-colors">
+                    {parseInt(token.supply || 0).toLocaleString()}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
+                  <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Initial Liquidity</span>
+                  <span className="font-bold group-hover:text-white transition-colors">
+                    {token.liquidity} {token.network?.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH'}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
+                  <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Max Wallet</span>
+                  <span className="font-bold group-hover:text-white transition-colors">
+                    {token.max_wallet_percentage}%
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
+                  <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Creator</span>
+                  <a 
+                    href={`https://snowtrace.io/address/${token.deployer_address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
+                  >
+                    {formatAddress(token.deployer_address)}
+                  </a>
+                </div>
+                
+                <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
+                  <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Contract</span>
+                  <a 
+                    href={`https://snowtrace.io/address/${token.token_address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
+                  >
+                    {formatAddress(token.token_address)}
+                  </a>
+                </div>
+                
+                <div className="flex justify-between items-center py-3 group">
+                  <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Created</span>
+                  <span className="font-bold group-hover:text-white transition-colors">
+                    {new Date(token.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
                   </span>
                 </div>
               </div>
+              
+              {/* Action buttons with improved styling */}
+              <div className="mt-8 space-y-3">
+                <button
+                  onClick={openDexScreener}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all duration-300 group relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 transform group-hover:translate-x-full transition-transform duration-500"></div>
+                  <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400 font-medium">
+                    Trade on DEX
+                  </span>
+                </button>
+                
+                <button
+                  onClick={() => copyToClipboard(token.token_address)}
+                  className="w-full py-3 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 hover:border-fuchsia-500/30 transition-all duration-300 text-gray-300 hover:text-white font-medium"
+                >
+                  {copySuccess || 'Copy Contract Address'}
+                </button>
+              </div>
             </div>
             
-            <div className="flex flex-wrap gap-2">
-              <button 
-                className="px-4 py-2 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 rounded-lg text-sm transition-colors"
-              >
-                <a 
-                  href={`https://dexscreener.com/${token.network === 'AVAX' ? 'avalanche' : token.network}/${token.token_address}`}
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  View on DexScreener
-                </a>
-              </button>
-              <a 
-                href={`https://snowtrace.io/address/${token.token_address}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg text-sm transition-colors"
-              >
-                View on Explorer
-              </a>
-              <button 
-                onClick={() => copyToClipboard(token.token_address)}
-                className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg text-sm transition-colors flex items-center gap-2"
-              >
-                <span>{copySuccess || 'Copy Address'}</span>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </button>
+            {/* Chart with improved styling */}
+            <div className="lg:col-span-2 bg-gradient-to-r from-gray-900/50 via-black/30 to-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:shadow-[0_0_25px_rgba(255,0,255,0.1)] transition-all duration-300">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                  Price Chart
+                </h2>
+                
+                <div className="flex bg-gray-800/50 rounded-xl overflow-hidden p-1">
+                  {['24h', '7d', '30d'].map((period) => (
+                    <button
+                      key={period}
+                      onClick={() => setTimeframe(period)}
+                      className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+                        timeframe === period 
+                          ? 'bg-fuchsia-500/20 text-fuchsia-400' 
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {period}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="h-[500px] w-full rounded-xl overflow-hidden border border-gray-800/50">
+                {dexScreenerUrl ? (
+                  <iframe 
+                    src={dexScreenerUrl}
+                    title="DexScreener Chart"
+                    className="w-full h-full border-0"
+                    allowFullScreen
+                  ></iframe>
+                ) : dexLoading ? (
+                  <div className="flex items-center justify-center h-full bg-gray-900/30">
+                    <div className="animate-spin rounded-full h-12 w-12 border-2 border-fuchsia-500 border-t-transparent"></div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full bg-gray-900/30">
+                    <div className="text-center">
+                      <p className="text-gray-400 mb-4">No chart data available for this token</p>
+                      <button
+                        onClick={openDexScreener}
+                        className="px-4 py-2 rounded-lg bg-fuchsia-500/20 border border-fuchsia-500/30 text-fuchsia-400 text-sm hover:bg-fuchsia-500/30 transition-all duration-300"
+                      >
+                        Check on DexScreener
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           
-          {/* Price and variation */}
-          <div className="mt-6 flex flex-wrap gap-6">
-            <div>
-              <p className="text-gray-400 text-sm">Price</p>
-              <p className="text-2xl font-bold">{formatPrice(token.market_data?.price)}</p>
-            </div>
-            
-            {token.market_data?.priceChange24h !== undefined && (
-              <div>
-                <p className="text-gray-400 text-sm">24h Change</p>
-                <p className={`text-xl font-bold ${
-                  parseFloat(token.market_data.priceChange24h) >= 0 ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {formatPercentage(token.market_data.priceChange24h)}
-                </p>
-              </div>
-            )}
-            
-            {token.market_data?.volume24h !== undefined && (
-              <div>
-                <p className="text-gray-400 text-sm">24h Volume</p>
-                <p className="text-xl font-bold">${parseInt(token.market_data.volume24h || 0).toLocaleString()}</p>
-              </div>
-            )}
-            
-            {token.market_data?.marketCap !== undefined && (
-              <div>
-                <p className="text-gray-400 text-sm">Market Cap</p>
-                <p className="text-xl font-bold">${parseInt(token.market_data.marketCap || 0).toLocaleString()}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Token stats and chart */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Stats */}
-          <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6">
-            <h2 className="text-xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-              Token Info
+          {/* Recent transactions with improved styling */}
+          <div className="mt-8 bg-gradient-to-r from-gray-900/50 via-black/30 to-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:shadow-[0_0_25px_rgba(255,0,255,0.1)] transition-all duration-300">
+            <h2 className="text-xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+              Recent Transactions
             </h2>
             
-            <div className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                <span className="text-gray-400">Price</span>
-                <span className="font-bold">{formatPrice(token.market_data?.price)}</span>
+            {token.transactions && token.transactions.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-left text-gray-400 border-b border-gray-800">
+                      <th className="pb-4 font-medium">Type</th>
+                      <th className="pb-4 font-medium">Amount</th>
+                      <th className="pb-4 font-medium">Price</th>
+                      <th className="pb-4 font-medium">Time</th>
+                      <th className="pb-4 font-medium">Tx Hash</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {token.transactions.slice(0, 10).map((tx, index) => (
+                      <tr key={index} className="border-b border-gray-800/50 hover:bg-gray-900/30 transition-colors">
+                        <td className={`py-4 ${
+                          tx.type === 'BUY' ? 'text-green-400' : 
+                          tx.type === 'SELL' ? 'text-red-400' : 'text-gray-400'
+                        }`}>
+                          <span className={`px-3 py-1 rounded-full text-sm ${
+                            tx.type === 'BUY' 
+                              ? 'bg-green-500/10 border border-green-500/30' 
+                              : 'bg-red-500/10 border border-red-500/30'
+                          }`}>
+                            {tx.type}
+                          </span>
+                        </td>
+                        <td className="py-4 font-medium">{tx.amount}</td>
+                        <td className="py-4 font-medium">${tx.price}</td>
+                        <td className="py-4 text-gray-400">
+                          {new Date(tx.timestamp).toLocaleString()}
+                        </td>
+                        <td className="py-4">
+                          <a 
+                            href={`https://snowtrace.io/tx/${tx.txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
+                          >
+                            {formatAddress(tx.txHash)}
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              
-              <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                <span className="text-gray-400">Market Cap</span>
-                <span className="font-bold">${parseInt(token.market_data?.marketCap || 0).toLocaleString()}</span>
-              </div>
-              
-              <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                <span className="text-gray-400">Total Supply</span>
-                <span className="font-bold">{parseInt(token.supply || 0).toLocaleString()}</span>
-              </div>
-              
-              <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                <span className="text-gray-400">Initial Liquidity</span>
-                <span className="font-bold">{token.liquidity} {token.network?.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH'}</span>
-              </div>
-              
-              <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                <span className="text-gray-400">Max Wallet</span>
-                <span className="font-bold">{token.max_wallet_percentage}%</span>
-              </div>
-              
-              <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                <span className="text-gray-400">Creator</span>
+            ) : (
+              <div className="text-center py-12 bg-gray-900/30 rounded-xl border border-gray-800/50">
+                <p className="text-gray-400 mb-4">No transactions found</p>
                 <a 
-                  href={`https://snowtrace.io/address/${token.deployer_address}`}
+                  href={`https://snowtrace.io/token/${token.token_address}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-bold text-fuchsia-400 hover:text-fuchsia-300"
+                  className="inline-block px-6 py-2 rounded-xl bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all duration-300 text-sm font-medium"
                 >
-                  {formatAddress(token.deployer_address)}
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                    View on Explorer
+                  </span>
                 </a>
-              </div>
-              
-              <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                <span className="text-gray-400">Contract</span>
-                <a 
-                  href={`https://snowtrace.io/address/${token.token_address}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold text-fuchsia-400 hover:text-fuchsia-300"
-                >
-                  {formatAddress(token.token_address)}
-                </a>
-              </div>
-              
-              <div className="flex justify-between items-center py-2">
-                <span className="text-gray-400">Created</span>
-                <span className="font-bold">
-                  {new Date(token.created_at).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </span>
-              </div>
-            </div>
-            
-            {/* Action buttons */}
-            <div className="mt-6 space-y-2">
-              <button
-                onClick={openDexScreener}
-                className="w-full py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all text-center"
-              >
-                Trade on DEX
-              </button>
-              
-              <button
-                onClick={() => copyToClipboard(token.token_address)}
-                className="w-full py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-all text-center"
-              >
-                {copySuccess || 'Copy Contract Address'}
-              </button>
-            </div>
-          </div>
-          
-          {/* Chart - DexScreener Embed */}
-          <div className="lg:col-span-2 bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                Price Chart
-              </h2>
-              
-              <div className="flex bg-gray-800/50 rounded-lg overflow-hidden">
-                {['24h', '7d', '30d'].map((period) => (
-                  <button
-                    key={period}
-                    onClick={() => setTimeframe(period)}
-                    className={`px-3 py-1 text-sm ${
-                      timeframe === period 
-                        ? 'bg-fuchsia-500/20 text-fuchsia-400' 
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    {period}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="h-[400px] w-full">
-              {dexScreenerUrl ? (
-                <iframe 
-                  src={dexScreenerUrl}
-                  title="DexScreener Chart"
-                  className="w-full h-full border-0 rounded-lg"
-                  allowFullScreen
-                ></iframe>
-              ) : dexLoading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fuchsia-500"></div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-400">
-                  <p>No chart data available for this token</p>
-                </div>
-              )}
-            </div>
-            
-            {!dexData && !dexLoading && (
-              <div className="text-center py-4 text-gray-400 text-sm">
-                No trading data available yet. Check DexScreener for the latest information.
               </div>
             )}
           </div>
-        </div>
-        
-        {/* Recent transactions */}
-        <div className="mt-8 bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6">
-          <h2 className="text-xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-            Recent Transactions
-          </h2>
-          
-          {token.transactions && token.transactions.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-gray-400 border-b border-gray-800">
-                    <th className="pb-2">Type</th>
-                    <th className="pb-2">Amount</th>
-                    <th className="pb-2">Price</th>
-                    <th className="pb-2">Time</th>
-                    <th className="pb-2">Tx Hash</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {token.transactions.slice(0, 10).map((tx, index) => (
-                    <tr key={index} className="border-b border-gray-800/50">
-                      <td className={`py-3 ${
-                        tx.type === 'BUY' ? 'text-green-400' : 
-                        tx.type === 'SELL' ? 'text-red-400' : 'text-gray-400'
-                      }`}>
-                        {tx.type}
-                      </td>
-                      <td className="py-3">{tx.amount}</td>
-                      <td className="py-3">${tx.price}</td>
-                      <td className="py-3 text-gray-400">
-                        {new Date(tx.timestamp).toLocaleString()}
-                      </td>
-                      <td className="py-3">
-                        <a 
-                          href={`https://snowtrace.io/tx/${tx.txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-fuchsia-400 hover:text-fuchsia-300"
-                        >
-                          {formatAddress(tx.txHash)}
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-400 mb-4">No transactions found</p>
-              <a 
-                href={`https://snowtrace.io/token/${token.token_address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-4 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all text-sm"
-              >
-                View on Explorer
-              </a>
-            </div>
-          )}
         </div>
       </div>
     </main>

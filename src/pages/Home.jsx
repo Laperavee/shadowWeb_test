@@ -10,28 +10,13 @@ export default function Home() {
   });
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
-  const textY = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
-  const parallaxY = useTransform(
-    scrollYProgress,
-    [0, 1],
-    ['0%', '20%']
-  );
-
-  // Définition des couleurs harmonieuses
-  const colors = {
-    primary: {
-      from: "from-purple-500",
-      to: "to-blue-500",
-      via: "via-indigo-500"
-    }
-  };
 
   return (
-    <main ref={containerRef} className="bg-black">
-      {/* Background qui s'étend sur toute la page */}
+    <main ref={containerRef} className="min-h-screen bg-black overflow-x-hidden">
+      {/* Enhanced animated background effects */}
       <div className="fixed inset-0">
         {/* Matrix-like grid with enhanced effects */}
-        <div className="grid-animation opacity-5" />
+        <div className="absolute inset-0 bg-grid-animation bg-grid-size opacity-5" style={{ backgroundPosition: 'center' }} />
         
         {/* Dynamic Glowing Orbs */}
         <motion.div 
@@ -59,159 +44,253 @@ export default function Home() {
         </div>
 
         {/* Subtle noise texture */}
-        <div className="absolute inset-0 bg-noise opacity-5" />
+        <div className="absolute inset-0 bg-noise bg-repeat opacity-[0.15]" />
       </div>
 
-      {/* Hero Section */}
-      <section className="min-h-screen relative overflow-hidden">
-        <div className="relative min-h-screen flex items-center">
-          <div className="container mx-auto px-4">
-            <motion.div
-              style={{ y: textY }}
-              className="max-w-4xl mx-auto text-center relative"
+      <div className="relative z-10">
+        {/* Hero Section */}
+        <section className="min-h-screen flex items-center justify-center px-4 py-20">
+          <div className="container mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center max-w-4xl mx-auto"
             >
-              {/* Badge Protocol amélioré */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2, duration: 0.8 }}
-                className="inline-block mb-8 px-6 py-3 rounded-full border border-fuchsia-500/20 bg-fuchsia-500/5 backdrop-blur-sm"
-              >
-                <span className="text-fuchsia-400 font-mono relative">
-                  <span className="absolute -inset-0.5 bg-fuchsia-500/20 blur-sm rounded-full animate-pulse" />
-                  <span className="relative">SHADOW PROTOCOL v1.0</span>
-                </span>
-              </motion.div>
-              
-              {/* Titre principal amélioré */}
               <motion.h1 
-                className="text-7xl sm:text-8xl font-bold mb-8 leading-tight relative"
+                className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400 mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1 }}
+                transition={{ delay: 0.2 }}
               >
-                <span className="relative inline-block">
-                  <span className="absolute -inset-1 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 blur-xl" />
-                  <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-400 to-cyan-400 animate-gradient">
-                    Social Tokens<br />Made Simple
-                  </span>
-                </span>
+                Shadow Protocol
               </motion.h1>
-              
-              {/* Sous-titre amélioré */}
               <motion.p 
-                className="text-xl sm:text-2xl mb-12 font-light"
+                className="text-xl text-gray-400 mb-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                Automated ERC20 token deployment with Uniswap V3 integration and cross-chain capabilities through LayerZero
+              </motion.p>
+              <motion.div 
+                className="flex flex-wrap justify-center gap-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400/90 to-cyan-400/90">
-                  Create and launch your token in seconds
-                </span>
-                <br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400/90 to-cyan-400/90">
-                  with guaranteed liquidity and social integration.
-                </span>
-              </motion.p>
-
-              {/* Boutons CTA améliorés */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="flex flex-col sm:flex-row gap-6 items-center justify-center"
-              >
-                <Link 
-                  to="/how-it-works" 
-                  className="group relative px-8 py-4 rounded-lg overflow-hidden interactive w-full sm:w-auto text-center"
+                <Link
+                  to="/create"
+                  className="relative px-8 py-3 rounded-xl overflow-hidden group"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover:opacity-30 transition-opacity duration-500" />
-                  <div className="absolute inset-0 backdrop-blur-sm" />
-                  <motion.span 
-                    className="relative text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    Get Started →
-                  </motion.span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-50 group-hover:opacity-70 transition-opacity" />
+                  <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                  <span className="relative text-white font-semibold">Launch App</span>
                 </Link>
-                
-                <a 
-                  href="https://shadow.fun" 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group interactive relative"
+                <a
+                  href="#features"
+                  className="relative px-8 py-3 rounded-xl overflow-hidden group"
                 >
-                  <motion.span 
-                    className="text-xl inline-block text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400/90 to-cyan-400/90"
-                    whileHover={{ 
-                      scale: 1.05,
-                      backgroundImage: "linear-gradient(to right, #D946EF, #06B6D4)",
-                    }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
-                    View Platform
-                  </motion.span>
+                  <div className="absolute inset-0 bg-white/5 group-hover:bg-white/10 transition-colors" />
+                  <span className="relative text-white font-semibold">Learn More</span>
                 </a>
               </motion.div>
             </motion.div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Key Features Section */}
-      <section className="py-20 relative">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 animate-gradient">
-              Why Choose Shadow?
-            </h2>
-            <p className="mt-4 text-gray-400 text-lg max-w-2xl mx-auto">
-              Experience the future of social tokens with our innovative platform
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.2 }}
-                whileHover={{ y: -5 }}
-                className={`group p-8 rounded-2xl bg-gradient-to-b from-gray-900/50 to-black/50 backdrop-blur-sm border border-violet-500/20 hover:border-violet-500/50 transition-all duration-300`}
-              >
-                <div className="text-3xl mb-4 transform group-hover:scale-110 transition-transform duration-300">{feature.icon}</div>
-                <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-400">{feature.description}</p>
-              </motion.div>
-            ))}
+        {/* Features Section */}
+        <section id="features" className="py-20 px-4">
+          <div className="container mx-auto">
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              Key Features
+            </motion.h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {features.map((feature, index) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:border-fuchsia-500/30 transition-all duration-300"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20 flex items-center justify-center mb-4">
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+                    <p className="text-gray-400">{feature.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* How it Works Section */}
+        <section className="py-20 px-4 bg-black/30">
+          <div className="container mx-auto">
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              How It Works
+            </motion.h2>
+            <div className="max-w-4xl mx-auto">
+              {steps.map((step, index) => (
+                <motion.div
+                  key={step.title}
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  className="relative flex items-start gap-8 mb-12"
+                >
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 flex items-center justify-center border border-fuchsia-500/20">
+                    <span className="text-xl font-bold text-white">{index + 1}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
+                    <p className="text-gray-400">{step.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Security Features Section */}
+        <section className="py-20 px-4">
+          <div className="container mx-auto">
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              Security Features
+            </motion.h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {securityFeatures.map((feature, index) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:border-fuchsia-500/30 transition-all duration-300"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+                    <p className="text-gray-400">{feature.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
 
 const features = [
   {
-    icon: "⚡",
-    title: "Instant Creation",
-    description: "Create your token with a single tweet or message on social media."
+    title: "Token Deployment",
+    description: "Deploy ERC20 tokens with customizable parameters including name, symbol, supply, and liquidity.",
+    icon: (
+      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+      </svg>
+    )
   },
   {
-    icon: "💧",
-    title: "Guaranteed Liquidity",
-    description: "Launch with confidence knowing your token has immediate trading capability."
+    title: "Uniswap V3 Integration",
+    description: "Automatic liquidity pool creation and management with sophisticated price calculation mechanisms.",
+    icon: (
+      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    )
   },
   {
-    icon: "🔗",
-    title: "Social Integration",
-    description: "Seamlessly manage your token through Twitter and Warpcast."
+    title: "Cross-Chain Support",
+    description: "Multi-chain deployment capabilities powered by LayerZero for seamless cross-chain communication.",
+    icon: (
+      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    )
+  },
+  {
+    title: "Position Management",
+    description: "Track and manage Uniswap V3 positions with automated fee collection and distribution.",
+    icon: (
+      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    )
+  },
+  {
+    title: "Fee Management",
+    description: "Sophisticated fee collection system with automated distribution to stakeholders.",
+    icon: (
+      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    )
+  },
+  {
+    title: "Price Management",
+    description: "Advanced price calculation utilities with TWAP oracle integration for accurate pricing.",
+    icon: (
+      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+      </svg>
+    )
+  }
+];
+
+const steps = [
+  {
+    title: "Token Creation",
+    description: "Start by configuring your token parameters including name, symbol, supply, and initial liquidity."
+  },
+  {
+    title: "Address Prediction & Salt Generation",
+    description: "The system generates a unique salt and predicts the token address to ensure Uniswap V3 compatibility."
+  },
+  {
+    title: "Price Calculation",
+    description: "Advanced algorithms calculate optimal pricing using TWAP oracles and sophisticated price management mechanisms."
+  },
+  {
+    title: "Pool Creation",
+    description: "Automatic creation and initialization of Uniswap V3 pool with calculated parameters and initial liquidity."
+  },
+  {
+    title: "Position Management",
+    description: "Track and manage your liquidity positions with automated fee collection and distribution systems."
+  }
+];
+
+const securityFeatures = [
+  {
+    title: "Access Control",
+    description: "Robust permission system with role-based access control for critical functions."
+  },
+  {
+    title: "Atomic Transactions",
+    description: "All deployment steps are atomic - if any step fails, the entire transaction reverts ensuring fund safety."
+  },
+  {
+    title: "Parameter Validation",
+    description: "Comprehensive parameter validation and security checks before any operation."
+  },
+  {
+    title: "Anti-Sniper Protection",
+    description: "Advanced salt generation mechanism to prevent front-running and sniping attacks."
   }
 ]; 

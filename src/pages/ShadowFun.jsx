@@ -495,186 +495,318 @@ export default function ShadowFun() {
   };
 
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen bg-black overflow-x-hidden">
+      {/* Animated background effects */}
       <div className="fixed inset-0">
-        <div className="grid-animation opacity-5" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)] animate-pulse-slow" />
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-fuchsia-900/20 to-cyan-900/30 animate-gradient-slow" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.9),transparent_50%,rgba(0,0,0,0.9))]" />
+        <div className="absolute inset-0">
+          <div className="absolute w-96 h-96 -top-48 -left-48 bg-purple-500/30 rounded-full blur-3xl animate-blob" />
+          <div className="absolute w-96 h-96 -top-48 -right-48 bg-cyan-500/30 rounded-full blur-3xl animate-blob animation-delay-2000" />
+          <div className="absolute w-96 h-96 -bottom-48 -left-48 bg-fuchsia-500/30 rounded-full blur-3xl animate-blob animation-delay-4000" />
+          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-purple-500/30 rounded-full blur-3xl animate-blob animation-delay-6000" />
+        </div>
       </div>
 
       <div className="relative z-10">
-        <header className="bg-black/30 backdrop-blur-sm border-b border-fuchsia-500/20">
-          <div className="container mx-auto flex justify-between items-center py-4 px-6">
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400 hover:scale-105 transition-transform cursor-default">
+        {/* Enhanced header with glass effect */}
+        <header className="sticky top-0 z-50 bg-black/20 backdrop-blur-xl border-b border-fuchsia-500/20 shadow-lg">
+          <motion.div 
+            initial={{ y: -100 }}
+            animate={{ y: 0 }}
+            transition={{ type: "spring", stiffness: 100 }}
+            className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-4 px-6 gap-4"
+          >
+            <motion.h1 
+              className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400 cursor-default"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
               Shadow Protocol
-            </h1>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleAddTestToken}
-                className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg"
-              >
-                Add Test Token
-              </button>
+            </motion.h1>
+            <div className="flex items-center gap-4 flex-wrap justify-center">
               <NetworkSelector
                 selectedChain={selectedChain}
                 onChange={setSelectedChain}
               />
               <motion.button
                 onClick={connectWallet}
-                className="px-6 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all shadow-[0_0_15px_rgba(255,0,255,0.3)] hover:shadow-[0_0_25px_rgba(255,0,255,0.5)]"
+                className="relative px-6 py-2.5 rounded-xl overflow-hidden group"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                  {isWalletConnected ? "Connected" : "Connect Wallet"}
-                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-50 group-hover:opacity-70 transition-opacity" />
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                <div className="relative flex items-center gap-2">
+                  <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span className="text-white font-semibold">
+                    {isWalletConnected ? "Connected" : "Connect Wallet"}
+                  </span>
+                </div>
               </motion.button>
             </div>
-          </div>
+          </motion.div>
         </header>
 
-        <div className="container mx-auto px-6 py-8">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-              Featured Tokens
-            </h2>
+        <div className="container mx-auto px-4 sm:px-6 py-8">
+          {/* Enhanced section header */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col sm:flex-row justify-between items-center gap-6 mb-12"
+          >
+            <div>
+              <motion.h2 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-3"
+              >
+                Featured Tokens
+              </motion.h2>
+              <motion.p 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-gray-400 text-sm sm:text-base max-w-lg"
+              >
+                Discover and trade the latest tokens on {NETWORKS[selectedChain].chainName}. 
+                Join our community of traders and find the next gem.
+              </motion.p>
+            </div>
             <motion.button
               onClick={() => setActiveTab('create')}
-              className="px-6 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all shadow-[0_0_15px_rgba(255,0,255,0.3)] hover:shadow-[0_0_25px_rgba(255,0,255,0.5)]"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="relative w-full sm:w-auto px-8 py-3.5 rounded-xl overflow-hidden group"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
             >
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                Create Token
-              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-50 group-hover:opacity-70 transition-opacity" />
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+              <div className="relative flex items-center justify-center gap-3">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="text-white font-semibold">Create Token</span>
+              </div>
             </motion.button>
-          </div>
+          </motion.div>
 
+          {/* Enhanced loading state */}
           {isLoading ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fuchsia-500"></div>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex justify-center items-center py-32"
+            >
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 rounded-full blur-xl animate-pulse" />
+                <div className="relative">
+                  <div className="w-20 h-20 border-4 border-fuchsia-500/30 border-t-fuchsia-500 rounded-full animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-12 h-12 bg-fuchsia-500/20 rounded-full blur-xl" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           ) : tokens.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-gray-400 mb-4">No tokens found on {NETWORKS[selectedChain].chainName}</p>
-              <motion.button
-                onClick={() => setActiveTab('create')}
-                className="px-6 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                  Create the first token
-                </span>
-              </motion.button>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-32 px-4"
+            >
+              <div className="inline-block p-8 rounded-2xl bg-black/50 backdrop-blur-xl border border-fuchsia-500/20 shadow-[0_0_25px_rgba(255,0,255,0.1)]">
+                <div className="relative w-24 h-24 mx-auto mb-6">
+                  <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 rounded-full blur-xl animate-pulse-slow" />
+                  <div className="relative flex items-center justify-center w-full h-full">
+                    <svg className="w-16 h-16 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                    </svg>
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">No Tokens Found</h3>
+                <p className="text-gray-400 mb-6">Be the first to create a token on {NETWORKS[selectedChain].chainName}</p>
+                <motion.button
+                  onClick={() => setActiveTab('create')}
+                  className="relative px-8 py-3 rounded-xl overflow-hidden group"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-50 group-hover:opacity-70 transition-opacity" />
+                  <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                  <span className="relative text-white font-semibold">Create First Token</span>
+                </motion.button>
+              </div>
+            </motion.div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {/* Enhanced token grid with stagger animation */}
+              <motion.div 
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.1
+                    }
+                  }
+                }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              >
                 {tokens.map((token) => (
                   <motion.div
                     key={token.token_address}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6"
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="group relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:border-fuchsia-500/30 transition-all duration-300"
                   >
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex items-center gap-4">
+                    <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative">
+                      <div className="flex items-start gap-4 mb-6">
                         {token.image_url ? (
-                          <img
+                          <motion.img
                             src={token.image_url}
                             alt={token.token_name}
-                            className="w-12 h-12 rounded-full object-cover"
+                            className="w-16 h-16 rounded-2xl object-cover border-2 border-fuchsia-500/20"
+                            whileHover={{ scale: 1.05 }}
                           />
                         ) : (
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 flex items-center justify-center">
-                            <span className="text-xl font-bold text-white">
+                          <motion.div
+                            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20 border-2 border-fuchsia-500/20 flex items-center justify-center overflow-hidden"
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-fuchsia-400 to-cyan-400">
                               {token.token_symbol.charAt(0)}
                             </span>
-                          </div>
+                          </motion.div>
                         )}
-                        <div>
-                          <h3 className="text-xl font-bold text-white">{token.token_name}</h3>
-                          <p className="text-gray-400">{token.token_symbol}</p>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-bold text-white mb-2 truncate group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-fuchsia-400 group-hover:to-cyan-400 transition-all">
+                            {token.token_name}
+                          </h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="px-3 py-1 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400 text-sm font-medium">
+                              ${token.token_symbol}
+                            </span>
+                            <span className="px-3 py-1 rounded-lg bg-gray-800/50 text-gray-400 text-sm">
+                              {NETWORKS[token.network].nativeCurrency.symbol}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-400">Supply: {token.supply}</p>
-                        <p className="text-sm text-gray-400">
-                          Liquidity: {token.liquidity} {NETWORKS[token.network].nativeCurrency.symbol}
-                        </p>
+
+                      <div className="space-y-3 mb-6">
+                        <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
+                          <span className="text-gray-400">Supply</span>
+                          <span className="font-medium text-white">{parseInt(token.supply).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
+                          <span className="text-gray-400">Liquidity</span>
+                          <span className="font-medium text-white">
+                            {token.liquidity} {NETWORKS[token.network].nativeCurrency.symbol}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Link
-                        to={`/token/${token.token_address}`}
-                        className="inline-block px-4 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all text-sm text-gray-300"
-                      >
-                        View Details
-                      </Link>
-                      <motion.a
-                        href={`${NETWORKS[token.network].blockExplorerUrls[0]}/address/${token.token_address}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block px-4 py-2 rounded-lg bg-gradient-to-r from-gray-800/80 to-gray-900/80 border border-gray-700/50 hover:border-fuchsia-500/30 transition-all text-sm text-gray-300"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        View on Explorer
-                      </motion.a>
+
+                      <div className="flex gap-2">
+                        <Link
+                          to={`/token/${token.token_address}`}
+                          className="flex-1 relative px-4 py-2.5 rounded-xl overflow-hidden group/button"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity" />
+                          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                          <span className="relative text-white text-sm font-medium">View Details</span>
+                        </Link>
+                        <motion.a
+                          href={`${NETWORKS[token.network].blockExplorerUrls[0]}/address/${token.token_address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="relative px-4 py-2.5 rounded-xl overflow-hidden group/button"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <div className="absolute inset-0 bg-gray-800/50" />
+                          <svg className="relative w-4 h-4 text-gray-400 group-hover/button:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </motion.a>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
-              </div>
+              </motion.div>
 
+              {/* Enhanced pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center mt-8">
-                  <div className="flex gap-2">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex justify-center mt-12"
+                >
+                  <div className="inline-flex items-center gap-2 p-1.5 rounded-2xl bg-black/50 backdrop-blur-xl border border-fuchsia-500/20">
                     <motion.button
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
-                      className={`px-3 py-1 rounded-lg ${
+                      className={`relative px-4 py-2 rounded-xl overflow-hidden ${
                         currentPage === 1 
-                          ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed' 
-                          : 'bg-gray-800/50 hover:bg-fuchsia-500/20 text-gray-300'
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : 'hover:bg-fuchsia-500/10'
                       }`}
                       whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
                       whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
                     >
-                      Previous
+                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
                     </motion.button>
                     
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <motion.button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`w-8 h-8 rounded-lg ${
-                          currentPage === page
-                            ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/50'
-                            : 'bg-gray-800/50 hover:bg-fuchsia-500/20'
-                        }`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {page}
-                      </motion.button>
-                    ))}
+                    <div className="flex gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                        <motion.button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`relative w-10 h-10 rounded-xl overflow-hidden ${
+                            currentPage === page
+                              ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20'
+                              : 'hover:bg-fuchsia-500/10'
+                          }`}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <span className={`text-sm font-medium ${
+                            currentPage === page ? 'text-white' : 'text-gray-400'
+                          }`}>
+                            {page}
+                          </span>
+                        </motion.button>
+                      ))}
+                    </div>
                     
                     <motion.button
                       onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                       disabled={currentPage === totalPages}
-                      className={`px-3 py-1 rounded-lg ${
+                      className={`relative px-4 py-2 rounded-xl overflow-hidden ${
                         currentPage === totalPages
-                          ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed'
-                          : 'bg-gray-800/50 hover:bg-fuchsia-500/20 text-gray-300'
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'hover:bg-fuchsia-500/10'
                       }`}
                       whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
                       whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
                     >
-                      Next
+                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </motion.button>
                   </div>
-                </div>
+                </motion.div>
               )}
             </>
           )}
