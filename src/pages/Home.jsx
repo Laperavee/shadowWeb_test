@@ -79,12 +79,20 @@ export default function Home() {
                 transition={{ delay: 0.4 }}
               >
                 <Link
-                  to="/create"
+                  to="/shadow-fun"
                   className="relative px-8 py-3 rounded-xl overflow-hidden group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-50 group-hover:opacity-70 transition-opacity" />
                   <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-                  <span className="relative text-white font-semibold">Launch App</span>
+                  <div className="relative flex items-center gap-2">
+                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span className="relative text-white font-semibold">Create Token</span>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 text-xs text-center text-white/70 pb-1">
+                    Deploy your own token
+                  </div>
                 </Link>
                 <a
                   href="#features"
