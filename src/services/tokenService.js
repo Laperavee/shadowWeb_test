@@ -29,32 +29,54 @@ export const tokenService = {
     console.log('TokenService - Fetching tokens for network:', network);
     console.log('TokenService - Using Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
     
-    const { data: tokens, error } = await supabase
-      .from('tokens')
-      .select('*, token_address')
-      .eq('network', network)
-      .order('created_at', { ascending: false });
+    try {
+      // Test la connexion Supabase
+      const { data: testData, error: testError } = await supabase
+        .from('tokens')
+        .select('count');
+      
+      console.log('TokenService - Testing Supabase connection:');
+      console.log('Test data:', testData);
+      if (testError) {
+        console.error('Test error:', testError);
+      }
 
-    if (error) {
-      console.error('TokenService - Error fetching tokens:', error);
-      console.error('TokenService - Full error details:', JSON.stringify(error, null, 2));
+      const { data: tokens, error } = await supabase
+        .from('tokens')
+        .select('*, token_address')
+        .eq('network', network)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('TokenService - Error fetching tokens:', error);
+        console.error('TokenService - Full error details:', JSON.stringify(error, null, 2));
+        return [];
+      }
+
+      console.log('TokenService - Raw tokens data:', tokens);
+      console.log('TokenService - Query details:', {
+        network,
+        table: 'tokens',
+        url: import.meta.env.VITE_SUPABASE_URL,
+        hasAnnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY
+      });
+
+      const uniqueTokens = tokens?.reduce((acc, current) => {
+        const x = acc.find(item => item.token_address === current.token_address);
+        if (!x) {
+          return acc.concat([current]);
+        } else {
+          return acc;
+        }
+      }, []);
+
+      console.log('TokenService - Processed unique tokens:', uniqueTokens);
+
+      return uniqueTokens || [];
+    } catch (error) {
+      console.error('TokenService - Unexpected error:', error);
       return [];
     }
-
-    console.log('TokenService - Raw tokens data:', tokens);
-
-    const uniqueTokens = tokens?.reduce((acc, current) => {
-      const x = acc.find(item => item.token_address === current.token_address);
-      if (!x) {
-        return acc.concat([current]);
-      } else {
-        return acc;
-      }
-    }, []);
-
-    console.log('TokenService - Processed unique tokens:', uniqueTokens);
-
-    return uniqueTokens || [];
   },
 
   // Get tokens by creator address

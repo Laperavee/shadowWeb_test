@@ -8,6 +8,7 @@ import Features from './pages/Features';
 import HowItWorks from './pages/HowItWorks';
 import ShadowFun from './pages/ShadowFun';
 import TokenDetail from './pages/TokenDetail';
+import Staking from './pages/Staking';
 
 // Components for managing effects
 import SoundProvider from './context/SoundContext';
@@ -16,7 +17,9 @@ import LoadingScreen from './components/LoadingScreen';
 // Créer un composant wrapper pour gérer l'affichage conditionnel de la Navbar
 function AppContent() {
   const location = useLocation();
-  const hideNavbar = location.pathname === '/shadow-fun' || location.pathname.startsWith('/token/');
+  const hideNavbar = location.pathname === '/shadow-fun' || 
+                    location.pathname.startsWith('/token/') ||
+                    location.pathname === '/staking';
 
   return (
     <div className="app relative min-h-screen bg-black text-white overflow-hidden flex flex-col">
@@ -57,6 +60,7 @@ function AppContent() {
               <Route path="/features" element={<Features />} />
               <Route path="/shadow-fun" element={<ShadowFun />} />
               <Route path="/token/:address" element={<TokenDetail />} />
+              <Route path="/staking" element={<Staking />} />
             </Routes>
           </AnimatePresence>
         </main>
