@@ -6,7 +6,6 @@ import avaxLogo from '../../dist/assets/avax_logo.png';
 import baseLogo from '../../dist/assets/base_logo.png';
 import { CONTRACTS } from '../config/contracts';
 import { tokenService } from '../services/tokenService';
-import { supabase } from '../utils/supabase';
 import { Link } from 'react-router-dom';
 
 const SHADOW_ABI = ShadowArtifact.abi;
@@ -214,7 +213,7 @@ export default function ShadowFun() {
     liquidity: '',
     maxWalletPercentage: '',
     deploymentFee: '0.00001',
-    fullAccess: false
+    isFeatured: false
   });
 
   const [isDeploying, setIsDeploying] = useState(false);
@@ -233,6 +232,22 @@ export default function ShadowFun() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  const loadTokens = async () => {
+    try {
+      console.log('ShadowFun - Loading tokens for network:', selectedChain);
+      setIsLoading(true);
+      const tokens = await tokenService.getTokens(selectedChain);
+      console.log('ShadowFun - Received tokens:', tokens);
+      if (Array.isArray(tokens)) {
+        setTokens(tokens);
+      }
+    } catch (error) {
+      console.error('ShadowFun - Error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const addNotification = (message, type = 'info') => {
     const id = Date.now();
@@ -284,7 +299,6 @@ export default function ShadowFun() {
         const signer = await provider.getSigner();
         
         const shadowAddress = CONTRACTS[selectedChain].SHADOW_ADDRESS;
-        const shadowTokenAddress = CONTRACTS[selectedChain].SHADOW_TOKEN_ADDRESS;
         
         const shadow = new ethers.Contract(
           shadowAddress,
@@ -320,29 +334,15 @@ export default function ShadowFun() {
   }, []);
 
   useEffect(() => {
-    async function loadTokens() {
-      try {
-        console.log('ShadowFun - Loading tokens for network:', selectedChain);
-        setIsLoading(true);
-        const tokens = await tokenService.getTokens(selectedChain);
-        console.log('ShadowFun - Received tokens:', tokens);
-        if (Array.isArray(tokens)) {
-          setTokens(tokens);
-        }
-      } catch (error) {
-        console.error('ShadowFun - Error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
     loadTokens();
   }, [selectedChain]);
 
   const handleCreateToken = async (e) => {
     e.preventDefault();
+    console.log('Starting token creation...');
     
     const { SHADOW_ADDRESS, SHADOW_TOKEN_ADDRESS } = CONTRACTS[selectedChain];
+    console.log('Contract addresses:', { SHADOW_ADDRESS, SHADOW_TOKEN_ADDRESS });
     
     if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
       addNotification("Contract addresses not configured for this network", "error");
@@ -359,92 +359,123 @@ export default function ShadowFun() {
       return;
     }
 
-    setIsDeploying(true);
-    setDeploymentStatus('Initializing deployment...');
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const userAddress = await signer.getAddress();
-
-    const network = await provider.getNetwork();
-
     try {
+      setIsDeploying(true);
+      setDeploymentStatus('Initializing deployment...');
+      console.log('Form data:', formData);
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const userAddress = await signer.getAddress();
+      console.log('User address:', userAddress);
+
+      const network = await provider.getNetwork();
+      console.log('Network:', network);
+
+      // Connexion au contrat Shadow
       const shadow = new ethers.Contract(
         SHADOW_ADDRESS,
         SHADOW_ABI,
         signer
       );
+
+      // Connexion au contrat SHADOW token
+      const shadowToken = new ethers.Contract(
+        SHADOW_TOKEN_ADDRESS,
+        ["function approve(address spender, uint256 amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)"],
+        signer
+      );
+
+      // Vérifier les frais de déploiement en SHADOW
+      const shadowFee = await shadow.shadowDeploymentFee();
+      console.log('Shadow deployment fee:', ethers.formatEther(shadowFee), 'SHADOW');
+
+      // Vérifier et mettre à jour l'allowance
+      const allowance = await shadowToken.allowance(userAddress, SHADOW_ADDRESS);
+      console.log('Current allowance:', ethers.formatEther(allowance), 'SHADOW');
+
+      if (allowance < shadowFee) {
+        console.log('Approving SHADOW tokens...');
+        setDeploymentStatus('Approving SHADOW tokens...');
+        const approveTx = await shadowToken.approve(SHADOW_ADDRESS, ethers.parseEther('1000'));
+        await approveTx.wait();
+        console.log('SHADOW tokens approved');
+      }
     
       const maxWalletPercentage = parseFloat(formData.maxWalletPercentage)*10;
+      console.log('Calculated maxWalletPercentage:', maxWalletPercentage);
 
       setDeploymentStatus('Generating salt...');
-      try {        
-        const result = await shadow.generateSalt.staticCall(
-          userAddress, 
-          formData.name,
-          formData.symbol,
-          BigInt(ethers.parseEther(formData.totalSupply)),
-          maxWalletPercentage
-        );
+      const result = await shadow.generateSalt.staticCall(
+        userAddress, 
+        formData.name,
+        formData.symbol,
+        BigInt(ethers.parseEther(formData.totalSupply)),
+        maxWalletPercentage,
+        formData.isFeatured
+      );
+      console.log('Generated salt result:', result);
 
-        const [salt, predictedAddress] = result;
+      const [salt, predictedAddress] = result;
 
-        setDeploymentStatus('Deploying token...');
-        const tx = await shadow.deployToken(
-          formData.name,
-          formData.symbol,
-          BigInt(ethers.parseEther(formData.totalSupply)),
-          ethers.parseUnits(formData.liquidity),
-          10000,
-          salt,
-          userAddress,
-          parseInt(maxWalletPercentage),
-          {
-            value: ethers.parseEther(formData.deploymentFee),
-            gasLimit: 8000000
-          }
-        );
+      setDeploymentStatus('Deploying token...');
+      const tx = await shadow.deployToken(
+        formData.name,
+        formData.symbol,
+        BigInt(ethers.parseEther(formData.totalSupply)),
+        ethers.parseUnits(formData.liquidity),
+        10000,
+        salt,
+        userAddress,
+        parseInt(maxWalletPercentage),
+        formData.isFeatured,
+        {
+          value: ethers.parseEther(formData.deploymentFee),
+          gasLimit: 8000000
+        }
+      );
+      console.log('Deploy transaction:', tx);
 
-        setDeploymentStatus('Waiting for confirmation...');
+      setDeploymentStatus('Waiting for confirmation...');
+      const receipt = await tx.wait();
+      console.log('Transaction receipt:', receipt);
+      
+      const tokenCreatedEvent = receipt.logs.find(log => {
+        try {
+          return log.topics[0] === ethers.id(
+            "TokenCreated(address,uint256,address,string,string,uint256)"
+          );
+        } catch {
+          return false;
+        }
+      });
+
+      if (tokenCreatedEvent) {
+        const tokenAddress = tokenCreatedEvent.args ? 
+          tokenCreatedEvent.args[0] : 
+          `0x${tokenCreatedEvent.topics[1].slice(26)}`;
         
-        const receipt = await tx.wait();
+        console.log('Token created at address:', tokenAddress);
+        setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
+        addNotification("Token deployed successfully!", "success");
         
-        const tokenCreatedEvent = receipt.logs.find(log => {
-          try {
-            return log.topics[0] === ethers.id(
-              "TokenCreated(address,uint256,address,string,string,uint256)"
-            );
-          } catch {
-            return false;
-          }
+        await saveTokenToDatabase(tokenAddress, userAddress);
+        
+        setFormData({
+          name: '',
+          symbol: '',
+          totalSupply: '',
+          liquidity: '',
+          maxWalletPercentage: '',
+          deploymentFee: '0.00001',
         });
 
-        if (tokenCreatedEvent) {
-          const tokenAddress = tokenCreatedEvent.args ? 
-            tokenCreatedEvent.args[0] : 
-            `0x${tokenCreatedEvent.topics[1].slice(26)}`;
-          
-          setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
-          addNotification("Token deployed successfully!", "success");
-          
-          await saveTokenToDatabase(tokenAddress, userAddress);
-          
-          setFormData({
-            name: '',
-            symbol: '',
-            totalSupply: '',
-            liquidity: '',
-            maxWalletPercentage: '',
-          });
-
-          loadTokens();
-        }
-
-      } catch (error) {
-        throw error;
+        loadTokens();
       }
 
     } catch (error) {
-      throw error;
+      console.error('Error in token creation:', error);
+      addNotification(error.message || "Error creating token", "error");
     } finally {
       setIsDeploying(false);
     }

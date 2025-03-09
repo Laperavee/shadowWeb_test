@@ -20,17 +20,17 @@ const TokenDetail = () => {
         setLoading(true);
         setError(null);
         
-        const datareturned = await tokenService.getTokenByAddress(address);
-        const tokenData = datareturned.data;
-        console.log('TokenDetail - Token data received:', tokenData);
+        const result = await tokenService.getTokenByAddress(address);
+        console.log('TokenDetail - Token data received:', result);
         
-        if (!tokenData) {
+        if (!result || !result.data) {
           console.error('TokenDetail - No token data found for address:', address);
           setError('Token not found');
           setLoading(false);
           return;
         }
         
+        const tokenData = result.data;
         if (tokenData.network === 'AVAX') {
           tokenData.network = 'avalanche';
         }

@@ -26,42 +26,50 @@ async function uploadTokenImage(file) {
 
 export const tokenService = {
   async getTokens(network) {
-    console.log('TokenService - Fetching tokens for network:', network);
-    console.log('TokenService - Using Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('TokenService - Starting getTokens for network:', network);
     
     try {
-      // Test la connexion Supabase
-      const { data: testData, error: testError } = await supabase
+      // Test simple avec une requête basique
+      const { data: simpleTest, error: simpleError } = await supabase
         .from('tokens')
-        .select('count');
-      
-      console.log('TokenService - Testing Supabase connection:');
-      console.log('Test data:', testData);
-      if (testError) {
-        console.error('Test error:', testError);
+        .select('id, token_address, network')
+        .limit(5);
+
+      console.log('TokenService - Simple test:', {
+        success: !simpleError,
+        error: simpleError,
+        data: simpleTest,
+        hasData: simpleTest && simpleTest.length > 0
+      });
+
+      // Si le test simple échoue, vérifions les permissions
+      if (simpleError) {
+        console.error('TokenService - Permission check failed:', simpleError);
+        return [];
       }
 
+      // Si le test simple réussit, procédons à la requête complète
       const { data: tokens, error } = await supabase
         .from('tokens')
-        .select('*, token_address')
+        .select('*')
         .eq('network', network)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('TokenService - Error fetching tokens:', error);
-        console.error('TokenService - Full error details:', JSON.stringify(error, null, 2));
         return [];
       }
 
-      console.log('TokenService - Raw tokens data:', tokens);
-      console.log('TokenService - Query details:', {
-        network,
-        table: 'tokens',
-        url: import.meta.env.VITE_SUPABASE_URL,
-        hasAnnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY
+      if (!tokens) {
+        return [];
+      }
+
+      console.log('TokenService - Final results:', {
+        totalCount: tokens.length,
+        firstToken: tokens[0]
       });
 
-      const uniqueTokens = tokens?.reduce((acc, current) => {
+      const uniqueTokens = tokens.reduce((acc, current) => {
         const x = acc.find(item => item.token_address === current.token_address);
         if (!x) {
           return acc.concat([current]);
@@ -70,11 +78,10 @@ export const tokenService = {
         }
       }, []);
 
-      console.log('TokenService - Processed unique tokens:', uniqueTokens);
-
-      return uniqueTokens || [];
+      return uniqueTokens;
     } catch (error) {
-      console.error('TokenService - Unexpected error:', error);
+      console.error('TokenService - Critical error in getTokens:', error);
+      console.error('TokenService - Error stack:', error.stack);
       return [];
     }
   },
@@ -116,18 +123,18 @@ export const tokenService = {
       
       if (error) {
         console.error('TokenService - Error in getTokenByAddress:', error);
-        return null;
+        return { data: null, error };
       }
       
       if (!data) {
         console.error('TokenService - No token found with address:', address);
-        return null;
+        return { data: null, error: 'Token not found' };
       }
       
-      return {data};
+      return { data };
     } catch (error) {
       console.error('TokenService - Error fetching token:', error);
-      return null;
+      return { data: null, error };
     }
   },
 
@@ -144,31 +151,61 @@ export const tokenService = {
     token_image
   }) {
     try {
+      console.log('TokenService - Starting token insertion with data:', {
+        token_address,
+        liquidity,
+        supply,
+        network,
+        deployer_address,
+        max_wallet_percentage,
+        token_name,
+        token_symbol
+      });
+
       const imgUrl = token_image ? await uploadTokenImage(token_image) : null;
+
+      // Parse numeric values
+      const parsedSupply = BigInt(Math.floor(parseFloat(supply))).toString();
+      const parsedLiquidity = Math.floor(parseFloat(liquidity)).toString();
+      const parsedMaxWalletPercentage = Math.floor(parseFloat(max_wallet_percentage) * 10);
+
+      console.log('TokenService - Parsed values:', {
+        parsedSupply,
+        parsedLiquidity,
+        parsedMaxWalletPercentage
+      });
+
+      const tokenData = {
+        token_address,
+        liquidity: parsedLiquidity,
+        supply: parsedSupply,
+        network,
+        deployer_address,
+        created_at: new Date(),
+        max_wallet_percentage: parsedMaxWalletPercentage,
+        token_name,
+        token_symbol,
+        image_url: imgUrl
+      };
+
+      console.log('TokenService - Attempting to insert token with data:', tokenData);
 
       const { data, error } = await supabase
         .from('tokens')
-        .insert([{
-          token_address,
-          liquidity,
-          supply,
-          network,
-          deployer_address,
-          created_at: new Date(),
-          max_wallet_percentage,
-          token_name,
-          token_symbol,
-          image_url: imgUrl
-        }]);
+        .insert([tokenData])
+        .select();
 
       if (error) {
-        console.error('Error inserting token:', error);
+        console.error('TokenService - Error inserting token:', error);
+        console.error('TokenService - Full error details:', JSON.stringify(error, null, 2));
         throw error;
       }
 
+      console.log('TokenService - Successfully inserted token:', data);
       return { success: true, data };
     } catch (error) {
-      console.error('Error in insertToken:', error);
+      console.error('TokenService - Error in insertToken:', error);
+      console.error('TokenService - Error stack:', error.stack);
       throw error;
     }
   },
