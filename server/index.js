@@ -29,10 +29,32 @@ const supabase = createClient(
     process.env.VITE_SUPABASE_SERVICE_KEY
 );
 
+// Test de connexion à Supabase
+const testSupabaseConnection = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('tokens')
+            .select('count')
+            .limit(1);
+        
+        if (error) {
+            console.error('Supabase connection test failed:', error);
+            return false;
+        }
+        
+        console.log('Supabase connection successful');
+        return true;
+    } catch (error) {
+        console.error('Supabase connection test failed:', error);
+        return false;
+    }
+};
+
 // Endpoint pour récupérer les tokens
 app.get('/api/tokens', async (req, res) => {
     try {
         const { network } = req.query;
+        console.log('GET /api/tokens - Request received for network:', network);
         
         const { data, error } = await supabase
             .from('tokens')
@@ -44,6 +66,12 @@ app.get('/api/tokens', async (req, res) => {
             console.error('Error fetching tokens:', error);
             return res.status(500).json({ error: error.message });
         }
+
+        console.log('GET /api/tokens - Query result:', {
+            dataCount: data ? data.length : 0,
+            firstToken: data ? data[0] : null,
+            error: error ? error.message : null
+        });
 
         res.json({ success: true, data });
     } catch (error) {
@@ -63,13 +91,9 @@ app.post('/api/tokens', async (req, res) => {
             max_wallet_percentage,
             network,
             deployer_address,
-            token_image,
-            tx_hash
+            image_url,
+            is_featured
         } = req.body;
-
-        if (!tx_hash) {
-            return res.status(400).json({ error: 'Transaction hash is required' });
-        }
 
         const { data, error } = await supabase
             .from('tokens')
@@ -83,7 +107,8 @@ app.post('/api/tokens', async (req, res) => {
                 network,
                 deployer_address,
                 created_at: new Date(),
-                image_url: token_image
+                image_url,
+                is_featured: is_featured || false
             }])
             .select();
 
@@ -99,7 +124,8 @@ app.post('/api/tokens', async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3002;
+app.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`);
+    await testSupabaseConnection();
 }); 

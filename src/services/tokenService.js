@@ -1,6 +1,8 @@
 import { supabase } from '../utils/supabase';
 import avaxLogo from '../../dist/assets/avax_logo.png';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+
 async function uploadTokenImage(file) {
   if (!file) return null;
 
@@ -26,10 +28,9 @@ async function uploadTokenImage(file) {
 
 export const tokenService = {
   async getTokens(network) {
-    console.log('TokenService - Starting getTokens for network:', network);
-    
     try {
-      const response = await fetch(`http://localhost:3001/api/tokens?network=${network}`);
+      const url = `${API_URL}/api/tokens?network=${network}`;
+      const response = await fetch(url);
       
       if (!response.ok) {
         console.error('TokenService - Error fetching tokens:', await response.text());
@@ -41,11 +42,6 @@ export const tokenService = {
       if (!tokens) {
         return [];
       }
-
-      console.log('TokenService - Final results:', {
-        totalCount: tokens.length,
-        firstToken: tokens[0]
-      });
 
       const uniqueTokens = tokens.reduce((acc, current) => {
         const x = acc.find(item => item.token_address === current.token_address);
@@ -130,21 +126,9 @@ export const tokenService = {
     tx_hash
   }) {
     try {
-      console.log('TokenService - Starting token insertion with data:', {
-        token_address,
-        token_name,
-        token_symbol,
-        supply,
-        liquidity,
-        max_wallet_percentage,
-        network,
-        deployer_address,
-        tx_hash
-      });
-
       const imgUrl = token_image ? await uploadTokenImage(token_image) : null;
 
-      const response = await fetch('http://localhost:3001/api/tokens', {
+      const response = await fetch(`${API_URL}/api/tokens`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,8 +142,8 @@ export const tokenService = {
           max_wallet_percentage: Math.floor(parseFloat(max_wallet_percentage) * 10),
           network,
           deployer_address,
-          token_image: imgUrl,
-          tx_hash
+          image_url: imgUrl,
+          is_featured: false
         })
       });
 
@@ -169,7 +153,6 @@ export const tokenService = {
       }
 
       const result = await response.json();
-      console.log('TokenService - Successfully inserted token:', result.data);
       return { success: true, data: result.data };
     } catch (error) {
       console.error('TokenService - Error in insertToken:', error);

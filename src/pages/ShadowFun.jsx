@@ -239,13 +239,23 @@ export default function ShadowFun() {
       setIsLoading(true);
       const tokens = await tokenService.getTokens(selectedChain);
       if (Array.isArray(tokens)) {
+        console.log('Tokens loaded:', tokens.length);
         setTokens(tokens);
+        // Calculer le nombre total de pages (10 tokens par page)
+        setTotalPages(Math.ceil(tokens.length / 10));
       }
     } catch (error) {
       console.error('Error loading tokens:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Calculer les tokens à afficher pour la page courante
+  const getCurrentPageTokens = () => {
+    const startIndex = (currentPage - 1) * 10;
+    const endIndex = startIndex + 10;
+    return tokens.slice(startIndex, endIndex);
   };
 
   const addNotification = (message, type = 'info') => {
@@ -693,9 +703,9 @@ export default function ShadowFun() {
                 }}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
               >
-                {tokens.map((token) => (
+                {getCurrentPageTokens().map((token) => (
                   <motion.div
-                    key={token.token_address}
+                    key={token.id}
                     variants={{
                       hidden: { opacity: 0, y: 20 },
                       visible: { opacity: 1, y: 0 }
