@@ -29,37 +29,15 @@ export const tokenService = {
     console.log('TokenService - Starting getTokens for network:', network);
     
     try {
-      // Test simple avec une requête basique
-      const { data: simpleTest, error: simpleError } = await supabase
-        .from('tokens')
-        .select('id, token_address, network')
-        .limit(5);
-
-      console.log('TokenService - Simple test:', {
-        success: !simpleError,
-        error: simpleError,
-        data: simpleTest,
-        hasData: simpleTest && simpleTest.length > 0
-      });
-
-      // Si le test simple échoue, vérifions les permissions
-      if (simpleError) {
-        console.error('TokenService - Permission check failed:', simpleError);
+      const response = await fetch(`http://localhost:3001/api/tokens?network=${network}`);
+      
+      if (!response.ok) {
+        console.error('TokenService - Error fetching tokens:', await response.text());
         return [];
       }
 
-      // Si le test simple réussit, procédons à la requête complète
-      const { data: tokens, error } = await supabase
-        .from('tokens')
-        .select('*')
-        .eq('network', network)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('TokenService - Error fetching tokens:', error);
-        return [];
-      }
-
+      const { data: tokens } = await response.json();
+      
       if (!tokens) {
         return [];
       }
@@ -141,68 +119,58 @@ export const tokenService = {
   // Insert a new token
   async insertToken({
     token_address,
-    liquidity,
-    supply,
-    network,
-    deployer_address,
-    max_wallet_percentage,
     token_name,
     token_symbol,
-    token_image
+    supply,
+    liquidity,
+    max_wallet_percentage,
+    network,
+    deployer_address,
+    token_image,
+    tx_hash
   }) {
     try {
       console.log('TokenService - Starting token insertion with data:', {
         token_address,
-        liquidity,
+        token_name,
+        token_symbol,
         supply,
+        liquidity,
+        max_wallet_percentage,
         network,
         deployer_address,
-        max_wallet_percentage,
-        token_name,
-        token_symbol
+        tx_hash
       });
 
       const imgUrl = token_image ? await uploadTokenImage(token_image) : null;
 
-      // Parse numeric values
-      const parsedSupply = BigInt(Math.floor(parseFloat(supply))).toString();
-      const parsedLiquidity = Math.floor(parseFloat(liquidity)).toString();
-      const parsedMaxWalletPercentage = Math.floor(parseFloat(max_wallet_percentage) * 10);
-
-      console.log('TokenService - Parsed values:', {
-        parsedSupply,
-        parsedLiquidity,
-        parsedMaxWalletPercentage
+      const response = await fetch('http://localhost:3001/api/tokens', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token_address,
+          token_name,
+          token_symbol,
+          supply: supply.toString(),
+          liquidity: liquidity.toString(),
+          max_wallet_percentage: Math.floor(parseFloat(max_wallet_percentage) * 10),
+          network,
+          deployer_address,
+          token_image: imgUrl,
+          tx_hash
+        })
       });
 
-      const tokenData = {
-        token_address,
-        liquidity: parsedLiquidity,
-        supply: parsedSupply,
-        network,
-        deployer_address,
-        created_at: new Date(),
-        max_wallet_percentage: parsedMaxWalletPercentage,
-        token_name,
-        token_symbol,
-        image_url: imgUrl
-      };
-
-      console.log('TokenService - Attempting to insert token with data:', tokenData);
-
-      const { data, error } = await supabase
-        .from('tokens')
-        .insert([tokenData])
-        .select();
-
-      if (error) {
-        console.error('TokenService - Error inserting token:', error);
-        console.error('TokenService - Full error details:', JSON.stringify(error, null, 2));
-        throw error;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to insert token');
       }
 
-      console.log('TokenService - Successfully inserted token:', data);
-      return { success: true, data };
+      const result = await response.json();
+      console.log('TokenService - Successfully inserted token:', result.data);
+      return { success: true, data: result.data };
     } catch (error) {
       console.error('TokenService - Error in insertToken:', error);
       console.error('TokenService - Error stack:', error.stack);

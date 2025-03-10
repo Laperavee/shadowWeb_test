@@ -213,7 +213,8 @@ export default function ShadowFun() {
     liquidity: '',
     maxWalletPercentage: '',
     deploymentFee: '0.00001',
-    isFeatured: false
+    isFeatured: false,
+    deployerAddress: ''
   });
 
   const [isDeploying, setIsDeploying] = useState(false);
@@ -235,15 +236,13 @@ export default function ShadowFun() {
 
   const loadTokens = async () => {
     try {
-      console.log('ShadowFun - Loading tokens for network:', selectedChain);
       setIsLoading(true);
       const tokens = await tokenService.getTokens(selectedChain);
-      console.log('ShadowFun - Received tokens:', tokens);
       if (Array.isArray(tokens)) {
         setTokens(tokens);
       }
     } catch (error) {
-      console.error('ShadowFun - Error:', error);
+      console.error('Error loading tokens:', error);
     } finally {
       setIsLoading(false);
     }
@@ -339,10 +338,8 @@ export default function ShadowFun() {
 
   const handleCreateToken = async (e) => {
     e.preventDefault();
-    console.log('Starting token creation...');
     
     const { SHADOW_ADDRESS, SHADOW_TOKEN_ADDRESS } = CONTRACTS[selectedChain];
-    console.log('Contract addresses:', { SHADOW_ADDRESS, SHADOW_TOKEN_ADDRESS });
     
     if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
       addNotification("Contract addresses not configured for this network", "error");
@@ -362,15 +359,13 @@ export default function ShadowFun() {
     try {
       setIsDeploying(true);
       setDeploymentStatus('Initializing deployment...');
-      console.log('Form data:', formData);
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const userAddress = await signer.getAddress();
-      console.log('User address:', userAddress);
+      const deployerAddress = userAddress;
 
       const network = await provider.getNetwork();
-      console.log('Network:', network);
 
       // Connexion au contrat Shadow
       const shadow = new ethers.Contract(
@@ -388,33 +383,25 @@ export default function ShadowFun() {
 
       // Vérifier les frais de déploiement en SHADOW
       const shadowFee = await shadow.shadowDeploymentFee();
-      console.log('Shadow deployment fee:', ethers.formatEther(shadowFee), 'SHADOW');
-
-      // Vérifier et mettre à jour l'allowance
       const allowance = await shadowToken.allowance(userAddress, SHADOW_ADDRESS);
-      console.log('Current allowance:', ethers.formatEther(allowance), 'SHADOW');
 
       if (allowance < shadowFee) {
-        console.log('Approving SHADOW tokens...');
         setDeploymentStatus('Approving SHADOW tokens...');
         const approveTx = await shadowToken.approve(SHADOW_ADDRESS, ethers.parseEther('1000'));
         await approveTx.wait();
-        console.log('SHADOW tokens approved');
       }
     
       const maxWalletPercentage = parseFloat(formData.maxWalletPercentage)*10;
-      console.log('Calculated maxWalletPercentage:', maxWalletPercentage);
 
       setDeploymentStatus('Generating salt...');
       const result = await shadow.generateSalt.staticCall(
-        userAddress, 
+        deployerAddress,
         formData.name,
         formData.symbol,
         BigInt(ethers.parseEther(formData.totalSupply)),
         maxWalletPercentage,
         formData.isFeatured
       );
-      console.log('Generated salt result:', result);
 
       const [salt, predictedAddress] = result;
 
@@ -426,7 +413,7 @@ export default function ShadowFun() {
         ethers.parseUnits(formData.liquidity),
         10000,
         salt,
-        userAddress,
+        deployerAddress,
         parseInt(maxWalletPercentage),
         formData.isFeatured,
         {
@@ -434,11 +421,9 @@ export default function ShadowFun() {
           gasLimit: 8000000
         }
       );
-      console.log('Deploy transaction:', tx);
 
       setDeploymentStatus('Waiting for confirmation...');
       const receipt = await tx.wait();
-      console.log('Transaction receipt:', receipt);
       
       const tokenCreatedEvent = receipt.logs.find(log => {
         try {
@@ -455,11 +440,10 @@ export default function ShadowFun() {
           tokenCreatedEvent.args[0] : 
           `0x${tokenCreatedEvent.topics[1].slice(26)}`;
         
-        console.log('Token created at address:', tokenAddress);
         setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
         addNotification("Token deployed successfully!", "success");
         
-        await saveTokenToDatabase(tokenAddress, userAddress);
+        await saveTokenToDatabase(tokenAddress, deployerAddress, receipt.hash);
         
         setFormData({
           name: '',
@@ -468,6 +452,7 @@ export default function ShadowFun() {
           liquidity: '',
           maxWalletPercentage: '',
           deploymentFee: '0.00001',
+          deployerAddress: ''
         });
 
         loadTokens();
@@ -481,8 +466,12 @@ export default function ShadowFun() {
     }
   };
 
-  const saveTokenToDatabase = async (tokenAddress, userAddress) => {
+  const saveTokenToDatabase = async (tokenAddress, deployerAddress, txHash) => {
     try {
+      if (!txHash) {
+        throw new Error('Transaction hash is required');
+      }
+
       await tokenService.insertToken({
         token_address: tokenAddress,
         token_name: formData.name,
@@ -491,13 +480,13 @@ export default function ShadowFun() {
         liquidity: parseFloat(formData.liquidity),
         max_wallet_percentage: parseFloat(formData.maxWalletPercentage),
         network: selectedChain,
-        deployer_address: userAddress,
-        token_image: formData.tokenImage
+        deployer_address: deployerAddress,
+        token_image: formData.tokenImage,
+        tx_hash: txHash
       });
 
       addNotification("Token saved to database", "success");
       
-      // Recharger la liste des tokens
       const tokens = await tokenService.getTokens(selectedChain);
       if (Array.isArray(tokens)) {
         setTokens(tokens);
@@ -508,12 +497,10 @@ export default function ShadowFun() {
     }
   };
 
-  // Fonction pour ajouter un token de test
   const handleAddTestToken = async () => {
     try {
       setIsLoading(true);
       await tokenService.addTestToken();
-      // Recharger les tokens après l'ajout
       const tokens = await tokenService.getTokens(selectedChain);
       if (Array.isArray(tokens)) {
         setTokens(tokens);
