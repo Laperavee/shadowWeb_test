@@ -1,7 +1,9 @@
 import { supabase } from '../utils/supabase';
 import avaxLogo from '../../dist/assets/avax_logo.png';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+// En production, on utilise le chemin relatif pour les fonctions Netlify
+const isProduction = import.meta.env.PROD;
+const API_URL = isProduction ? '/.netlify/functions' : 'http://localhost:3002';
 
 async function uploadTokenImage(file) {
   if (!file) return null;
