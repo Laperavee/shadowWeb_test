@@ -20,15 +20,15 @@ const TokenDetail = () => {
   useEffect(() => {
     const fetchToken = async () => {
       try {
-        console.log('TokenDetail - Fetching token with address:', address);
         setLoading(true);
         setError(null);
         
+        const isProduction = import.meta.env.PROD;
+        const API_URL = isProduction ? '/.netlify/functions' : 'http://localhost:3002';
+        
         const result = await tokenService.getTokenByAddress(address);
-        console.log('TokenDetail - Token data received:', result);
         
         if (!result || !result.data) {
-          console.error('TokenDetail - No token data found for address:', address);
           setError('Token not found');
           setLoading(false);
           return;
@@ -41,14 +41,12 @@ const TokenDetail = () => {
         
         setToken(tokenData);
         fetchDexScreenerData(tokenData.token_address, tokenData.network);
-        fetchHoldersCount(tokenData.token_address, tokenData.network);
         
         // Récupérer le prix du token natif (AVAX ou ETH)
         const nativeSymbol = tokenData.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH';
         const price = await priceService.getPrice(nativeSymbol);
         setTokenPrice(price);
       } catch (err) {
-        console.error('TokenDetail - Error in fetchToken:', err);
         setError(err.message || 'Failed to load token data');
       } finally {
         setLoading(false);
@@ -72,7 +70,6 @@ const TokenDetail = () => {
 
   const fetchDexScreenerData = async (tokenAddress, network) => {
     try {
-      console.log('TokenDetail - Fetching DexScreener data for:', tokenAddress);
       setDexLoading(true);
       
       const dexNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
@@ -80,8 +77,6 @@ const TokenDetail = () => {
       
       const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
       const data = await response.json();
-      
-      console.log('TokenDetail - DexScreener data received:', data);
       
       if (data && data.pairs && data.pairs.length > 0) {
         // Sort by volume to get the most active pair
@@ -91,7 +86,6 @@ const TokenDetail = () => {
         
         const mainPair = sortedPairs[0];
         setDexData(mainPair);
-        console.log('TokenDetail - Main trading pair:', mainPair);
         
         // Update token with market information
         if (mainPair) {
@@ -103,17 +97,14 @@ const TokenDetail = () => {
             liquidity: parseFloat(mainPair.liquidity?.usd || 0) / 1000
           };
 
-          console.log('TokenDetail - Previous token data:', token);
           setToken(prevToken => ({
             ...prevToken,
             market_data: marketData
           }));
         }
-      } else {
-        console.log('TokenDetail - No trading pairs found on DexScreener');
       }
     } catch (err) {
-      console.error('TokenDetail - Error fetching DexScreener data:', err);
+      // Silently handle error
     } finally {
       setDexLoading(false);
     }

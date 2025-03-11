@@ -45,7 +45,6 @@ export const tokenService = {
       const response = await fetch(url);
       
       if (!response.ok) {
-        console.error('TokenService - Error fetching tokens:', await response.text());
         return [];
       }
 
@@ -66,8 +65,7 @@ export const tokenService = {
 
       return uniqueTokens;
     } catch (error) {
-      console.error('TokenService - Critical error in getTokens:', error);
-      console.error('TokenService - Error stack:', error.stack);
+      console.error('Error in getTokens:', error);
       return [];
     }
   },
@@ -99,7 +97,7 @@ export const tokenService = {
       const { data } = await response.json();
       return { data };
     } catch (error) {
-      console.error('TokenService - Error fetching token:', error);
+      console.error('Error fetching token:', error);
       return { data: null, error };
     }
   },
@@ -134,7 +132,8 @@ export const tokenService = {
           network,
           deployer_address,
           image_url: imgUrl,
-          is_featured: false
+          is_featured: false,
+          tx_hash
         })
       });
 
@@ -146,8 +145,7 @@ export const tokenService = {
       const result = await response.json();
       return { success: true, data: result.data };
     } catch (error) {
-      console.error('TokenService - Error in insertToken:', error);
-      console.error('TokenService - Error stack:', error.stack);
+      console.error('Error in insertToken:', error);
       throw error;
     }
   },

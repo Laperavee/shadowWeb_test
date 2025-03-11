@@ -531,13 +531,14 @@ export default function ShadowFun() {
 
       addNotification("Token saved to database", "success");
       
-      // Rediriger l'utilisateur vers la page du token
-      navigate(`/token/${tokenAddress}`);
-      
+      // Mettre à jour la liste des tokens
       const tokens = await tokenService.getTokens(selectedChain);
       if (Array.isArray(tokens)) {
         setTokens(tokens);
       }
+      
+      // Forcer une redirection avec rechargement de page pour s'assurer que la page du token s'affiche correctement
+      window.location.href = `/token/${tokenAddress}`;
     } catch (error) {
       console.error('Error saving token:', error);
       addNotification("Failed to save token to database", "error");
@@ -776,9 +777,6 @@ export default function ShadowFun() {
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="px-3 py-1 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400 text-sm font-medium">
                               ${token.token_symbol}
-                            </span>
-                            <span className="px-3 py-1 rounded-lg bg-gray-800/50 text-gray-400 text-sm">
-                              {NETWORKS[token.network].nativeCurrency.symbol}
                             </span>
                           </div>
                         </div>

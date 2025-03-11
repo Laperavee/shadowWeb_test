@@ -66,8 +66,6 @@ const testSupabaseConnection = async () => {
 app.get('/api/tokens', async (req, res) => {
     try {
         const { network } = req.query;
-        console.log('GET /api/tokens - Request received for network:', network);
-        
         const { data, error } = await supabase
             .from('tokens')
             .select('*')
@@ -79,11 +77,51 @@ app.get('/api/tokens', async (req, res) => {
             return res.status(500).json({ error: error.message });
         }
 
-        console.log('GET /api/tokens - Query result:', {
-            dataCount: data ? data.length : 0,
-            firstToken: data ? data[0] : null,
-            error: error ? error.message : null
-        });
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Endpoint pour récupérer un token par son adresse
+app.get('/api/tokens/address/:address', async (req, res) => {
+    try {
+        const { address } = req.params;
+
+        const { data, error } = await supabase
+            .from('tokens')
+            .select('*')
+            .eq('token_address', address)
+            .single();
+
+        if (error) {
+            console.error('Error fetching token by address:', error);
+            return res.status(404).json({ error: 'Token not found' });
+        }
+
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Endpoint pour récupérer les tokens d'un créateur
+app.get('/api/tokens/creator/:address', async (req, res) => {
+    try {
+        const { address } = req.params;
+
+        const { data, error } = await supabase
+            .from('tokens')
+            .select('*')
+            .eq('deployer_address', address)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching creator tokens:', error);
+            return res.status(500).json({ error: error.message });
+        }
 
         res.json({ success: true, data });
     } catch (error) {
@@ -104,8 +142,14 @@ app.post('/api/tokens', async (req, res) => {
             network,
             deployer_address,
             image_url,
-            is_featured
+            is_featured,
+            tx_hash
         } = req.body;
+
+        // Vérifier que tx_hash est fourni
+        if (!tx_hash) {
+            return res.status(400).json({ error: 'Transaction hash is required' });
+        }
 
         const { data, error } = await supabase
             .from('tokens')
@@ -120,7 +164,8 @@ app.post('/api/tokens', async (req, res) => {
                 deployer_address,
                 created_at: new Date(),
                 image_url,
-                is_featured: is_featured || false
+                is_featured: is_featured || false,
+                tx_hash
             }])
             .select();
 
