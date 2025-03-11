@@ -22,8 +22,8 @@ export const handler = async (event, context) => {
     }
 
     try {
-        // GET /api/tokens
-        if (event.httpMethod === 'GET') {
+        // GET /api/tokens (liste des tokens par réseau)
+        if (event.httpMethod === 'GET' && !event.path.includes('/creator/') && !event.path.includes('/address/')) {
             const params = new URLSearchParams(event.queryStringParameters);
             const network = params.get('network');
 
@@ -42,7 +42,61 @@ export const handler = async (event, context) => {
             };
         }
 
-        // POST /api/tokens
+        // GET /api/tokens/creator/:address (tokens par créateur)
+        if (event.httpMethod === 'GET' && event.path.includes('/creator/')) {
+            const creator = event.path.split('/creator/')[1];
+            
+            const { data, error } = await supabase
+                .from('tokens')
+                .select(`
+                    token_address,
+                    token_name,
+                    token_symbol,
+                    supply,
+                    liquidity,
+                    max_wallet_percentage,
+                    network,
+                    deployer_address,
+                    created_at
+                `)
+                .eq('deployer_address', creator)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({ success: true, data })
+            };
+        }
+
+        // GET /api/tokens/address/:address (token par adresse)
+        if (event.httpMethod === 'GET' && event.path.includes('/address/')) {
+            const address = event.path.split('/address/')[1];
+            
+            const { data, error } = await supabase
+                .from('tokens')
+                .select('*')
+                .eq('token_address', address)
+                .single();
+
+            if (error) {
+                return {
+                    statusCode: 404,
+                    headers,
+                    body: JSON.stringify({ success: false, error: 'Token not found' })
+                };
+            }
+
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({ success: true, data })
+            };
+        }
+
+        // POST /api/tokens (création de token)
         if (event.httpMethod === 'POST') {
             const body = JSON.parse(event.body);
             const {

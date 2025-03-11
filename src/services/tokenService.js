@@ -60,26 +60,15 @@ export const tokenService = {
     }
   },
 
-  // Get tokens by creator address
   async getTokensByCreator(creator) {
     try {
-      const { data, error } = await supabase
-        .from('tokens')
-        .select(`
-          token_address,
-          token_name,
-          token_symbol,
-          supply,
-          liquidity,
-          max_wallet_percentage,
-          network,
-          deployer_address,
-          created_at
-        `)
-        .eq('deployer_address', creator)
-        .order('created_at', { ascending: false });
+      const response = await fetch(`${API_URL}/api/tokens/creator/${creator}`);
       
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error('Failed to fetch creator tokens');
+      }
+
+      const { data } = await response.json();
       return data;
     } catch (error) {
       console.error('Error fetching creator tokens:', error);
@@ -89,22 +78,13 @@ export const tokenService = {
 
   async getTokenByAddress(address) {
     try {
-      const { data, error } = await supabase
-        .from('tokens')
-        .select('*')
-        .eq('token_address', address)
-        .single();
+      const response = await fetch(`${API_URL}/api/tokens/address/${address}`);
       
-      if (error) {
-        console.error('TokenService - Error in getTokenByAddress:', error);
-        return { data: null, error };
-      }
-      
-      if (!data) {
-        console.error('TokenService - No token found with address:', address);
+      if (!response.ok) {
         return { data: null, error: 'Token not found' };
       }
-      
+
+      const { data } = await response.json();
       return { data };
     } catch (error) {
       console.error('TokenService - Error fetching token:', error);
@@ -112,7 +92,6 @@ export const tokenService = {
     }
   },
 
-  // Insert a new token
   async insertToken({
     token_address,
     token_name,
