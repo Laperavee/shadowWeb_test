@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { tokenService } from '../services/tokenService';
+import { priceService } from '../services/priceService';
 
 const TokenDetail = () => {
   const { address } = useParams();
@@ -12,6 +13,9 @@ const TokenDetail = () => {
   const [dexData, setDexData] = useState(null);
   const [dexLoading, setDexLoading] = useState(false);
   const [dexScreenerUrl, setDexScreenerUrl] = useState('');
+  const [holdersCount, setHoldersCount] = useState(null);
+  const [holdersLoading, setHoldersLoading] = useState(false);
+  const [tokenPrice, setTokenPrice] = useState(0);
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -37,6 +41,12 @@ const TokenDetail = () => {
         
         setToken(tokenData);
         fetchDexScreenerData(tokenData.token_address, tokenData.network);
+        fetchHoldersCount(tokenData.token_address, tokenData.network);
+        
+        // Récupérer le prix du token natif (AVAX ou ETH)
+        const nativeSymbol = tokenData.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH';
+        const price = await priceService.getPrice(nativeSymbol);
+        setTokenPrice(price);
       } catch (err) {
         console.error('TokenDetail - Error in fetchToken:', err);
         setError(err.message || 'Failed to load token data');
@@ -46,6 +56,18 @@ const TokenDetail = () => {
     };
 
     fetchToken();
+    
+    // S'abonner aux mises à jour de prix
+    const unsubscribe = priceService.subscribeToUpdates((prices) => {
+      if (token) {
+        const nativeSymbol = token.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH';
+        setTokenPrice(prices[nativeSymbol] || 0);
+      }
+    });
+    
+    return () => {
+      unsubscribe();
+    };
   }, [address]);
 
   const fetchDexScreenerData = async (tokenAddress, network) => {
@@ -343,7 +365,12 @@ const TokenDetail = () => {
                 <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
                   <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Initial Liquidity</span>
                   <span className="font-bold group-hover:text-white transition-colors">
-                    {token.liquidity} {token.network?.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH'}
+                    {parseFloat(token.liquidity).toLocaleString()} {token.network === 'avalanche' ? 'AVAX' : 'ETH'}
+                    {tokenPrice > 0 && (
+                      <span className="block text-sm text-gray-400 mt-1">
+                        ≈ ${(parseFloat(token.liquidity) * tokenPrice).toLocaleString('en-US', {maximumFractionDigits: 2})}
+                      </span>
+                    )}
                   </span>
                 </div>
                 

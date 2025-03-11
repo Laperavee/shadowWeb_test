@@ -3,11 +3,11 @@ import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import ShadowArtifact from '../artifact/Shadow.json';
 import avaxLogo from '../../dist/assets/avax_logo.png';
-import baseLogo from '../../dist/assets/base_logo.png';
 import { CONTRACTS } from '../config/contracts';
 import { tokenService } from '../services/tokenService';
 import { realtimeService } from '../services/realtimeService';
-import { Link } from 'react-router-dom';
+import { priceService } from '../services/priceService';
+import { Link, useNavigate } from 'react-router-dom';
 
 const SHADOW_ABI = ShadowArtifact.abi;
 
@@ -24,19 +24,6 @@ const NETWORKS = {
     },
     rpcUrls: ["https://api.avax.network/ext/bc/C/rpc"],
     blockExplorerUrls: ["https://snowtrace.io"]
-  },
-  BASE: {
-    chainId: "0x2105",
-    chainName: "Base",
-    logo: baseLogo,
-    disabled: true,
-    nativeCurrency: {
-      name: "ETH",
-      symbol: "ETH",
-      decimals: 18
-    },
-    rpcUrls: ["https://mainnet.base.org"],
-    blockExplorerUrls: ["https://basescan.org"]
   }
 };
 
@@ -204,6 +191,7 @@ const formatNumber = (num) => {
 };
 
 export default function ShadowFun() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('tokens');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   
@@ -215,7 +203,8 @@ export default function ShadowFun() {
     maxWalletPercentage: '',
     deploymentFee: '0.00001',
     isFeatured: false,
-    deployerAddress: ''
+    deployerAddress: '',
+    tokenImage: null
   });
 
   const [isDeploying, setIsDeploying] = useState(false);
@@ -323,24 +312,30 @@ export default function ShadowFun() {
     updateContracts();
   }, [selectedChain, isWalletConnected]);
 
+  // Utiliser le service de prix au lieu de faire des appels directs à CoinGecko
   useEffect(() => {
-    const fetchTokenPrices = async () => {
+    // Fonction pour mettre à jour les prix
+    const updatePrices = async () => {
       try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2,ethereum&vs_currencies=usd');
-        const data = await response.json();
-        setTokenPrices({
-          AVAX: data['avalanche-2'].usd,
-          ETH: data.ethereum.usd
-        });
+        const prices = await priceService.getPrices();
+        setTokenPrices(prices);
       } catch (error) {
         console.error('Failed to fetch token prices:', error);
       }
     };
 
-    fetchTokenPrices();
-    const interval = setInterval(fetchTokenPrices, 60000); 
-
-    return () => clearInterval(interval);
+    // Mettre à jour les prix immédiatement
+    updatePrices();
+    
+    // S'abonner aux mises à jour de prix
+    const unsubscribe = priceService.subscribeToUpdates((prices) => {
+      setTokenPrices(prices);
+    });
+    
+    // Nettoyer l'abonnement quand le composant est démonté
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -381,26 +376,6 @@ export default function ShadowFun() {
       unsubscribe();
     };
   }, [selectedChain]);
-
-  useEffect(() => {
-    const fetchTokenPrices = async () => {
-      try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2,ethereum&vs_currencies=usd');
-        const data = await response.json();
-        setTokenPrices({
-          AVAX: data['avalanche-2'].usd,
-          ETH: data.ethereum.usd
-        });
-      } catch (error) {
-        console.error('Failed to fetch token prices:', error);
-      }
-    };
-
-    fetchTokenPrices();
-    const interval = setInterval(fetchTokenPrices, 60000); 
-
-    return () => clearInterval(interval);
-  }, []);
 
   const handleCreateToken = async (e) => {
     e.preventDefault();
@@ -511,6 +486,7 @@ export default function ShadowFun() {
         
         await saveTokenToDatabase(tokenAddress, deployerAddress, receipt.hash);
         
+        // Réinitialiser le formulaire
         setFormData({
           name: '',
           symbol: '',
@@ -518,10 +494,12 @@ export default function ShadowFun() {
           liquidity: '',
           maxWalletPercentage: '',
           deploymentFee: '0.00001',
-          deployerAddress: ''
+          deployerAddress: '',
+          tokenImage: null
         });
 
-        loadTokens();
+        // Fermer le modal de création
+        setActiveTab('tokens');
       }
 
     } catch (error) {
@@ -552,6 +530,9 @@ export default function ShadowFun() {
       });
 
       addNotification("Token saved to database", "success");
+      
+      // Rediriger l'utilisateur vers la page du token
+      navigate(`/token/${tokenAddress}`);
       
       const tokens = await tokenService.getTokens(selectedChain);
       if (Array.isArray(tokens)) {
