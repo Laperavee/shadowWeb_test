@@ -5,6 +5,16 @@ import avaxLogo from '../../dist/assets/avax_logo.png';
 const isProduction = import.meta.env.PROD;
 const API_URL = isProduction ? '/.netlify/functions' : 'http://localhost:3002';
 
+// Construire l'URL de l'API en fonction de l'environnement
+const getApiUrl = (endpoint) => {
+  if (isProduction) {
+    // En production, on appelle directement la fonction tokens
+    return `${API_URL}/tokens${endpoint}`;
+  }
+  // En développement, on garde le préfixe /api
+  return `${API_URL}/api${endpoint}`;
+};
+
 async function uploadTokenImage(file) {
   if (!file) return null;
 
@@ -31,7 +41,7 @@ async function uploadTokenImage(file) {
 export const tokenService = {
   async getTokens(network) {
     try {
-      const url = `${API_URL}/api/tokens?network=${network}`;
+      const url = getApiUrl(`/tokens?network=${network}`);
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -64,7 +74,7 @@ export const tokenService = {
 
   async getTokensByCreator(creator) {
     try {
-      const response = await fetch(`${API_URL}/api/tokens/creator/${creator}`);
+      const response = await fetch(getApiUrl(`/tokens/creator/${creator}`));
       
       if (!response.ok) {
         throw new Error('Failed to fetch creator tokens');
@@ -80,7 +90,7 @@ export const tokenService = {
 
   async getTokenByAddress(address) {
     try {
-      const response = await fetch(`${API_URL}/api/tokens/address/${address}`);
+      const response = await fetch(getApiUrl(`/tokens/address/${address}`));
       
       if (!response.ok) {
         return { data: null, error: 'Token not found' };
@@ -109,7 +119,7 @@ export const tokenService = {
     try {
       const imgUrl = token_image ? await uploadTokenImage(token_image) : null;
 
-      const response = await fetch(`${API_URL}/api/tokens`, {
+      const response = await fetch(getApiUrl('/tokens'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
