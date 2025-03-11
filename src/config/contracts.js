@@ -1,7 +1,7 @@
 // Créer un nouveau fichier pour la configuration des contrats
 export const CONTRACTS = {
     AVAX: {
-      SHADOW_ADDRESS: "0xda993237b26b2952c9Ba6889f440F5f04aAF9Db1",
+      SHADOW_ADDRESS: "0xFdd9600101FdD7A7d77eb1C3455A8C8a3eAaC200",
       SHADOW_TOKEN_ADDRESS: "0x420FcA0121DC28039145009570975747295f2329"
     },
     BASE: {

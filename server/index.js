@@ -13,7 +13,19 @@ const __dirname = dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
-app.use(cors());
+
+// Configuration CORS
+const corsOptions = {
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:4173',
+        'https://your-netlify-app.netlify.app', // Remplacez par votre domaine Netlify
+    ],
+    methods: ['GET', 'POST'],
+    credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Vérifier que les variables d'environnement sont définies
