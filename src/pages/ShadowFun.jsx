@@ -6,6 +6,7 @@ import avaxLogo from '../../dist/assets/avax_logo.png';
 import baseLogo from '../../dist/assets/base_logo.png';
 import { CONTRACTS } from '../config/contracts';
 import { tokenService } from '../services/tokenService';
+import { realtimeService } from '../services/realtimeService';
 import { Link } from 'react-router-dom';
 
 const SHADOW_ABI = ShadowArtifact.abi;
@@ -344,7 +345,62 @@ export default function ShadowFun() {
 
   useEffect(() => {
     loadTokens();
+    
+    // S'abonner aux mises à jour en temps réel des tokens
+    const unsubscribe = realtimeService.subscribeToTokens(selectedChain, (payload) => {
+      console.log('Token update received:', payload);
+      
+      // Selon le type d'événement, on met à jour les tokens
+      if (payload.eventType === 'INSERT') {
+        // Ajouter un nouveau token
+        setTokens(prevTokens => {
+          // Vérifier si le token existe déjà
+          const exists = prevTokens.some(token => token.token_address === payload.new.token_address);
+          if (exists) return prevTokens;
+          
+          // Ajouter le nouveau token au début de la liste
+          return [payload.new, ...prevTokens];
+        });
+      } else if (payload.eventType === 'UPDATE') {
+        // Mettre à jour un token existant
+        setTokens(prevTokens => 
+          prevTokens.map(token => 
+            token.token_address === payload.new.token_address ? payload.new : token
+          )
+        );
+      } else if (payload.eventType === 'DELETE') {
+        // Supprimer un token
+        setTokens(prevTokens => 
+          prevTokens.filter(token => token.token_address !== payload.old.token_address)
+        );
+      }
+    });
+    
+    // Nettoyer l'abonnement quand le composant est démonté ou quand le réseau change
+    return () => {
+      unsubscribe();
+    };
   }, [selectedChain]);
+
+  useEffect(() => {
+    const fetchTokenPrices = async () => {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2,ethereum&vs_currencies=usd');
+        const data = await response.json();
+        setTokenPrices({
+          AVAX: data['avalanche-2'].usd,
+          ETH: data.ethereum.usd
+        });
+      } catch (error) {
+        console.error('Failed to fetch token prices:', error);
+      }
+    };
+
+    fetchTokenPrices();
+    const interval = setInterval(fetchTokenPrices, 60000); 
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleCreateToken = async (e) => {
     e.preventDefault();
