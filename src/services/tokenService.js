@@ -102,6 +102,34 @@ export const tokenService = {
     }
   },
 
+  async getTopHolderPurchases(tokenAddress) {
+    try {
+      console.log(`📡 Récupération des achats pour le token ${tokenAddress}...`);
+      const url = getApiUrl(`/tokens/${tokenAddress}/top-holder-purchases`);
+      console.log(`🔗 URL: ${url}`);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        console.error(`❌ Erreur HTTP: ${response.status} ${response.statusText}`);
+        return { data: [], error: `Failed to fetch top holder purchases: ${response.status} ${response.statusText}` };
+      }
+
+      const result = await response.json();
+      console.log(`✅ ${result.data?.length || 0} achats récupérés`);
+      
+      // Trier les achats par date (du plus récent au plus ancien)
+      if (result.data && Array.isArray(result.data)) {
+        result.data.sort((a, b) => new Date(b.purchased_at) - new Date(a.purchased_at));
+      }
+      
+      return { data: result.data || [] };
+    } catch (error) {
+      console.error('❌ Error fetching top holder purchases:', error);
+      return { data: [], error };
+    }
+  },
+
   async insertToken({
     token_address,
     token_name,

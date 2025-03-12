@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { tokenService } from '../services/tokenService';
 import { priceService } from '../services/priceService';
+import { realtimeService } from '../services/realtimeService';
 
 const TokenDetail = () => {
   const { address } = useParams();
@@ -16,6 +17,34 @@ const TokenDetail = () => {
   const [holdersCount, setHoldersCount] = useState(null);
   const [holdersLoading, setHoldersLoading] = useState(false);
   const [tokenPrice, setTokenPrice] = useState(0);
+  const [topHolderPurchases, setTopHolderPurchases] = useState([]);
+  const [purchasesLoading, setPurchasesLoading] = useState(false);
+  const [newPurchaseIds, setNewPurchaseIds] = useState([]);
+  const [newPurchasesCount, setNewPurchasesCount] = useState(0);
+  const notificationSound = useRef(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const refreshTimerRef = useRef(null);
+
+  // Initialiser le son de notification
+  useEffect(() => {
+    notificationSound.current = new Audio('/notification.mp3');
+  }, []);
+
+  // Fonction pour jouer le son de notification
+  const playNotificationSound = () => {
+    if (notificationSound.current) {
+      notificationSound.current.play().catch(e => {
+        // Ignorer les erreurs de lecture (souvent dues aux restrictions du navigateur)
+        console.log('Notification sound could not be played:', e);
+      });
+    }
+  };
+
+  // Fonction pour formater les adresses (afficher seulement le début et la fin)
+  const formatAddress = (address) => {
+    if (!address) return '';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  };
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -41,6 +70,7 @@ const TokenDetail = () => {
         
         setToken(tokenData);
         fetchDexScreenerData(tokenData.token_address, tokenData.network);
+        fetchTopHolderPurchases(tokenData.token_address);
         
         // Récupérer le prix du token natif (AVAX ou ETH)
         const nativeSymbol = tokenData.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH';
@@ -110,6 +140,131 @@ const TokenDetail = () => {
     }
   };
 
+  const fetchTopHolderPurchases = async (tokenAddress) => {
+    try {
+      setPurchasesLoading(true);
+      const { data, error } = await tokenService.getTopHolderPurchases(tokenAddress);
+      
+      if (error) {
+        console.error('Error fetching top holder purchases:', error);
+      } else {
+        setTopHolderPurchases(data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch top holder purchases:', err);
+    } finally {
+      setPurchasesLoading(false);
+    }
+  };
+
+  // S'abonner aux achats des top holders en temps réel
+  useEffect(() => {
+    if (token && token.token_address) {
+      console.log(`🔔 Abonnement aux achats pour le token ${token.token_address}`);
+      
+      // S'abonner aux nouveaux achats
+      const unsubscribe = realtimeService.subscribeToTokenPurchases(
+        token.token_address,
+        async (payload) => {
+          console.log('📣 Nouvel événement reçu:', payload);
+          
+          // Vérifier si c'est un nouvel achat ou une mise à jour
+          if (payload.eventType === 'INSERT') {
+            console.log('✨ Nouvel achat détecté:', payload.new);
+            const newPurchase = payload.new;
+            
+            // Si le prix du token est disponible et que le coût n'est pas défini, le calculer et mettre à jour la base de données
+            if (token.market_data?.price && !newPurchase.cost) {
+              try {
+                const tokenAmount = parseFloat(newPurchase.amount) / 1e18;
+                const cost = tokenAmount * token.market_data.price;
+                
+                console.log(`💰 Calcul du coût pour l'achat ${newPurchase.id}: $${cost.toFixed(2)}`);
+                
+                // Mettre à jour la colonne cost dans la base de données
+                const response = await fetch(`/api/token-purchases/${newPurchase.id}/update-cost`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    cost: cost.toString()
+                  }),
+                });
+                
+                if (response.ok) {
+                  console.log(`✅ Coût mis à jour pour l'achat ${newPurchase.id}: $${cost.toFixed(2)}`);
+                  // Mettre à jour l'achat dans l'état local
+                  newPurchase.cost = cost.toString();
+                } else {
+                  console.error('❌ Erreur lors de la mise à jour du coût:', await response.text());
+                }
+              } catch (error) {
+                console.error('❌ Erreur lors de la mise à jour du coût:', error);
+              }
+            }
+            
+            // Ajouter le nouvel achat à la liste et mettre à jour l'interface
+            console.log('📊 Mise à jour de la liste des achats avec le nouvel achat');
+            setTopHolderPurchases(prevPurchases => {
+              // Vérifier si l'achat existe déjà dans la liste
+              const exists = prevPurchases.some(p => p.tx_hash === newPurchase.tx_hash);
+              if (exists) {
+                console.log('⚠️ Cet achat existe déjà dans la liste, mise à jour uniquement');
+                return prevPurchases.map(p => 
+                  p.tx_hash === newPurchase.tx_hash ? newPurchase : p
+                );
+              } else {
+                console.log('✅ Ajout du nouvel achat à la liste');
+                return [newPurchase, ...prevPurchases];
+              }
+            });
+            
+            // Mettre à jour les IDs des nouvelles transactions pour l'animation
+            setNewPurchaseIds(prevIds => {
+              if (!prevIds.includes(newPurchase.tx_hash)) {
+                console.log('🎬 Ajout de l\'ID à la liste des nouvelles transactions pour l\'animation');
+                return [...prevIds, newPurchase.tx_hash];
+              }
+              return prevIds;
+            });
+            
+            // Incrémenter le compteur de nouvelles transactions
+            setNewPurchasesCount(count => count + 1);
+            
+            // Jouer le son de notification
+            console.log('🔊 Lecture du son de notification');
+            playNotificationSound();
+            
+            // Supprimer l'ID de la liste des nouvelles transactions après 5 secondes
+            setTimeout(() => {
+              console.log(`⏱️ Suppression de l'animation pour la transaction ${newPurchase.tx_hash}`);
+              setNewPurchaseIds(prevIds => prevIds.filter(id => id !== newPurchase.tx_hash));
+            }, 5000);
+          } else if (payload.eventType === 'UPDATE') {
+            console.log('🔄 Mise à jour d\'un achat détectée:', payload.new);
+            const updatedPurchase = payload.new;
+            
+            // Mettre à jour l'achat dans la liste
+            setTopHolderPurchases(prevPurchases => {
+              return prevPurchases.map(purchase => 
+                purchase.id === updatedPurchase.id ? updatedPurchase : purchase
+              );
+            });
+            
+            console.log('✅ Achat mis à jour dans la liste');
+          }
+        }
+      );
+      
+      // Se désabonner quand le composant est démonté ou quand l'adresse du token change
+      return () => {
+        console.log(`🔕 Désabonnement des achats pour le token ${token.token_address}`);
+        unsubscribe();
+      };
+    }
+  }, [token]);
+
   // Update DexScreener URL when timeframe changes
   useEffect(() => {
     if (token && token.token_address) {
@@ -123,11 +278,6 @@ const TokenDetail = () => {
     navigator.clipboard.writeText(text);
     setCopySuccess('Copied!');
     setTimeout(() => setCopySuccess(''), 2000);
-  };
-
-  const formatAddress = (address) => {
-    if (!address) return '';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   };
 
   const formatPrice = (price) => {
@@ -160,6 +310,61 @@ const TokenDetail = () => {
       window.open(`https://dexscreener.com/${token.network}/${token.token_address}`, '_blank');
     }
   };
+
+  // Fonction pour rafraîchir manuellement les données
+  const refreshData = useCallback(async () => {
+    if (refreshing || !token) return;
+    
+    try {
+      setRefreshing(true);
+      console.log('🔄 Rafraîchissement manuel des données...');
+      
+      // Rafraîchir les données du token
+      const result = await tokenService.getTokenByAddress(token.token_address);
+      if (result && result.data) {
+        setToken(prevToken => ({
+          ...prevToken,
+          ...result.data,
+          market_data: prevToken.market_data // Conserver les données de marché
+        }));
+      }
+      
+      // Rafraîchir les achats des top holders
+      await fetchTopHolderPurchases(token.token_address);
+      
+      // Rafraîchir les données de marché
+      await fetchDexScreenerData(token.token_address, token.network);
+      
+      console.log('✅ Données rafraîchies avec succès');
+    } catch (error) {
+      console.error('❌ Erreur lors du rafraîchissement des données:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [token, refreshing]);
+
+  // Configurer le rafraîchissement automatique
+  useEffect(() => {
+    if (token) {
+      // Nettoyer tout timer existant
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+      
+      // Configurer un nouveau timer pour rafraîchir les données toutes les 30 secondes
+      refreshTimerRef.current = setInterval(() => {
+        console.log('⏱️ Rafraîchissement automatique des données...');
+        refreshData();
+      }, 30000); // 30 secondes
+      
+      // Nettoyer le timer lors du démontage du composant
+      return () => {
+        if (refreshTimerRef.current) {
+          clearInterval(refreshTimerRef.current);
+        }
+      };
+    }
+  }, [token, refreshData]);
 
   if (loading) {
     return (
@@ -548,6 +753,149 @@ const TokenDetail = () => {
                     View on Explorer
                   </span>
                 </a>
+              </div>
+            )}
+          </div>
+          
+          {/* Top Holder Purchases Section */}
+          <div className="mt-8 bg-gradient-to-r from-gray-900/50 via-black/30 to-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:shadow-[0_0_25px_rgba(255,0,255,0.1)] transition-all duration-300">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                Top Holder Purchases
+                {newPurchasesCount > 0 && (
+                  <span className="ml-2 px-2 py-1 text-xs rounded-full bg-fuchsia-500/20 border border-fuchsia-500/30 text-fuchsia-400">
+                    +{newPurchasesCount} new
+                  </span>
+                )}
+              </h2>
+              
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={refreshData}
+                  disabled={refreshing}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    refreshing 
+                      ? 'bg-gray-800/50 text-gray-500 cursor-not-allowed' 
+                      : 'bg-fuchsia-500/20 text-fuchsia-400 hover:bg-fuchsia-500/30'
+                  }`}
+                >
+                  <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  {refreshing ? 'Rafraîchissement...' : 'Rafraîchir'}
+                </button>
+                
+                {newPurchasesCount > 0 && (
+                  <button 
+                    onClick={() => setNewPurchasesCount(0)}
+                    className="text-sm text-gray-400 hover:text-fuchsia-400 transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {purchasesLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-fuchsia-500"></div>
+              </div>
+            ) : topHolderPurchases.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-left text-gray-400 border-b border-gray-800">
+                      <th className="pb-4 font-medium">Holder</th>
+                      <th className="pb-4 font-medium">Type</th>
+                      <th className="pb-4 font-medium">Amount</th>
+                      <th className="pb-4 font-medium">Est. Value</th>
+                      <th className="pb-4 font-medium">Date</th>
+                      <th className="pb-4 font-medium">Transaction</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topHolderPurchases.map((purchase, index) => (
+                      <tr 
+                        key={purchase.id || purchase.tx_hash || index} 
+                        className={`border-b border-gray-800/50 hover:bg-gray-900/30 transition-all ${
+                          newPurchaseIds.includes(purchase.tx_hash) 
+                            ? 'bg-fuchsia-900/20 animate-pulse' 
+                            : ''
+                        }`}
+                      >
+                        <td className="py-4">
+                          <div className="flex items-center">
+                            <div>
+                              <div className="font-medium text-white">
+                                {formatAddress(purchase.user_id)}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                Top Holder
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 font-medium">
+                          <span className={`px-3 py-1 rounded-full ${
+                            purchase.action === false 
+                              ? 'bg-red-500/10 border border-red-500/30 text-red-400' 
+                              : 'bg-green-500/10 border border-green-500/30 text-green-400'
+                          } text-sm`}>
+                            {purchase.action === false ? 'SELL' : 'BUY'}
+                          </span>
+                        </td>
+                        <td className="py-4 font-medium">
+                          <span className={`${
+                            purchase.action === false 
+                              ? 'text-red-400' 
+                              : 'text-green-400'
+                          }`}>
+                            {parseFloat(purchase.amount) / 1e18 > 0.000001 
+                              ? (parseFloat(purchase.amount) / 1e18).toFixed(6) 
+                              : (parseFloat(purchase.amount) / 1e18).toExponential(4)} tokens
+                          </span>
+                        </td>
+                        <td className="py-4 font-medium">
+                          {purchase.cost ? (
+                            <span className="text-gray-300">
+                              ${parseFloat(purchase.cost).toFixed(2)}
+                            </span>
+                          ) : token.market_data?.price ? (
+                            <span className="text-gray-300">
+                              {formatPrice((parseFloat(purchase.amount) / 1e18) * token.market_data.price)}
+                              <span className="text-xs text-gray-500 block">(estimation)</span>
+                            </span>
+                          ) : (
+                            <span className="text-gray-500">N/A</span>
+                          )}
+                        </td>
+                        <td className="py-4 text-gray-400">
+                          {new Date(purchase.purchased_at).toLocaleString()}
+                        </td>
+                        <td className="py-4">
+                          <a 
+                            href={`https://snowtrace.io/tx/${purchase.tx_hash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors flex items-center"
+                          >
+                            {formatAddress(purchase.tx_hash)}
+                            <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-gray-900/30 rounded-xl border border-gray-800/50">
+                <p className="text-gray-400 mb-2">No top holder purchases detected yet</p>
+                <p className="text-sm text-gray-500 mb-4">
+                  When top holders purchase this token, their transactions will appear here
+                </p>
               </div>
             )}
           </div>

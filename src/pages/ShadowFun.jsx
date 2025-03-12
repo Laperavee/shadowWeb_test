@@ -545,21 +545,6 @@ export default function ShadowFun() {
     }
   };
 
-  const handleAddTestToken = async () => {
-    try {
-      setIsLoading(true);
-      await tokenService.addTestToken();
-      const tokens = await tokenService.getTokens(selectedChain);
-      if (Array.isArray(tokens)) {
-        setTokens(tokens);
-      }
-    } catch (error) {
-      console.error('Error adding test token:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
       {/* Animated background effects */}
