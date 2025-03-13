@@ -116,6 +116,58 @@ export const handler = async (event, context) => {
             };
         }
 
+        // GET /api/tokens/:tokenAddress/top-holder-purchases (achats des top holders)
+        if (event.httpMethod === 'GET' && event.path.includes('/top-holder-purchases')) {
+            const tokenAddress = event.path.split('/top-holder-purchases')[0].split('/tokens/')[1];
+            console.log('Fetching top holder purchases for token:', tokenAddress);
+
+            const { data: purchases, error } = await supabase
+                .from('token_purchases')
+                .select(`
+                    id,
+                    user_id,
+                    token_address,
+                    tx_hash,
+                    amount,
+                    cost,
+                    action,
+                    created_at,
+                    tokens:token_address (
+                        token_symbol,
+                        token_name
+                    )
+                `)
+                .eq('token_address', tokenAddress)
+                .order('created_at', { ascending: false })
+                .limit(50);
+
+            if (error) {
+                console.error('Error fetching top holder purchases:', error);
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ 
+                        success: false, 
+                        error: 'Failed to fetch top holder purchases',
+                        details: error 
+                    })
+                };
+            }
+
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({ 
+                    success: true, 
+                    data: purchases.map(p => ({
+                        ...p,
+                        token_symbol: p.tokens?.token_symbol,
+                        token_name: p.tokens?.token_name
+                    }))
+                })
+            };
+        }
+
         // POST /api/tokens (création de token)
         if (event.httpMethod === 'POST') {
             const body = JSON.parse(event.body);

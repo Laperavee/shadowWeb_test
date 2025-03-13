@@ -133,12 +133,23 @@ export const tokenService = {
       const result = await response.json();
       console.log(`✅ ${result.data?.length || 0} achats récupérés`);
       
-      // Trier les achats par date (du plus récent au plus ancien)
-      if (result.data && Array.isArray(result.data)) {
-        result.data.sort((a, b) => new Date(b.purchased_at) - new Date(a.purchased_at));
+      if (!result.success || !result.data) {
+        return { data: [], error: 'No data returned from API' };
       }
-      
-      return { data: result.data || [] };
+
+      // Formater les transactions pour l'affichage
+      const formattedData = result.data.map(tx => ({
+        type: tx.action ? 'BUY' : 'SELL',
+        amount: tx.amount ? (parseFloat(tx.amount) / 1e18).toLocaleString() : '0',
+        price: tx.cost ? `$${parseFloat(tx.cost).toFixed(2)}` : '$0.00',
+        timestamp: new Date(tx.created_at),
+        txHash: tx.tx_hash,
+        user: tx.user_id,
+        tokenSymbol: tx.token_symbol || 'UNKNOWN',
+        tokenName: tx.token_name || 'Unknown Token'
+      }));
+
+      return { data: formattedData };
     } catch (error) {
       console.error('❌ Error fetching top holder purchases:', error);
       return { data: [], error };
