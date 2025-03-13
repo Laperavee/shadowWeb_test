@@ -4,13 +4,29 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_SERVICE_KEY;
 
+// Vérification initiale des variables d'environnement
+const envCheck = {
+    SUPABASE_URL: !!SUPABASE_URL,
+    SUPABASE_KEY: !!SUPABASE_KEY,
+    NODE_ENV: process.env.NODE_ENV,
+    AWS_LAMBDA_FUNCTION_NAME: process.env.AWS_LAMBDA_FUNCTION_NAME
+};
+
+console.log('Environment check:', envCheck);
+
 if (!SUPABASE_URL || !SUPABASE_KEY) {
     console.error('❌ Missing Supabase environment variables');
     console.log('SUPABASE_URL:', !!SUPABASE_URL);
     console.log('SUPABASE_KEY:', !!SUPABASE_KEY);
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+let supabase;
+try {
+    supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('✅ Supabase client created successfully');
+} catch (error) {
+    console.error('❌ Failed to create Supabase client:', error);
+}
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -19,29 +35,39 @@ const headers = {
 };
 
 export const handler = async (event, context) => {
-    console.log('🚀 Function started');
-    console.log('Method:', event.httpMethod);
-    console.log('Path:', event.path);
+    console.log('🚀 Function started with event:', {
+        httpMethod: event.httpMethod,
+        path: event.path,
+        headers: event.headers
+    });
+
+    // Vérifier si le client Supabase est initialisé
+    if (!supabase) {
+        console.error('❌ Supabase client not initialized');
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({
+                success: false,
+                error: 'Database connection not initialized',
+                env: envCheck
+            })
+        };
+    }
 
     try {
         // Gérer les requêtes OPTIONS pour CORS
         if (event.httpMethod === 'OPTIONS') {
-            return {
-                statusCode: 200,
-                headers,
-                body: ''
-            };
+            return { statusCode: 200, headers, body: '' };
         }
 
-        // GET /api/transactions/:tokenAddress (récupérer les transactions d'un token)
+        // GET /api/transactions/:tokenAddress
         if (event.httpMethod === 'GET') {
             try {
                 console.log('📥 GET request received');
-                console.log('Raw path:', event.path);
                 
                 const tokenAddress = event.path.split('/transactions/')[1];
                 if (!tokenAddress) {
-                    console.error('❌ No token address provided');
                     return {
                         statusCode: 400,
                         headers,
@@ -52,64 +78,61 @@ export const handler = async (event, context) => {
                     };
                 }
                 
-                console.log('🔍 Token address:', tokenAddress);
-                console.log('📊 Supabase config:', {
-                    url: SUPABASE_URL ? '✅ Set' : '❌ Missing',
-                    key: SUPABASE_KEY ? '✅ Set' : '❌ Missing'
-                });
+                console.log('🔍 Processing request for token:', tokenAddress);
 
-                // Vérifier la connexion à Supabase
-                try {
-                    const { data: testData, error: testError } = await supabase
-                        .from('token_purchases')
-                        .select('count(*)', { count: 'exact' })
-                        .limit(1);
+                // Test de connexion à Supabase
+                const { data: testData, error: testError } = await supabase
+                    .from('token_purchases')
+                    .select('count(*)', { count: 'exact' })
+                    .limit(1);
 
-                    console.log('🔌 Supabase connection test:', {
-                        success: !testError,
-                        error: testError
-                    });
-
-                    if (testError) {
-                        throw new Error(`Supabase connection test failed: ${testError.message}`);
-                    }
-                } catch (testError) {
-                    console.error('❌ Supabase connection test error:', testError);
-                    throw testError;
+                if (testError) {
+                    console.error('❌ Database connection test failed:', testError);
+                    return {
+                        statusCode: 500,
+                        headers,
+                        body: JSON.stringify({
+                            success: false,
+                            error: 'Database connection test failed',
+                            details: testError,
+                            env: envCheck
+                        })
+                    };
                 }
 
                 // Requête principale
                 console.log('📡 Fetching transactions...');
                 const { data, error } = await supabase
                     .from('token_purchases')
-                    .select(`
-                        id,
-                        user_id,
-                        token_address,
-                        tx_hash,
-                        amount,
-                        cost,
-                        action,
-                        created_at
-                    `)
+                    .select('*')
                     .eq('token_address', tokenAddress)
                     .order('created_at', { ascending: false });
 
-                console.log('📦 Query result:', {
-                    success: !error,
-                    dataCount: data?.length || 0,
-                    error: error
-                });
-
                 if (error) {
-                    throw error;
+                    console.error('❌ Query error:', error);
+                    return {
+                        statusCode: 500,
+                        headers,
+                        body: JSON.stringify({
+                            success: false,
+                            error: 'Failed to fetch transactions',
+                            details: error,
+                            query: {
+                                table: 'token_purchases',
+                                tokenAddress,
+                                columns: '*'
+                            }
+                        })
+                    };
                 }
 
+                console.log(`✅ Found ${data?.length || 0} transactions`);
                 return {
                     statusCode: 200,
                     headers,
                     body: JSON.stringify({ success: true, data })
                 };
+
             } catch (error) {
                 console.error('❌ GET handler error:', error);
                 return {
@@ -117,8 +140,10 @@ export const handler = async (event, context) => {
                     headers,
                     body: JSON.stringify({
                         success: false,
-                        error: 'Internal server error',
-                        details: error.message
+                        error: 'Internal server error in GET handler',
+                        details: error.message,
+                        stack: error.stack,
+                        env: envCheck
                     })
                 };
             }
@@ -228,8 +253,11 @@ export const handler = async (event, context) => {
             statusCode: 500,
             headers,
             body: JSON.stringify({
-                error: 'Internal server error',
-                details: error.message
+                success: false,
+                error: 'Global handler error',
+                details: error.message,
+                stack: error.stack,
+                env: envCheck
             })
         };
     }
