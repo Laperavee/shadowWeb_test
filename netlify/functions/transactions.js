@@ -1,9 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-    process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_SERVICE_KEY
-);
+// Vérification des variables d'environnement
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_SERVICE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+    console.error('❌ Missing Supabase environment variables');
+    console.log('SUPABASE_URL:', !!SUPABASE_URL);
+    console.log('SUPABASE_KEY:', !!SUPABASE_KEY);
+}
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -12,16 +19,111 @@ const headers = {
 };
 
 export const handler = async (event, context) => {
-    // Gérer les requêtes OPTIONS pour CORS
-    if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 200,
-            headers,
-            body: ''
-        };
-    }
+    console.log('🚀 Function started');
+    console.log('Method:', event.httpMethod);
+    console.log('Path:', event.path);
 
     try {
+        // Gérer les requêtes OPTIONS pour CORS
+        if (event.httpMethod === 'OPTIONS') {
+            return {
+                statusCode: 200,
+                headers,
+                body: ''
+            };
+        }
+
+        // GET /api/transactions/:tokenAddress (récupérer les transactions d'un token)
+        if (event.httpMethod === 'GET') {
+            try {
+                console.log('📥 GET request received');
+                console.log('Raw path:', event.path);
+                
+                const tokenAddress = event.path.split('/transactions/')[1];
+                if (!tokenAddress) {
+                    console.error('❌ No token address provided');
+                    return {
+                        statusCode: 400,
+                        headers,
+                        body: JSON.stringify({
+                            success: false,
+                            error: 'Token address is required'
+                        })
+                    };
+                }
+                
+                console.log('🔍 Token address:', tokenAddress);
+                console.log('📊 Supabase config:', {
+                    url: SUPABASE_URL ? '✅ Set' : '❌ Missing',
+                    key: SUPABASE_KEY ? '✅ Set' : '❌ Missing'
+                });
+
+                // Vérifier la connexion à Supabase
+                try {
+                    const { data: testData, error: testError } = await supabase
+                        .from('token_purchases')
+                        .select('count(*)', { count: 'exact' })
+                        .limit(1);
+
+                    console.log('🔌 Supabase connection test:', {
+                        success: !testError,
+                        error: testError
+                    });
+
+                    if (testError) {
+                        throw new Error(`Supabase connection test failed: ${testError.message}`);
+                    }
+                } catch (testError) {
+                    console.error('❌ Supabase connection test error:', testError);
+                    throw testError;
+                }
+
+                // Requête principale
+                console.log('📡 Fetching transactions...');
+                const { data, error } = await supabase
+                    .from('token_purchases')
+                    .select(`
+                        id,
+                        user_id,
+                        token_address,
+                        tx_hash,
+                        amount,
+                        cost,
+                        action,
+                        created_at
+                    `)
+                    .eq('token_address', tokenAddress)
+                    .order('created_at', { ascending: false });
+
+                console.log('📦 Query result:', {
+                    success: !error,
+                    dataCount: data?.length || 0,
+                    error: error
+                });
+
+                if (error) {
+                    throw error;
+                }
+
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify({ success: true, data })
+                };
+            } catch (error) {
+                console.error('❌ GET handler error:', error);
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({
+                        success: false,
+                        error: 'Internal server error',
+                        details: error.message
+                    })
+                };
+            }
+        }
+
         // POST /api/transactions (enregistrer une transaction)
         if (event.httpMethod === 'POST') {
             const body = JSON.parse(event.body);
@@ -114,52 +216,6 @@ export const handler = async (event, context) => {
             };
         }
 
-        // GET /api/transactions/:tokenAddress (récupérer les transactions d'un token)
-        if (event.httpMethod === 'GET') {
-            console.log('Raw path:', event.path);
-            const tokenAddress = event.path.split('/transactions/')[1];
-            
-            console.log('Parsed token address:', tokenAddress);
-            console.log('Supabase URL:', process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL);
-            console.log('Checking if Supabase key is set:', !!process.env.SUPABASE_SERVICE_KEY || !!process.env.VITE_SUPABASE_SERVICE_KEY);
-
-            const { data, error } = await supabase
-                .from('token_purchases')
-                .select(`
-                    id,
-                    user_id,
-                    token_address,
-                    tx_hash,
-                    amount,
-                    cost,
-                    action,
-                    created_at
-                `)
-                .eq('token_address', tokenAddress)
-                .order('created_at', { ascending: false });
-
-            console.log('Query result:', { data, error });
-
-            if (error) {
-                console.error('Supabase error:', error);
-                return {
-                    statusCode: 500,
-                    headers,
-                    body: JSON.stringify({ 
-                        success: false, 
-                        error: 'Failed to fetch transactions',
-                        details: error 
-                    })
-                };
-            }
-
-            return {
-                statusCode: 200,
-                headers,
-                body: JSON.stringify({ success: true, data })
-            };
-        }
-
         return {
             statusCode: 405,
             headers,
@@ -167,11 +223,14 @@ export const handler = async (event, context) => {
         };
 
     } catch (error) {
-        console.error('Error:', error);
+        console.error('❌ Global handler error:', error);
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: error.message })
+            body: JSON.stringify({
+                error: 'Internal server error',
+                details: error.message
+            })
         };
     }
 }; 
