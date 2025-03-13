@@ -65,9 +65,16 @@ export const handler = async (event, context) => {
         if (event.httpMethod === 'GET') {
             try {
                 console.log('📥 GET request received');
+                console.log('Raw path:', event.path);
                 
-                const tokenAddress = event.path.split('/transactions/')[1];
-                if (!tokenAddress) {
+                // Extraire l'adresse du token de l'URL
+                const pathParts = event.path.split('/');
+                const tokenAddress = pathParts[pathParts.length - 1];
+                
+                console.log('Path parts:', pathParts);
+                console.log('Extracted token address:', tokenAddress);
+
+                if (!tokenAddress || tokenAddress === 'transactions') {
                     return {
                         statusCode: 400,
                         headers,
