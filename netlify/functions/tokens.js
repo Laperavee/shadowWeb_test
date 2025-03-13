@@ -121,6 +121,32 @@ export const handler = async (event, context) => {
             const tokenAddress = event.path.split('/top-holder-purchases')[0].split('/tokens/')[1];
             console.log('Fetching top holder purchases for token:', tokenAddress);
 
+            // Debug: Vérifier la structure de la table
+            console.log('Checking token_purchases table structure...');
+            const { error: tableError } = await supabase
+                .from('token_purchases')
+                .select('count')
+                .limit(1);
+
+            if (tableError) {
+                console.error('Error accessing token_purchases table:', tableError);
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ 
+                        success: false, 
+                        error: 'Failed to access token_purchases table',
+                        details: tableError 
+                    })
+                };
+            }
+
+            // Debug: Log the query we're about to make
+            console.log('Querying token_purchases table with params:', {
+                tokenAddress,
+                table: 'token_purchases'
+            });
+
             const { data: purchases, error } = await supabase
                 .from('token_purchases')
                 .select(`
@@ -154,16 +180,30 @@ export const handler = async (event, context) => {
                 };
             }
 
+            // Debug: Log what we found
+            console.log('Query results:', {
+                purchasesFound: purchases?.length || 0,
+                firstPurchase: purchases?.[0] || null
+            });
+
+            const formattedPurchases = purchases.map(p => ({
+                ...p,
+                token_symbol: p.tokens?.token_symbol,
+                token_name: p.tokens?.token_name
+            }));
+
+            // Debug: Log formatted results
+            console.log('Formatted results:', {
+                formattedCount: formattedPurchases.length,
+                firstFormatted: formattedPurchases[0] || null
+            });
+
             return {
                 statusCode: 200,
                 headers,
                 body: JSON.stringify({ 
                     success: true, 
-                    data: purchases.map(p => ({
-                        ...p,
-                        token_symbol: p.tokens?.token_symbol,
-                        token_name: p.tokens?.token_name
-                    }))
+                    data: formattedPurchases
                 })
             };
         }
