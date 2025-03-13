@@ -3,6 +3,16 @@
   publish = "dist"
 
 [[redirects]]
+  from = "/.netlify/functions/transactions/*"
+  to = "/.netlify/functions/transactions"
+  status = 200
+
+[[redirects]]
+  from = "/.netlify/functions/tokens/*"
+  to = "/.netlify/functions/tokens"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200 
