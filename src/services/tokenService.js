@@ -42,17 +42,31 @@ export const tokenService = {
   async getTokens(network) {
     try {
       const url = getApiUrl(`/tokens?network=${network}`);
+      console.log(`[TokenService] Fetching tokens for network ${network} from ${url}`);
+      
       const response = await fetch(url);
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[TokenService] HTTP Error ${response.status}: ${errorText}`);
+        throw new Error(`Failed to fetch tokens: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        console.error('[TokenService] API Error:', result.error);
+        throw new Error(result.error || 'Failed to fetch tokens');
+      }
+
+      const tokens = result.data;
+      
+      if (!tokens) {
+        console.warn('[TokenService] No tokens returned from API');
         return [];
       }
 
-      const { data: tokens } = await response.json();
-      
-      if (!tokens) {
-        return [];
-      }
+      console.log(`[TokenService] Successfully loaded ${tokens.length} tokens`);
 
       const uniqueTokens = tokens.reduce((acc, current) => {
         const x = acc.find(item => item.token_address === current.token_address);
@@ -65,8 +79,9 @@ export const tokenService = {
 
       return uniqueTokens;
     } catch (error) {
-      console.error('Error in getTokens:', error);
-      return [];
+      console.error('[TokenService] Error:', error);
+      // You might want to handle this error in your UI
+      throw error;
     }
   },
 

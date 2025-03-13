@@ -22,10 +22,18 @@ export const handler = async (event, context) => {
     }
 
     try {
+        // Log environment check
+        console.log('Environment check:', {
+            hasSupabaseUrl: !!process.env.VITE_SUPABASE_URL,
+            hasSupabaseKey: !!process.env.VITE_SUPABASE_SERVICE_KEY
+        });
+
         // GET /api/tokens (liste des tokens par réseau)
         if (event.httpMethod === 'GET' && !event.path.includes('/creator/') && !event.path.includes('/address/')) {
             const params = new URLSearchParams(event.queryStringParameters);
             const network = params.get('network');
+            
+            console.log('Fetching tokens for network:', network);
 
             const { data, error } = await supabase
                 .from('tokens')
@@ -33,8 +41,20 @@ export const handler = async (event, context) => {
                 .eq('network', network)
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase query error:', error);
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ 
+                        success: false, 
+                        error: error.message,
+                        details: error
+                    })
+                };
+            }
 
+            console.log(`Successfully fetched ${data?.length || 0} tokens`);
             return {
                 statusCode: 200,
                 headers,
