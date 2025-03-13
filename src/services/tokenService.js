@@ -120,7 +120,8 @@ export const tokenService = {
   async getTopHolderPurchases(tokenAddress) {
     try {
       console.log(`📡 Récupération des achats pour le token ${tokenAddress}...`);
-      const url = getApiUrl(`/transactions/${tokenAddress}`);
+      // On utilise API_URL directement pour éviter l'ajout automatique de /tokens
+      const url = `${API_URL}/transactions/${tokenAddress}`;
       console.log(`🔗 URL: ${url}`);
       
       const response = await fetch(url);

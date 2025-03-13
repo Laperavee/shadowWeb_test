@@ -116,9 +116,12 @@ export const handler = async (event, context) => {
 
         // GET /api/transactions/:tokenAddress (récupérer les transactions d'un token)
         if (event.httpMethod === 'GET') {
+            console.log('Raw path:', event.path);
             const tokenAddress = event.path.split('/transactions/')[1];
             
-            console.log('Fetching transactions for token:', tokenAddress);
+            console.log('Parsed token address:', tokenAddress);
+            console.log('Supabase URL:', process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL);
+            console.log('Checking if Supabase key is set:', !!process.env.SUPABASE_SERVICE_KEY || !!process.env.VITE_SUPABASE_SERVICE_KEY);
 
             const { data, error } = await supabase
                 .from('token_purchases')
@@ -135,7 +138,10 @@ export const handler = async (event, context) => {
                 .eq('token_address', tokenAddress)
                 .order('created_at', { ascending: false });
 
+            console.log('Query result:', { data, error });
+
             if (error) {
+                console.error('Supabase error:', error);
                 return {
                     statusCode: 500,
                     headers,
