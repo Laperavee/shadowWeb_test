@@ -9,23 +9,36 @@ const envCheck = {
     SUPABASE_URL: !!SUPABASE_URL,
     SUPABASE_KEY: !!SUPABASE_KEY,
     NODE_ENV: process.env.NODE_ENV,
-    AWS_LAMBDA_FUNCTION_NAME: process.env.AWS_LAMBDA_FUNCTION_NAME
+    AWS_LAMBDA_FUNCTION_NAME: process.env.AWS_LAMBDA_FUNCTION_NAME,
+    // Liste toutes les variables d'environnement disponibles
+    ENV_KEYS: Object.keys(process.env).filter(key => !key.includes('KEY') && !key.includes('SECRET')),
+    // Vérifie si on est dans Netlify
+    IS_NETLIFY: !!process.env.NETLIFY
 };
 
-console.log('Environment check:', envCheck);
+console.log('🔍 Environment check:', envCheck);
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
     console.error('❌ Missing Supabase environment variables');
-    console.log('SUPABASE_URL:', !!SUPABASE_URL);
-    console.log('SUPABASE_KEY:', !!SUPABASE_KEY);
+    console.log('SUPABASE_URL present:', !!SUPABASE_URL);
+    console.log('SUPABASE_KEY present:', !!SUPABASE_KEY);
+    console.log('Available environment variables:', envCheck.ENV_KEYS);
 }
 
 let supabase;
 try {
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+        throw new Error('Missing Supabase credentials');
+    }
     supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     console.log('✅ Supabase client created successfully');
 } catch (error) {
     console.error('❌ Failed to create Supabase client:', error);
+    console.log('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        env: envCheck
+    });
 }
 
 const headers = {
