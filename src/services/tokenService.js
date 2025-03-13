@@ -120,23 +120,26 @@ export const tokenService = {
   async getTopHolderPurchases(tokenAddress) {
     try {
       console.log(`📡 Récupération des achats pour le token ${tokenAddress}...`);
-      const url = getApiUrl(`/tokens/${tokenAddress}/top-holder-purchases`);
+      const url = getApiUrl(`/transactions/${tokenAddress}`);
       console.log(`🔗 URL: ${url}`);
       
       const response = await fetch(url);
       
       if (!response.ok) {
         console.error(`❌ Erreur HTTP: ${response.status} ${response.statusText}`);
-        return { data: [], error: `Failed to fetch top holder purchases: ${response.status} ${response.statusText}` };
+        return { data: [], error: `Failed to fetch transactions: ${response.status} ${response.statusText}` };
       }
 
       const result = await response.json();
-      console.log(`✅ ${result.data?.length || 0} achats récupérés`);
+      console.log(`✅ ${result.data?.length || 0} transactions récupérées`);
       
       if (!result.success || !result.data) {
         return { data: [], error: 'No data returned from API' };
       }
 
+      // Récupérer les informations du token
+      const { data: token } = await this.getTokenByAddress(tokenAddress);
+      
       // Formater les transactions pour l'affichage
       const formattedData = result.data.map(tx => ({
         type: tx.action ? 'BUY' : 'SELL',
@@ -145,13 +148,13 @@ export const tokenService = {
         timestamp: new Date(tx.created_at),
         txHash: tx.tx_hash,
         user: tx.user_id,
-        tokenSymbol: tx.token_symbol || 'UNKNOWN',
-        tokenName: tx.token_name || 'Unknown Token'
+        tokenSymbol: token?.token_symbol || 'UNKNOWN',
+        tokenName: token?.token_name || 'Unknown Token'
       }));
 
       return { data: formattedData };
     } catch (error) {
-      console.error('❌ Error fetching top holder purchases:', error);
+      console.error('❌ Error fetching transactions:', error);
       return { data: [], error };
     }
   },
