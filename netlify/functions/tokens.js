@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
-    process.env.VITE_SUPABASE_URL,
-    process.env.VITE_SUPABASE_SERVICE_KEY
+    process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_SERVICE_KEY
 );
 
 const headers = {
@@ -24,8 +24,8 @@ export const handler = async (event, context) => {
     try {
         // Log environment check
         console.log('Environment check:', {
-            hasSupabaseUrl: !!process.env.VITE_SUPABASE_URL,
-            hasSupabaseKey: !!process.env.VITE_SUPABASE_SERVICE_KEY
+            hasSupabaseUrl: !!process.env.SUPABASE_URL || !!process.env.VITE_SUPABASE_URL,
+            hasSupabaseKey: !!process.env.SUPABASE_SERVICE_KEY || !!process.env.VITE_SUPABASE_SERVICE_KEY
         });
 
         // GET /api/tokens (liste des tokens par réseau)
