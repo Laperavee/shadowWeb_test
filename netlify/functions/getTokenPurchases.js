@@ -75,16 +75,7 @@ exports.handler = async (event, context) => {
     // Get purchases with the correct column names
     const { data: purchases, error } = await supabase
       .from('token_purchases')
-      .select(`
-        id,
-        user_id,
-        token_address,
-        amount,
-        purchased_at,
-        tx_hash,
-        cost,
-        action
-      `)
+      .select('*')
       .eq('token_address', tokenAddress)
       .order('purchased_at', { ascending: false })
       .limit(50);
@@ -109,39 +100,16 @@ exports.handler = async (event, context) => {
     }
 
     console.log(`✨ [getTokenPurchases] ${purchases?.length || 0} achats trouvés`);
-    console.log('🔍 [getTokenPurchases] Requête utilisée:', {
-      table: 'token_purchases',
-      filter: `token_address=${tokenAddress}`,
-      total_records: count || 0
-    });
-
-    // Format the data according to the actual schema
-    console.log('🔄 [getTokenPurchases] Formatage des données...');
-    const formattedData = (purchases || []).map(purchase => ({
-      buyer: purchase.user_id,
-      type: purchase.action ? 'BUY' : 'SELL',
-      amount: purchase.amount,
-      cost: purchase.cost,
-      date: purchase.purchased_at,
-      tx_hash: purchase.tx_hash
-    }));
-
-    console.log(`✅ [getTokenPurchases] Données formatées avec succès (${formattedData.length} entrées)`);
-    if (formattedData.length > 0) {
-      console.log('📊 [getTokenPurchases] Exemple d\'achat:', JSON.stringify(formattedData[0], null, 2));
-    }
     
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({ 
         success: true, 
-        data: formattedData,
+        data: purchases || [],
         debug: {
           raw_count: purchases?.length || 0,
-          formatted_count: formattedData.length,
-          token_address: tokenAddress,
-          sample_raw: purchases?.[0] || null
+          token_address: tokenAddress
         }
       })
     };

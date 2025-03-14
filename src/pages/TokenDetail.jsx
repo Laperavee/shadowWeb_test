@@ -797,7 +797,7 @@ const TokenDetail = () => {
                   <tbody>
                     {topHolderPurchases.map((purchase, index) => (
                       <tr 
-                        key={purchase.id || purchase.tx_hash || index} 
+                        key={purchase.tx_hash || index} 
                         className={`border-b border-gray-800/50 hover:bg-gray-900/30 transition-all ${
                           newPurchaseIds.includes(purchase.tx_hash) 
                             ? 'bg-fuchsia-900/20 animate-pulse' 
@@ -806,13 +806,8 @@ const TokenDetail = () => {
                       >
                         <td className="py-4">
                           <div className="flex items-center">
-                            <div>
-                              <div className="font-medium text-white">
-                                {formatAddress(purchase.buyer)}
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                Top Holder
-                              </div>
+                            <div className="font-medium text-white">
+                              {purchase.buyer}
                             </div>
                           </div>
                         </td>
@@ -826,30 +821,13 @@ const TokenDetail = () => {
                           </span>
                         </td>
                         <td className="py-4 font-medium">
-                          <span className={`${
-                            purchase.type === 'SELL'
-                              ? 'text-red-400' 
-                              : 'text-green-400'
-                          }`}>
-                            {(parseFloat(purchase.amount) / 1e18).toFixed(6)} tokens
-                          </span>
+                          {purchase.amount}
                         </td>
                         <td className="py-4 font-medium">
-                          {purchase.cost ? (
-                            <span className="text-gray-300">
-                              ${parseFloat(purchase.cost).toFixed(6)}
-                            </span>
-                          ) : token.market_data?.price ? (
-                            <span className="text-gray-300">
-                              ${((parseFloat(purchase.amount) / 1e18) * token.market_data.price).toFixed(6)}
-                              <span className="text-xs text-gray-500 block">(estimation)</span>
-                            </span>
-                          ) : (
-                            <span className="text-gray-500">N/A</span>
-                          )}
+                          {purchase.cost}
                         </td>
                         <td className="py-4 text-gray-400">
-                          {new Date(purchase.date).toLocaleString()}
+                          {purchase.date}
                         </td>
                         <td className="py-4">
                           <a 
@@ -858,10 +836,7 @@ const TokenDetail = () => {
                             rel="noopener noreferrer"
                             className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors flex items-center"
                           >
-                            {formatAddress(purchase.tx_hash)}
-                            <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
+                            {purchase.tx_hash}
                           </a>
                         </td>
                       </tr>
