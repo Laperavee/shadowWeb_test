@@ -88,47 +88,73 @@ const TokenDetail = () => {
     }
   }, []);
 
-  // Fonction principale pour charger les données du token
-  const loadTokenData = useCallback(async (tokenAddress) => {
+  // Fonction pour rafraîchir manuellement les données
+  const refreshData = useCallback(async () => {
+    if (refreshing || !token) return;
+    
     try {
-      setLoading(true);
-      setError(null);
-      
-      const result = await tokenService.getTokenByAddress(tokenAddress);
-      
-      if (!result || !result.data) {
-        setError('Token not found');
-        return;
+      setRefreshing(true);      
+      const result = await tokenService.getTokenByAddress(token.token_address);
+      if (result && result.data) {
+        setToken(prevToken => ({
+          ...prevToken,
+          ...result.data,
+          market_data: prevToken.market_data
+        }));
       }
       
-      const tokenData = result.data;
-      if (tokenData.network === 'AVAX') {
-        tokenData.network = 'avalanche';
-      }
-      
-      setToken(tokenData);
-      
-      // Fetch market data
-      const nativeSymbol = tokenData.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH';
-      const price = await priceService.getPrice(nativeSymbol);
-      setTokenPrice(price);
-      
-      // Fetch DEX data and top holder purchases in parallel
       await Promise.all([
-        fetchDexScreenerData(tokenData.token_address, tokenData.network),
-        fetchTopHolderPurchases(tokenData.token_address)
+        fetchTopHolderPurchases(token.token_address),
+        fetchDexScreenerData(token.token_address, token.network)
       ]);
       
-    } catch (err) {
-      setError(err.message || 'Failed to load token data');
+    } catch (error) {
+      console.error('Error refreshing data:', error);
     } finally {
-      setLoading(false);
+      setRefreshing(false);
     }
-  }, [fetchDexScreenerData, fetchTopHolderPurchases]);
+  }, [token, refreshing, fetchTopHolderPurchases, fetchDexScreenerData]);
 
   // Initial data load
   useEffect(() => {
-    loadTokenData(address);
+    const loadTokenData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const result = await tokenService.getTokenByAddress(address);
+        
+        if (!result || !result.data) {
+          setError('Token not found');
+          return;
+        }
+        
+        const tokenData = result.data;
+        if (tokenData.network === 'AVAX') {
+          tokenData.network = 'avalanche';
+        }
+        
+        setToken(tokenData);
+        
+        // Load all data in parallel
+        await Promise.all([
+          (async () => {
+            const nativeSymbol = tokenData.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH';
+            const price = await priceService.getPrice(nativeSymbol);
+            setTokenPrice(price);
+          })(),
+          fetchDexScreenerData(tokenData.token_address, tokenData.network),
+          fetchTopHolderPurchases(tokenData.token_address)
+        ]);
+        
+      } catch (err) {
+        setError(err.message || 'Failed to load token data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTokenData();
     
     // Subscribe to price updates
     const unsubscribe = priceService.subscribeToUpdates((prices) => {
@@ -138,10 +164,8 @@ const TokenDetail = () => {
       }
     });
     
-    return () => {
-      unsubscribe();
-    };
-  }, [address, loadTokenData]);
+    return () => unsubscribe();
+  }, [address, fetchDexScreenerData, fetchTopHolderPurchases]);
 
   // Subscribe to real-time purchases
   useEffect(() => {
@@ -190,7 +214,7 @@ const TokenDetail = () => {
     );
     
     return () => unsubscribe();
-  }, [token, playNotificationSound]);
+  }, [token]);
 
   // Update DexScreener URL when timeframe changes
   useEffect(() => {
@@ -209,9 +233,7 @@ const TokenDetail = () => {
       clearInterval(refreshTimerRef.current);
     }
     
-    refreshTimerRef.current = setInterval(() => {
-      refreshData();
-    }, 30000);
+    refreshTimerRef.current = setInterval(refreshData, 30000);
     
     return () => {
       if (refreshTimerRef.current) {
@@ -262,35 +284,6 @@ const TokenDetail = () => {
       window.open(`https://dexscreener.com/${token.network}/${token.token_address}`, '_blank');
     }
   };
-
-  // Fonction pour rafraîchir manuellement les données
-  const refreshData = useCallback(async () => {
-    if (refreshing || !token) return;
-    
-    try {
-      setRefreshing(true);      
-      // Rafraîchir les données du token
-      const result = await tokenService.getTokenByAddress(token.token_address);
-      if (result && result.data) {
-        setToken(prevToken => ({
-          ...prevToken,
-          ...result.data,
-          market_data: prevToken.market_data // Conserver les données de marché
-        }));
-      }
-      
-      // Rafraîchir les achats des top holders
-      await fetchTopHolderPurchases(token.token_address);
-      
-      // Rafraîchir les données de marché
-      await fetchDexScreenerData(token.token_address, token.network);
-      
-    } catch (error) {
-      console.error('Error refreshing data:', error);
-    } finally {
-      setRefreshing(false);
-    }
-  }, [token, refreshing]);
 
   if (loading) {
     return (
