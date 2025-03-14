@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSound } from '../context/SoundContext';
 
@@ -10,10 +10,6 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  if (location.pathname === '/shadow-fun') {
-    return null;
-  }
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -21,6 +17,16 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleNavigation = useCallback((path) => {
+    navigate(path);
+    playSound('click');
+    setIsMobileMenuOpen(false);
+  }, [navigate, playSound]);
+
+  if (location.pathname === '/shadow-fun') {
+    return null;
+  }
 
   const menuItems = [
     { title: "How it Works", path: "/how-it-works" },
@@ -75,10 +81,7 @@ export default function Navbar() {
               </Link>
             ))}
             <motion.button
-              onClick={() => {
-                navigate('/shadow-fun');
-                playSound('click');
-              }}
+              onClick={() => handleNavigation('/shadow-fun')}
               className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 backdrop-blur-sm border border-fuchsia-400/20 px-6 py-2 rounded-lg hover:border-fuchsia-400/50 transition-all interactive relative overflow-hidden group"
               onMouseEnter={() => playSound('hover')}
               whileHover={{ scale: 1.05 }}
@@ -167,15 +170,12 @@ export default function Navbar() {
                     closed: { x: -20, opacity: 0 }
                   }}
                 >
-                  <a
-                    href="https://shadow.fun"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-sm border border-purple-500/20 px-6 py-2 rounded-lg hover:border-purple-500/50 transition-all mx-4 text-center interactive block"
-                    onClick={() => playSound('click')}
+                  <button
+                    onClick={() => handleNavigation('/shadow-fun')}
+                    className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-sm border border-purple-500/20 px-6 py-2 rounded-lg hover:border-purple-500/50 transition-all mx-4 text-center interactive block w-full"
                   >
                     Launch App
-                  </a>
+                  </button>
                 </motion.div>
               </motion.div>
             </motion.div>
