@@ -808,7 +808,7 @@ const TokenDetail = () => {
                           <div className="flex items-center">
                             <div>
                               <div className="font-medium text-white">
-                                {formatAddress(purchase.user_id)}
+                                {formatAddress(purchase.buyer)}
                               </div>
                               <div className="text-xs text-gray-400">
                                 Top Holder
@@ -818,30 +818,30 @@ const TokenDetail = () => {
                         </td>
                         <td className="py-4 font-medium">
                           <span className={`px-3 py-1 rounded-full ${
-                            purchase.action === false 
+                            purchase.type === 'SELL'
                               ? 'bg-red-500/10 border border-red-500/30 text-red-400' 
                               : 'bg-green-500/10 border border-green-500/30 text-green-400'
                           } text-sm`}>
-                            {purchase.action === false ? 'SELL' : 'BUY'}
+                            {purchase.type}
                           </span>
                         </td>
                         <td className="py-4 font-medium">
                           <span className={`${
-                            purchase.action === false 
+                            purchase.type === 'SELL'
                               ? 'text-red-400' 
                               : 'text-green-400'
                           }`}>
-                            {purchase.amount} tokens
+                            {(parseFloat(purchase.amount) / 1e18).toFixed(6)} tokens
                           </span>
                         </td>
                         <td className="py-4 font-medium">
                           {purchase.cost ? (
                             <span className="text-gray-300">
-                              ${purchase.cost}
+                              ${parseFloat(purchase.cost).toFixed(6)}
                             </span>
                           ) : token.market_data?.price ? (
                             <span className="text-gray-300">
-                              ${(purchase.amount * token.market_data.price).toString()}
+                              ${((parseFloat(purchase.amount) / 1e18) * token.market_data.price).toFixed(6)}
                               <span className="text-xs text-gray-500 block">(estimation)</span>
                             </span>
                           ) : (
@@ -849,7 +849,7 @@ const TokenDetail = () => {
                           )}
                         </td>
                         <td className="py-4 text-gray-400">
-                          {purchase.date}
+                          {new Date(purchase.date).toLocaleString()}
                         </td>
                         <td className="py-4">
                           <a 
