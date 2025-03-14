@@ -10,6 +10,10 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  if (location.pathname === '/shadow-fun' || location.pathname.startsWith('/token/')) {
+    return null;
+  }
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
