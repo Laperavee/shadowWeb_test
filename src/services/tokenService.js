@@ -8,10 +8,8 @@ const API_URL = isProduction ? '/.netlify/functions' : 'http://localhost:3002';
 // Construire l'URL de l'API en fonction de l'environnement
 const getApiUrl = (endpoint) => {
   if (isProduction) {
-    // En production, on appelle directement la fonction tokens sans ajouter /tokens
     return `${API_URL}/tokens${endpoint.startsWith('/tokens') ? endpoint.substring(7) : endpoint}`;
   }
-  // En développement, on garde le préfixe /api
   return `${API_URL}/api${endpoint}`;
 };
 
@@ -42,9 +40,10 @@ export const tokenService = {
   async getTokens(network) {
     try {
       const url = getApiUrl(`/tokens?network=${network}`);
-      console.log(`[TokenService] Fetching tokens for network ${network} from ${url}`);
+      console.log(`[TokenService] Constructed URL for fetching tokens: ${url}`);
       
       const response = await fetch(url);
+      console.log(`[TokenService] Response status: ${response.status}`);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -53,6 +52,7 @@ export const tokenService = {
       }
 
       const result = await response.json();
+      console.log(`[TokenService] API response received:`, result);
       
       if (!result.success) {
         console.error('[TokenService] API Error:', result.error);
@@ -80,7 +80,6 @@ export const tokenService = {
       return uniqueTokens;
     } catch (error) {
       console.error('[TokenService] Error:', error);
-      // You might want to handle this error in your UI
       throw error;
     }
   },
@@ -119,8 +118,6 @@ export const tokenService = {
 
   async getTopHolderPurchases(tokenAddress) {
     try {
-      console.log(`📡 Récupération des achats pour le token ${tokenAddress}...`);
-      // Utiliser la route des tokens pour la cohérence
       const url = getApiUrl(`/tokens/${tokenAddress}/top-holder-purchases`);
       console.log(`🔗 URL: ${url}`);
       
@@ -132,16 +129,13 @@ export const tokenService = {
       }
 
       const result = await response.json();
-      console.log(`✅ ${result.data?.length || 0} transactions récupérées`);
       
       if (!result.success || !result.data) {
         return { data: [], error: 'No data returned from API' };
       }
 
-      // Récupérer les informations du token
       const { data: token } = await this.getTokenByAddress(tokenAddress);
       
-      // Formater les transactions pour l'affichage
       const formattedData = result.data.map(tx => ({
         type: tx.action ? 'BUY' : 'SELL',
         amount: tx.amount ? (parseFloat(tx.amount) / 1e18).toLocaleString() : '0',

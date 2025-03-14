@@ -63,6 +63,20 @@ const testSupabaseConnection = async () => {
     }
 };
 
+app.get('/api/token_purchases', async (req, res) => {
+    const { tokenAddress } = req.query;
+    const { data, error } = await supabase
+        .from('token_purchases')
+        .select('*')
+        .eq('token_address', tokenAddress);
+    if (error) {
+        console.error('Error fetching token purchases:', error);
+        return res.status(500).json({ error: error.message });
+    }
+
+    res.json({ success: true, data });
+});
+
 // Endpoint pour récupérer les tokens
 app.get('/api/tokens', async (req, res) => {
     try {
