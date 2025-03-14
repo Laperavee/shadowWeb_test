@@ -19,7 +19,7 @@ exports.handler = async (event, context) => {
 
   // Check for required environment variables
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
-    console.error('Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE');
+    console.error('[TokenPurchases] Missing required environment variables');
     return {
       statusCode: 500,
       headers,
@@ -56,11 +56,20 @@ exports.handler = async (event, context) => {
 
     console.log(`[TokenPurchases] Fetching purchases for token: ${tokenAddress}`);
     
-    // Get purchases with additional fields
-    const { data, error } = await supabase
+    // Get purchases with the correct column names
+    const { data: purchases, error } = await supabase
       .from('token_purchases')
-      .select('*')
-      .eq('token_address', tokenAddress)
+      .select(`
+        id,
+        user_id,
+        token_address,
+        amount,
+        purchased_at,
+        tx_hash,
+        cost,
+        action
+      `)
+      .eq('token_address', tokenAddress.toLowerCase())
       .order('purchased_at', { ascending: false })
       .limit(50);
 
@@ -76,10 +85,19 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Format the data according to the actual schema
+    const formattedData = (purchases || []).map(purchase => ({
+      buyer: purchase.user_id || 'Unknown',
+      type: purchase.action ? 'BUY' : 'SELL',
+      amount: parseFloat(purchase.amount) || 0,
+      estimated_value: parseFloat(purchase.cost) || 0,
+      date: purchase.purchased_at,
+      transaction_hash: purchase.tx_hash || ''
+    }));
 
     console.log(`[TokenPurchases] Found ${formattedData.length} purchases for token ${tokenAddress}`);
     if (formattedData.length > 0) {
-      console.log('[TokenPurchases] Sample purchase:', formattedData[0]);
+      console.log('[TokenPurchases] Sample purchase:', JSON.stringify(formattedData[0], null, 2));
     }
     
     return {
@@ -87,7 +105,13 @@ exports.handler = async (event, context) => {
       headers,
       body: JSON.stringify({ 
         success: true, 
-        data: data
+        data: formattedData,
+        debug: {
+          raw_count: purchases?.length || 0,
+          formatted_count: formattedData.length,
+          token_address: tokenAddress,
+          sample_raw: purchases?.[0] || null
+        }
       })
     };
   } catch (error) {
