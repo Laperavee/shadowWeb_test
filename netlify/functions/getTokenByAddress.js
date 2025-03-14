@@ -36,11 +36,9 @@ exports.handler = async (event, context) => {
       process.env.SUPABASE_SERVICE_ROLE
     );
 
-    // Extract token address from path parameter
+    // Extract token address from path
     const path = event.path;
-    const pathSegments = path.split('/');
-    const addressIndex = pathSegments.indexOf('address') + 1;
-    const tokenAddress = addressIndex < pathSegments.length ? pathSegments[addressIndex] : null;
+    const tokenAddress = path.split('/getTokenByAddress/')[1];
 
     console.log(`Fetching token with address: ${tokenAddress}`);
 
@@ -73,6 +71,8 @@ exports.handler = async (event, context) => {
         })
       };
     }
+
+    console.log(`Found token data:`, data);
 
     return {
       statusCode: 200,

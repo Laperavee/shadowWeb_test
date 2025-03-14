@@ -9,7 +9,7 @@
 
 [[redirects]]
   from = "/api/tokens/address/*"
-  to = "/.netlify/functions/getTokenByAddress"
+  to = "/.netlify/functions/getTokenByAddress/:splat"
   status = 200
 
 [[redirects]]
