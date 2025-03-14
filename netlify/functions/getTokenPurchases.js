@@ -53,19 +53,13 @@ exports.handler = async (event, context) => {
         })
       };
     }
-    
+
     console.log(`[TokenPurchases] Fetching purchases for token: ${tokenAddress}`);
     
     // Get purchases with additional fields
     const { data, error } = await supabase
       .from('token_purchases')
-      .select(`
-        user_id,
-        tx_hash,
-        amount,
-        cost,
-        purchased_at
-      `)
+      .select('*')
       .eq('token_address', tokenAddress)
       .order('purchased_at', { ascending: false })
       .limit(50);
@@ -84,12 +78,12 @@ exports.handler = async (event, context) => {
 
     // Format the data
     const formattedData = (data || []).map(purchase => ({
-      buyer: purchase.buyer || 'Unknown',
-      type: 'BUY',
+      user_id: purchase.user_id || 'Unknown',
+      type: purchase.action === 'buy' ? 'BUY' : 'SELL',
       amount: parseFloat(purchase.amount) || 0,
-      estimated_value: parseFloat(purchase.price_usd) || 0,
-      date: purchase.created_at,
-      transaction_hash: purchase.transaction_hash
+      cost: parseFloat(purchase.cost) || 0,
+      purchased_at: purchase.purchased_at,
+      tx_hash: purchase.tx_hash
     }));
 
     console.log(`[TokenPurchases] Found ${formattedData.length} purchases for token ${tokenAddress}`);
