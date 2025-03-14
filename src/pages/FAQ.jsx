@@ -6,14 +6,14 @@ export default function FAQ() {
 
   const faqs = [
     {
-      question: "Comment créer mon token avec Shadow ?",
-      answer: "Il suffit de mentionner @Shadow sur Twitter ou Warpcast avec les paramètres souhaités. Par exemple : '@Shadow Crée mon token $EXEMPLE avec 1000 unités de liquidité initiale'."
+      question: "How to create my token with Shadow?",
+      answer: "Simply mention @Shadow on Twitter or Warpcast with your desired parameters. For example: '@Shadow Create my token $EXAMPLE with 1000 initial liquidity units'."
     },
     {
-      question: "Quelle est la liquidité minimale requise ?",
-      answer: "La liquidité minimale est de 100 unités. Nous recommandons cependant une liquidité plus importante pour assurer une meilleure stabilité."
+      question: "What is the minimum required liquidity?",
+      answer: "The minimum liquidity is 100 units. However, we recommend higher liquidity to ensure better stability."
     },
-    // Ajoutez d'autres FAQs
+    // Add other FAQs
   ];
 
   return (

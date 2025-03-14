@@ -1,43 +1,43 @@
 /**
- * Service pour gérer les prix des tokens avec mise en cache
- * Centralise les appels à CoinGecko pour éviter les problèmes de rate limiting
+ * Service to manage token prices with caching
+ * Centralizes CoinGecko calls to avoid rate limiting issues
  */
 
 class PriceService {
   constructor() {
-    // Cache des prix avec durée de validité
+    // Price cache with validity duration
     this.priceCache = {
       data: {},
       timestamp: null,
-      // Durée de validité du cache en millisecondes (5 minutes)
+      // Cache validity duration in milliseconds (5 minutes)
       cacheDuration: 5 * 60 * 1000
     };
     
-    // Liste des tokens à suivre
+    // List of tokens to track
     this.tokenIds = ['avalanche-2', 'ethereum'];
     
-    // Événement personnalisé pour notifier les mises à jour de prix
+    // Custom event for price updates
     this.priceUpdateEvent = new CustomEvent('priceUpdate');
     
-    // Initialiser les prix au démarrage
+    // Initialize prices at startup
     this.fetchPrices();
     
-    // Mettre en place une mise à jour périodique (toutes les 5 minutes)
+    // Set up periodic updates (every 5 minutes)
     this.startPeriodicUpdate();
   }
   
   /**
-   * Démarre la mise à jour périodique des prix
+   * Start periodic price updates
    */
   startPeriodicUpdate() {
-    // Mettre à jour les prix toutes les 5 minutes
+    // Update prices every 5 minutes
     this.updateInterval = setInterval(() => {
       this.fetchPrices();
     }, this.priceCache.cacheDuration);
   }
   
   /**
-   * Arrête la mise à jour périodique des prix
+   * Stop periodic price updates
    */
   stopPeriodicUpdate() {
     if (this.updateInterval) {
@@ -86,7 +86,7 @@ class PriceService {
   }
   
   /**
-   * Vérifie si le cache est valide
+   * Check if cache is valid
    */
   isCacheValid() {
     if (!this.priceCache.timestamp) return false;
@@ -98,7 +98,7 @@ class PriceService {
   }
   
   /**
-   * Récupère les prix, depuis le cache si valide, sinon depuis l'API
+   * Get prices, from cache if valid, otherwise from API
    */
   async getPrices() {
     if (this.isCacheValid()) {
@@ -143,5 +143,5 @@ class PriceService {
   }
 }
 
-// Exporter une instance unique du service
+// Export a single instance of the service
 export const priceService = new PriceService(); 

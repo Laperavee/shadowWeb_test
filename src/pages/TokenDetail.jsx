@@ -167,42 +167,17 @@ const TokenDetail = () => {
   // S'abonner aux achats des top holders en temps réel
   useEffect(() => {
     if (token && token.token_address) {
-      // S'abonner aux nouveaux achats
+      // Subscribe to new purchases
       const unsubscribe = realtimeService.subscribeToTokenPurchases(
         token.token_address,
         async (payload) => {
-          // Vérifier si c'est un nouvel achat ou une mise à jour
+          // Check if it's a new purchase or an update
           if (payload.eventType === 'INSERT') {
             const newPurchase = payload.new;
             
-            // Si le prix du token est disponible et que le coût n'est pas défini, le calculer et mettre à jour la base de données
-            if (token.market_data?.price && !newPurchase.cost) {
-              try {
-                const tokenAmount = parseFloat(newPurchase.amount) / 1e18;
-                const cost = tokenAmount * token.market_data.price;
-                
-                // Mettre à jour la colonne cost dans la base de données
-                const response = await fetch(`/api/token-purchases/${newPurchase.id}/update-cost`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    cost: cost.toString()
-                  }),
-                });
-                
-                if (response.ok) {
-                  newPurchase.cost = cost.toString();
-                }
-              } catch (error) {
-                console.error('❌ Erreur lors de la mise à jour du coût:', error);
-              }
-            }
-            
-            // Ajouter le nouvel achat à la liste et mettre à jour l'interface
+            // Update top holder purchases list
             setTopHolderPurchases(prevPurchases => {
-              // Vérifier si l'achat existe déjà dans la liste
+              // Check if purchase already exists in the list
               const exists = prevPurchases.some(p => p.tx_hash === newPurchase.tx_hash);
               if (exists) {
                 return prevPurchases.map(p => 
@@ -213,7 +188,7 @@ const TokenDetail = () => {
               }
             });
             
-            // Mettre à jour les IDs des nouvelles transactions pour l'animation
+            // Update new transaction IDs for animation
             setNewPurchaseIds(prevIds => {
               if (!prevIds.includes(newPurchase.tx_hash)) {
                 return [...prevIds, newPurchase.tx_hash];
@@ -221,30 +196,30 @@ const TokenDetail = () => {
               return prevIds;
             });
             
-            // Incrémenter le compteur de nouvelles transactions
+            // Increment new transactions counter
             setNewPurchasesCount(count => count + 1);
             
-            // Jouer le son de notification
+            // Play notification sound
             playNotificationSound();
             
-            // Supprimer l'ID de la liste des nouvelles transactions après 5 secondes
+            // Remove ID from new transactions list after 5 seconds
             setTimeout(() => {
               setNewPurchaseIds(prevIds => prevIds.filter(id => id !== newPurchase.tx_hash));
             }, 5000);
           } else if (payload.eventType === 'UPDATE') {
             const updatedPurchase = payload.new;
             
-            // Mettre à jour l'achat dans la liste
+            // Update purchase in the list
             setTopHolderPurchases(prevPurchases => {
               return prevPurchases.map(purchase => 
-                purchase.id === updatedPurchase.id ? updatedPurchase : purchase
+                purchase.tx_hash === updatedPurchase.tx_hash ? updatedPurchase : purchase
               );
             });
           }
         }
       );
       
-      // Se désabonner quand le composant est démonté ou quand l'adresse du token change
+      // Unsubscribe when component is unmounted or token address changes
       return () => {
         unsubscribe();
       };
@@ -763,7 +738,7 @@ const TokenDetail = () => {
                   <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  {refreshing ? 'Rafraîchissement...' : 'Rafraîchir'}
+                  {refreshing ? 'Refreshing...' : 'Refresh'}
                 </button>
                 
                 {newPurchasesCount > 0 && (

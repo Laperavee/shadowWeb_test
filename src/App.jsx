@@ -17,9 +17,6 @@ import LoadingScreen from './components/LoadingScreen';
 // Créer un composant wrapper pour gérer l'affichage conditionnel de la Navbar
 function AppContent() {
   const location = useLocation();
-  const hideNavbar = location.pathname === '/shadow-fun' || 
-                    location.pathname.startsWith('/token/') ||
-                    location.pathname === '/staking';
 
   return (
     <div className="app relative min-h-screen bg-black text-white overflow-hidden flex flex-col">
@@ -51,7 +48,7 @@ function AppContent() {
 
       {/* Contenu principal */}
       <div className="relative z-10 flex flex-col min-h-screen">
-        {!hideNavbar && <Navbar />}
+        <Navbar />
         <main className="flex-grow">
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
@@ -64,7 +61,7 @@ function AppContent() {
             </Routes>
           </AnimatePresence>
         </main>
-        {!hideNavbar && <Footer className="mt-auto" />}
+        <Footer className="mt-auto" />
       </div>
 
       {/* Effets globaux */}

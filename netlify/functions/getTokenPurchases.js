@@ -1,9 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event, context) => {
-  console.log('🚀 [getTokenPurchases] Démarrage de la fonction');
-  console.log('📝 [getTokenPurchases] Méthode HTTP:', event.httpMethod);
-  console.log('🔍 [getTokenPurchases] Path:', event.path);
 
   // Set CORS headers
   const headers = {
@@ -14,7 +11,6 @@ exports.handler = async (event, context) => {
 
   // Handle OPTIONS request for CORS
   if (event.httpMethod === 'OPTIONS') {
-    console.log('✨ [getTokenPurchases] Requête OPTIONS - CORS');
     return {
       statusCode: 200,
       headers,
@@ -24,9 +20,6 @@ exports.handler = async (event, context) => {
 
   // Check for required environment variables
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    console.error('❌ [getTokenPurchases] Variables d\'environnement manquantes:');
-    console.error('- SUPABASE_URL:', process.env.SUPABASE_URL ? '✅' : '❌');
-    console.error('- SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? '✅' : '❌');
     return {
       statusCode: 500,
       headers,

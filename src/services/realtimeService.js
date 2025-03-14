@@ -4,21 +4,16 @@ class RealtimeService {
   constructor() {
     this.channels = {};
     this.listeners = {};
-    console.log('🚀 Service de temps réel initialisé');
   }
 
-  // S'abonner aux changements de la table tokens
+  // Subscribe to token table changes
   subscribeToTokens(network, callback) {
     const channelId = `tokens-${network}`;
-    console.log(`📡 Tentative d'abonnement aux tokens du réseau ${network}`);
     
-    // Si un canal existe déjà pour ce réseau, on le désabonne d'abord
     if (this.channels[channelId]) {
-      console.log(`⚠️ Un canal existe déjà pour ${channelId}, désabonnement...`);
       this.unsubscribeFromTokens(network);
     }
 
-    // Créer un nouveau canal pour ce réseau
     this.channels[channelId] = supabase
       .channel(channelId)
       .on('postgres_changes', 
@@ -29,34 +24,27 @@ class RealtimeService {
           filter: `network=eq.${network}`
         }, 
         (payload) => {
-          console.log('📣 Token update:', payload);
           if (callback && typeof callback === 'function') {
             callback(payload);
           }
         }
       )
-      .subscribe((status) => {
-        console.log(`📡 Statut de l'abonnement pour ${channelId}:`, status);
-      });
+      .subscribe();
 
-    // Stocker le callback pour pouvoir le réutiliser
     this.listeners[channelId] = callback;
-    console.log(`✅ Abonnement aux tokens du réseau ${network} réussi`);
     
     return () => this.unsubscribeFromTokens(network);
   }
 
-  // S'abonner aux achats des top holders pour un token spécifique
+  // Subscribe to top holder purchases for a specific token
   subscribeToTokenPurchases(tokenAddress, callback) {
     const channelId = `token-purchases-${tokenAddress}`;
     
-    // Si un canal existe déjà pour ce token, on le désabonne d'abord
     if (this.channels[channelId]) {
       this.unsubscribeFromTokenPurchases(tokenAddress);
     }
 
     try {
-      // Créer un nouveau canal pour ce token
       this.channels[channelId] = supabase
         .channel(channelId)
         .on('postgres_changes', 
@@ -68,8 +56,10 @@ class RealtimeService {
           }, 
           (payload) => {
             if (callback && typeof callback === 'function') {
+              const formattedPurchase = this.formatPurchase(payload.new);
               callback({
                 ...payload,
+                new: formattedPurchase,
                 eventType: 'INSERT'
               });
             }
@@ -84,8 +74,10 @@ class RealtimeService {
           }, 
           (payload) => {
             if (callback && typeof callback === 'function') {
+              const formattedPurchase = this.formatPurchase(payload.new);
               callback({
                 ...payload,
+                new: formattedPurchase,
                 eventType: 'UPDATE'
               });
             }
@@ -93,30 +85,50 @@ class RealtimeService {
         )
         .subscribe();
 
-      // Stocker le callback pour pouvoir le réutiliser
       this.listeners[channelId] = callback;
       
       return () => this.unsubscribeFromTokenPurchases(tokenAddress);
     } catch (error) {
-      console.error(`❌ Erreur lors de la création du canal pour ${channelId}:`, error);
+      console.error(`[RealtimeService] Failed to create channel ${channelId}:`, error);
       return () => {};
     }
   }
 
-  // Se désabonner des changements de la table tokens
+  // Format purchase data to match tokenService format
+  formatPurchase(tx) {
+    const date = new Date(tx.created_at);
+    const formattedDate = !isNaN(date.getTime()) 
+      ? date.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      : 'Unknown date';
+
+    return {
+      action: tx.action ? 'BUY' : 'SELL',
+      amount: tx.amount ? (parseFloat(tx.amount) / 1e18).toFixed(3) : '0',
+      cost: tx.cost ? `$${parseFloat(tx.cost).toFixed(3)}` : '$0.00',
+      date: formattedDate,
+      tx_hash: tx.tx_hash,
+      user_id: tx.user_id
+    };
+  }
+
+  // Unsubscribe from token table changes
   unsubscribeFromTokens(network) {
     const channelId = `tokens-${network}`;
     
     if (this.channels[channelId]) {
-      console.log(`🔕 Désabonnement de ${channelId}...`);
       supabase.removeChannel(this.channels[channelId]);
       delete this.channels[channelId];
       delete this.listeners[channelId];
-      console.log(`✅ Désabonnement de ${channelId} réussi`);
     }
   }
 
-  // Se désabonner des achats des top holders pour un token spécifique
+  // Unsubscribe from token purchases
   unsubscribeFromTokenPurchases(tokenAddress) {
     const channelId = `token-purchases-${tokenAddress}`;
     
@@ -127,17 +139,14 @@ class RealtimeService {
     }
   }
 
-  // Se désabonner de tous les canaux
+  // Unsubscribe from all channels
   unsubscribeAll() {
-    console.log(`🔕 Désabonnement de tous les canaux...`);
     Object.keys(this.channels).forEach(channelId => {
       supabase.removeChannel(this.channels[channelId]);
-      console.log(`✅ Désabonnement de ${channelId} réussi`);
     });
     
     this.channels = {};
     this.listeners = {};
-    console.log(`✅ Tous les canaux ont été désabonnés`);
   }
 }
 

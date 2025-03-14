@@ -54,7 +54,7 @@ export default function Platform() {
         .order('mentioned_at', { ascending: false });
 
       if (error) {
-        console.error('Erreur lors de la récupération des données:', error);
+        console.error('Error while fetching data:', error);
         setError(error.message);
       } else {
         setItems(data);

@@ -153,45 +153,49 @@ export const tokenService = {
   },
 
   async getTopHolderPurchases(tokenAddress) {
-    console.log('🚀 [TokenService] Début de getTopHolderPurchases pour:', tokenAddress);
     try {
       const url = getApiUrl(`/token_purchases/${tokenAddress}`);
-      console.log(`📡 [TokenService] URL construite: ${url}`);
       
-      console.log('⏳ [TokenService] Envoi de la requête...');
       const response = await fetch(url);
-      console.log(`📥 [TokenService] Réponse reçue - Status: ${response.status}`);
       
       if (!response.ok) {
-        console.error(`❌ [TokenService] Erreur HTTP: ${response.status} ${response.statusText}`);
         const errorText = await response.text();
-        console.error('📄 [TokenService] Contenu de l\'erreur:', errorText);
+        console.error('[TokenService] Error content:', errorText);
         return { data: [], error: `Failed to fetch transactions: ${response.status} ${response.statusText}` };
       }
 
-      console.log('🔄 [TokenService] Parsing de la réponse JSON...');
       const result = await response.json();
-      console.log('📦 [TokenService] Données reçues:', result);
       
       if (!result.success || !result.data) {
-        console.warn('⚠️ [TokenService] Pas de données dans la réponse');
+        console.warn('[TokenService] No data in response');
         return { data: [], error: 'No data returned from API' };
       }
       
-      console.log(`✨ [TokenService] Formatage de ${result.data.length} transactions...`);
-      const formattedData = result.data.map(tx => ({
-        action: tx.action ? 'BUY' : 'SELL',
-        amount: tx.amount ? (parseFloat(tx.amount) / 1e18).toFixed(3) : '0',
-        cost: tx.cost ? `$${parseFloat(tx.cost).toFixed(3)}` : '$0.00',
-        date: new Date(tx.created_at).toLocaleString(),
-        tx_hash: tx.tx_hash,
-        user_id: tx.user_id
-      }));
+      const formattedData = result.data.map(tx => {
+        const date = new Date(tx.created_at);
+        const formattedDate = !isNaN(date.getTime()) 
+          ? date.toLocaleString('en-US', {
+              year: 'numeric',
+              month: 'numeric',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          : 'Unknown date';
 
-      console.log('✅ [TokenService] Données formatées avec succès');
+        return {
+          action: tx.action ? 'BUY' : 'SELL',
+          amount: tx.amount ? (parseFloat(tx.amount) / 1e18).toFixed(3) : '0',
+          cost: tx.cost ? `$${parseFloat(tx.cost).toFixed(3)}` : '$0.00',
+          date: formattedDate,
+          tx_hash: tx.tx_hash,
+          user_id: tx.user_id
+        };
+      });
+
       return { data: formattedData };
     } catch (error) {
-      console.error('💥 [TokenService] Erreur inattendue:', error);
+      console.error('[TokenService] Unexpected error:', error);
       return { data: [], error };
     }
   },
