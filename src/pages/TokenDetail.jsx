@@ -807,17 +807,17 @@ const TokenDetail = () => {
                         <td className="py-4">
                           <div className="flex items-center">
                             <div className="font-medium text-white">
-                              {purchase.buyer}
+                              {purchase.user_id}
                             </div>
                           </div>
                         </td>
                         <td className="py-4 font-medium">
                           <span className={`px-3 py-1 rounded-full ${
-                            purchase.type === 'SELL'
+                            purchase.action === 'SELL'
                               ? 'bg-red-500/10 border border-red-500/30 text-red-400' 
                               : 'bg-green-500/10 border border-green-500/30 text-green-400'
                           } text-sm`}>
-                            {purchase.type}
+                            {purchase.action}
                           </span>
                         </td>
                         <td className="py-4 font-medium">
@@ -827,7 +827,7 @@ const TokenDetail = () => {
                           {purchase.cost}
                         </td>
                         <td className="py-4 text-gray-400">
-                          {purchase.date}
+                          {purchase.purchased_at}
                         </td>
                         <td className="py-4">
                           <a 
