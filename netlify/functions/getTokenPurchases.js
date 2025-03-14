@@ -118,12 +118,12 @@ exports.handler = async (event, context) => {
     // Format the data according to the actual schema
     console.log('🔄 [getTokenPurchases] Formatage des données...');
     const formattedData = (purchases || []).map(purchase => ({
-      buyer: purchase.user_id || 'Unknown',
+      buyer: purchase.user_id,
       type: purchase.action ? 'BUY' : 'SELL',
-      amount: parseFloat(purchase.amount) || 0,
-      estimated_value: parseFloat(purchase.cost) || 0,
+      amount: purchase.amount,
+      cost: purchase.cost,
       date: purchase.purchased_at,
-      transaction_hash: purchase.tx_hash || ''
+      tx_hash: purchase.tx_hash
     }));
 
     console.log(`✅ [getTokenPurchases] Données formatées avec succès (${formattedData.length} entrées)`);
