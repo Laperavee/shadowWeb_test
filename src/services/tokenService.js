@@ -202,7 +202,7 @@ export const tokenService = {
     try {
       const imgUrl = token_image ? await uploadTokenImage(token_image) : null;
 
-      const response = await fetch(getApiUrl('/tokens'), {
+      const response = await fetch(getApiUrl('/addToken'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

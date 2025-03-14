@@ -28,6 +28,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/tokens/add"
+  to = "/.netlify/functions/addToken"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200 
