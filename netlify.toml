@@ -23,11 +23,6 @@
   status = 200
 
 [[redirects]]
-  from = "/api/market-data/*"
-  to = "/.netlify/functions/getMarketData"
-  status = 200
-
-[[redirects]]
   from = "/api/tokens/add"
   to = "/.netlify/functions/addToken"
   status = 200
