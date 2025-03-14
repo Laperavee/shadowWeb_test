@@ -56,7 +56,7 @@ exports.handler = async (event, context) => {
     const { data, error } = await supabase
       .from('tokens')
       .select('*')
-      .eq('token_address', tokenAddress.toLowerCase())
+      .eq('token_address', tokenAddress)
       .single();
 
     if (error) {
