@@ -146,32 +146,52 @@ export const handler = async (event, context) => {
             }
 
             try {
-                // Vérifier si la table existe
+                // Vérifier si la table existe et son contenu
                 console.log('📊 Checking token_purchases table...');
-                const { data: tableInfo, error: tableError } = await supabase
+                
+                // 1. Vérifier le nombre total d'entrées dans la table
+                const { data: totalCount, error: countError } = await supabase
                     .from('token_purchases')
-                    .select('count(*)')
-                    .limit(1);
+                    .select('count', { count: 'exact' });
 
-                if (tableError) {
-                    console.error('❌ Table check error:', tableError);
+                console.log('Total purchases in table:', {
+                    count: totalCount,
+                    error: countError
+                });
+
+                if (countError) {
+                    console.error('❌ Table check error:', countError);
                     return {
                         statusCode: 500,
                         headers,
                         body: JSON.stringify({
                             success: false,
                             error: 'Failed to check token_purchases table',
-                            details: tableError
+                            details: countError
                         })
                     };
                 }
 
-                // Requête pour ce token spécifique
+                // 2. Récupérer un échantillon des dernières entrées
+                const { data: sampleData, error: sampleError } = await supabase
+                    .from('token_purchases')
+                    .select('*')
+                    .limit(5)
+                    .order('created_at', { ascending: false });
+
+                console.log('Recent purchases sample:', {
+                    hasData: sampleData && sampleData.length > 0,
+                    sampleSize: sampleData?.length || 0,
+                    firstEntry: sampleData?.[0],
+                    error: sampleError
+                });
+
+                // 3. Requête spécifique pour le token
                 console.log(`📡 Fetching purchases for token: ${tokenAddress}`);
                 const { data: purchases, error: purchasesError } = await supabase
                     .from('token_purchases')
                     .select('*')
-                    .eq('token_address', tokenAddress)
+                    .eq('token_address', tokenAddress.toLowerCase()) // Convertir en minuscules
                     .order('created_at', { ascending: false });
 
                 if (purchasesError) {
@@ -182,10 +202,21 @@ export const handler = async (event, context) => {
                         body: JSON.stringify({
                             success: false,
                             error: 'Failed to fetch purchases',
-                            details: purchasesError
+                            details: purchasesError,
+                            debug: {
+                                tokenAddress,
+                                lowercaseAddress: tokenAddress.toLowerCase()
+                            }
                         })
                     };
                 }
+
+                console.log('Token-specific query results:', {
+                    purchasesFound: purchases?.length || 0,
+                    tokenAddress: tokenAddress,
+                    lowercaseAddress: tokenAddress.toLowerCase(),
+                    firstPurchase: purchases?.[0]
+                });
 
                 // Récupérer les informations du token
                 const { data: token, error: tokenError } = await supabase
@@ -197,13 +228,6 @@ export const handler = async (event, context) => {
                 if (tokenError) {
                     console.warn('⚠️ Token info not found:', tokenError);
                 }
-
-                console.log('Query results:', {
-                    purchasesFound: purchases?.length || 0,
-                    hasTokenInfo: !!token,
-                    tokenSymbol: token?.token_symbol,
-                    tokenName: token?.token_name
-                });
 
                 const formattedPurchases = (purchases || []).map(p => ({
                     type: p.action ? 'BUY' : 'SELL',
