@@ -806,9 +806,14 @@ const TokenDetail = () => {
                       >
                         <td className="py-4">
                           <div className="flex items-center">
-                            <div className="font-medium text-white">
-                              {purchase.user_id}
-                            </div>
+                            <a 
+                              href={`https://snowtrace.io/address/${purchase.user_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-medium text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
+                            >
+                              {`${purchase.user_id.substring(0, 4)}...${purchase.user_id.substring(purchase.user_id.length - 3)}`}
+                            </a>
                           </div>
                         </td>
                         <td className="py-4 font-medium">
@@ -834,9 +839,12 @@ const TokenDetail = () => {
                             href={`https://snowtrace.io/tx/${purchase.tx_hash}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors flex items-center"
+                            className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors flex items-center gap-2 group"
                           >
-                            {purchase.tx_hash}
+                            <span>{`${purchase.tx_hash.substring(0, 4)}...${purchase.tx_hash.substring(purchase.tx_hash.length - 3)}`}</span>
+                            <svg className="w-4 h-4 text-fuchsia-400 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
                           </a>
                         </td>
                       </tr>
