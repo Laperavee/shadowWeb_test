@@ -372,11 +372,23 @@ export default function Staking() {
                   <label className="block text-gray-400 mb-2">Amount to Stake</label>
                   <div className="relative">
                     <input
-                      type="number"
+                      type="text"
                       value={stakingAmount}
-                      onChange={(e) => setStakingAmount(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || /^\d+$/.test(value)) {
+                          setStakingAmount(value);
+                        }
+                      }}
+                      onKeyPress={(e) => {
+                        if (!/[0-9]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                       className="w-full px-4 py-3 bg-black/30 border border-gray-700 rounded-lg focus:outline-none focus:border-fuchsia-500/50"
                       placeholder={`Minimum ${stakingData.minimumStake} SHDW`}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                     />
                     <button 
                       onClick={() => setStakingAmount(stakingData.userStaked.toString())}
