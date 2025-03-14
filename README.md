@@ -86,10 +86,10 @@ Records purchases made by top holders.
 
 Create a `.env` file in the root directory with the following variables:
 
-```
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_SUPABASE_SERVICE_KEY=your_supabase_service_key
+```env
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_KEY=your_supabase_service_key
 WEBSOCKET_RPC_URL=your_websocket_rpc_url
 ```
 
