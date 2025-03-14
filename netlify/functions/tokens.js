@@ -118,21 +118,23 @@ export const handler = async (event, context) => {
 
         // GET /api/tokens/:tokenAddress/top-holder-purchases (achats des top holders)
         if (event.httpMethod === 'GET' && event.path.includes('/top-holder-purchases')) {
-            // Debug: Log raw path
+            console.log('🔍 Handling top-holder-purchases request');
             console.log('Raw path:', event.path);
             
             // Fix path parsing to handle double 'tokens'
             const pathParts = event.path.split('/');
-            const tokenAddress = pathParts[pathParts.indexOf('tokens') + 1];
+            const tokenIndex = pathParts.lastIndexOf('tokens') + 1;
+            const tokenAddress = pathParts[tokenIndex];
             
             console.log('Path analysis:', {
                 pathParts,
+                tokenIndex,
                 tokenAddress,
                 fullPath: event.path
             });
 
             if (!tokenAddress || tokenAddress === 'top-holder-purchases') {
-                console.error('Invalid token address in path');
+                console.error('❌ Invalid token address in path');
                 return {
                     statusCode: 400,
                     headers,
@@ -143,101 +145,103 @@ export const handler = async (event, context) => {
                 };
             }
 
-            // Debug: Vérifier la structure de la table
-            console.log('Checking token_purchases table structure...');
-            
-            // D'abord, vérifions s'il y a des données dans la table
-            const { data: allPurchases, error: countError } = await supabase
-                .from('token_purchases')
-                .select('*')
-                .limit(1);
+            try {
+                // Vérifier si la table existe
+                console.log('📊 Checking token_purchases table...');
+                const { data: tableInfo, error: tableError } = await supabase
+                    .from('token_purchases')
+                    .select('count(*)')
+                    .limit(1);
 
-            console.log('Table check:', {
-                hasData: allPurchases && allPurchases.length > 0,
-                firstRow: allPurchases?.[0],
-                error: countError
-            });
+                if (tableError) {
+                    console.error('❌ Table check error:', tableError);
+                    return {
+                        statusCode: 500,
+                        headers,
+                        body: JSON.stringify({
+                            success: false,
+                            error: 'Failed to check token_purchases table',
+                            details: tableError
+                        })
+                    };
+                }
 
-            if (countError) {
-                console.error('Error accessing token_purchases table:', countError);
-                return {
-                    statusCode: 500,
-                    headers,
-                    body: JSON.stringify({ 
-                        success: false, 
-                        error: 'Failed to access token_purchases table',
-                        details: countError 
-                    })
-                };
-            }
+                // Requête pour ce token spécifique
+                console.log(`📡 Fetching purchases for token: ${tokenAddress}`);
+                const { data: purchases, error: purchasesError } = await supabase
+                    .from('token_purchases')
+                    .select('*')
+                    .eq('token_address', tokenAddress)
+                    .order('created_at', { ascending: false });
 
-            // Debug: Log the query we're about to make
-            console.log('Querying token_purchases table with params:', {
-                tokenAddress,
-                table: 'token_purchases'
-            });
+                if (purchasesError) {
+                    console.error('❌ Query error:', purchasesError);
+                    return {
+                        statusCode: 500,
+                        headers,
+                        body: JSON.stringify({
+                            success: false,
+                            error: 'Failed to fetch purchases',
+                            details: purchasesError
+                        })
+                    };
+                }
 
-            // Requête principale modifiée pour plus de clarté
-            const { data: purchases, error } = await supabase
-                .from('token_purchases')
-                .select('*')
-                .eq('token_address', tokenAddress)
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error('Error fetching top holder purchases:', error);
-                return {
-                    statusCode: 500,
-                    headers,
-                    body: JSON.stringify({ 
-                        success: false, 
-                        error: 'Failed to fetch top holder purchases',
-                        details: error 
-                    })
-                };
-            }
-
-            // Debug: Log what we found
-            console.log('Query results:', {
-                purchasesFound: purchases?.length || 0,
-                firstPurchase: purchases?.[0],
-                tokenAddress: tokenAddress,
-                allColumns: purchases?.[0] ? Object.keys(purchases[0]) : []
-            });
-
-            // Si nous avons des achats, récupérons les informations du token
-            let tokenInfo = null;
-            if (purchases && purchases.length > 0) {
-                const { data: token } = await supabase
+                // Récupérer les informations du token
+                const { data: token, error: tokenError } = await supabase
                     .from('tokens')
                     .select('token_symbol, token_name')
                     .eq('token_address', tokenAddress)
                     .single();
-                
-                tokenInfo = token;
+
+                if (tokenError) {
+                    console.warn('⚠️ Token info not found:', tokenError);
+                }
+
+                console.log('Query results:', {
+                    purchasesFound: purchases?.length || 0,
+                    hasTokenInfo: !!token,
+                    tokenSymbol: token?.token_symbol,
+                    tokenName: token?.token_name
+                });
+
+                const formattedPurchases = (purchases || []).map(p => ({
+                    type: p.action ? 'BUY' : 'SELL',
+                    amount: p.amount ? (parseFloat(p.amount) / 1e18).toLocaleString() : '0',
+                    price: p.cost ? `$${parseFloat(p.cost).toFixed(2)}` : '$0.00',
+                    timestamp: p.created_at,
+                    txHash: p.tx_hash,
+                    user: p.user_id,
+                    tokenSymbol: token?.token_symbol || 'UNKNOWN',
+                    tokenName: token?.token_name || 'Unknown Token'
+                }));
+
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify({
+                        success: true,
+                        data: formattedPurchases,
+                        debug: {
+                            tokenAddress,
+                            purchasesCount: purchases?.length || 0,
+                            hasTokenInfo: !!token
+                        }
+                    })
+                };
+            } catch (error) {
+                console.error('❌ Handler error:', error);
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({
+                        success: false,
+                        error: 'Internal server error',
+                        details: error.message,
+                        debug: { tokenAddress }
+                    })
+                };
             }
-
-            console.log('Token info:', tokenInfo);
-
-            const formattedPurchases = purchases.map(p => ({
-                type: p.action ? 'BUY' : 'SELL',
-                amount: p.amount ? (parseFloat(p.amount) / 1e18).toLocaleString() : '0',
-                price: p.cost ? `$${parseFloat(p.cost).toFixed(2)}` : '$0.00',
-                timestamp: p.created_at,
-                txHash: p.tx_hash,
-                user: p.user_id,
-                tokenSymbol: tokenInfo?.token_symbol || 'UNKNOWN',
-                tokenName: tokenInfo?.token_name || 'Unknown Token'
-            }));
-
-            return {
-                statusCode: 200,
-                headers,
-                body: JSON.stringify({ 
-                    success: true, 
-                    data: formattedPurchases
-                })
-            };
         }
 
         // POST /api/tokens (création de token)

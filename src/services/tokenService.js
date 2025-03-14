@@ -8,8 +8,8 @@ const API_URL = isProduction ? '/.netlify/functions' : 'http://localhost:3002';
 // Construire l'URL de l'API en fonction de l'environnement
 const getApiUrl = (endpoint) => {
   if (isProduction) {
-    // En production, on appelle directement la fonction tokens
-    return `${API_URL}/tokens${endpoint}`;
+    // En production, on appelle directement la fonction tokens sans ajouter /tokens
+    return `${API_URL}/tokens${endpoint.startsWith('/tokens') ? endpoint.substring(7) : endpoint}`;
   }
   // En développement, on garde le préfixe /api
   return `${API_URL}/api${endpoint}`;
