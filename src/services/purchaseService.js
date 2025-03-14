@@ -1,4 +1,4 @@
-import { CACHE_DURATION } from '../utils/constants';
+import { API_URL, CACHE_DURATION } from '../utils/constants';
 
 // En production, on utilise le chemin relatif pour les fonctions Netlify
 const isProduction = import.meta.env.PROD;
