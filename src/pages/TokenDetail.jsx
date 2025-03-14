@@ -827,7 +827,7 @@ const TokenDetail = () => {
                           {purchase.cost}
                         </td>
                         <td className="py-4 text-gray-400">
-                          {purchase.purchased_at}
+                          {purchase.date}
                         </td>
                         <td className="py-4">
                           <a 
