@@ -50,11 +50,7 @@ const TokenDetail = () => {
     const fetchToken = async () => {
       try {
         setLoading(true);
-        setError(null);
-        
-        const isProduction = import.meta.env.PROD;
-        const API_URL = isProduction ? '/.netlify/functions' : 'http://localhost:3002';
-        
+        setError(null);        
         const result = await tokenService.getTokenByAddress(address);
         
         if (!result || !result.data) {
