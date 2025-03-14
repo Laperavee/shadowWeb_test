@@ -831,19 +831,17 @@ const TokenDetail = () => {
                               ? 'text-red-400' 
                               : 'text-green-400'
                           }`}>
-                            {parseFloat(purchase.amount) / 1e18 > 0.000001 
-                              ? (parseFloat(purchase.amount) / 1e18).toFixed(6) 
-                              : (parseFloat(purchase.amount) / 1e18).toExponential(4)} tokens
+                            {purchase.amount} tokens
                           </span>
                         </td>
                         <td className="py-4 font-medium">
                           {purchase.cost ? (
                             <span className="text-gray-300">
-                              ${parseFloat(purchase.cost).toFixed(2)}
+                              ${purchase.cost}
                             </span>
                           ) : token.market_data?.price ? (
                             <span className="text-gray-300">
-                              {formatPrice((parseFloat(purchase.amount) / 1e18) * token.market_data.price)}
+                              ${(purchase.amount * token.market_data.price).toString()}
                               <span className="text-xs text-gray-500 block">(estimation)</span>
                             </span>
                           ) : (
@@ -851,7 +849,7 @@ const TokenDetail = () => {
                           )}
                         </td>
                         <td className="py-4 text-gray-400">
-                          {new Date(purchase.purchased_at).toLocaleString()}
+                          {purchase.date}
                         </td>
                         <td className="py-4">
                           <a 
