@@ -183,7 +183,7 @@ export const tokenService = {
         action: tx.action ? 'BUY' : 'SELL',
         amount: tx.amount ? (parseFloat(tx.amount) / 1e18).toFixed(3) : '0',
         cost: tx.cost ? `$${parseFloat(tx.cost).toFixed(3)}` : '$0.00',
-        purchased_at: new Date(tx.created_at),
+        date: new Date(tx.created_at).toLocaleString(),
         tx_hash: tx.tx_hash,
         user_id: tx.user_id
       }));
