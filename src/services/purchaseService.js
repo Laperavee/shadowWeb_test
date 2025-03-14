@@ -36,7 +36,7 @@ class PurchaseService {
       }
 
       console.debug('[Purchase Service] Fetching purchases for:', tokenAddress);
-      const url = getApiUrl(`/tokens/${tokenAddress}/top-holder-purchases`);
+      const url = `${API_URL}/tokens/${tokenAddress}/top-holder-purchases`;
       console.log('[Purchase Service] Full request URL:', url);
       
       const response = await fetch(url);
