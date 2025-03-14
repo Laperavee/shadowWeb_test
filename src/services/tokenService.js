@@ -179,17 +179,8 @@ export const tokenService = {
       }
       
       console.log(`✨ [TokenService] Formatage de ${result.data.length} transactions...`);
-      const formattedData = result.data.map(tx => ({
-        type: tx.action ? 'BUY' : 'SELL',
-        amount: tx.amount ? (parseFloat(tx.amount) / 1e18).toLocaleString() : '0',
-        price: tx.cost ? `$${parseFloat(tx.cost).toFixed(2)}` : '$0.00',
-        timestamp: new Date(tx.created_at),
-        txHash: tx.tx_hash,
-        user: tx.user_id
-      }));
-
       console.log('✅ [TokenService] Données formatées avec succès');
-      return { data: formattedData };
+      return { data: result.data };
     } catch (error) {
       console.error('💥 [TokenService] Erreur inattendue:', error);
       return { data: [], error };
