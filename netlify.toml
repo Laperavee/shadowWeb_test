@@ -8,9 +8,10 @@
   status = 200
 
 [[redirects]]
-  from = "/api/tokens/address/*"
-  to = "/.netlify/functions/getTokenByAddress/:splat"
+  from = "/api/tokens/address/:address"
+  to = "/.netlify/functions/getTokenByAddress/:address"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/api/tokens"
