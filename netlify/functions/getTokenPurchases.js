@@ -93,6 +93,7 @@ exports.handler = async (event, context) => {
     }
 
     console.log(`✨ [getTokenPurchases] ${purchases?.length || 0} achats trouvés`);
+    console.log('📅 [getTokenPurchases] Example purchase date:', purchases?.[0]?.purchased_at);
     
     return {
       statusCode: 200,

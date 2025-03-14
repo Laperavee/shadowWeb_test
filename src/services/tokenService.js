@@ -172,16 +172,26 @@ export const tokenService = {
       }
       
       const formattedData = result.data.map(tx => {
-        const date = new Date(tx.created_at);
+        console.log('[TokenService] Raw purchase data:', {
+          purchased_at: tx.purchased_at,
+          created_at: tx.created_at,
+          tx_hash: tx.tx_hash
+        });
+        
+        const date = new Date(tx.purchased_at);
+        console.log('[TokenService] Parsed date object:', date);
+        
         const formattedDate = !isNaN(date.getTime()) 
           ? date.toLocaleString('en-US', {
               year: 'numeric',
               month: 'numeric',
               day: 'numeric',
               hour: '2-digit',
-              minute: '2-digit'
+              minute: '2-digit',
+              hour12: true
             })
           : 'Unknown date';
+        console.log('[TokenService] Formatted date:', formattedDate);
 
         return {
           action: tx.action ? 'BUY' : 'SELL',
