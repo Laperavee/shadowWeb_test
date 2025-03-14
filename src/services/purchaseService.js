@@ -1,4 +1,18 @@
-import { API_URL, CACHE_DURATION } from '../utils/constants';
+import { CACHE_DURATION } from '../utils/constants';
+
+// En production, on utilise le chemin relatif pour les fonctions Netlify
+const isProduction = import.meta.env.PROD;
+const API_URL = isProduction ? '/.netlify/functions' : 'http://localhost:3002';
+
+// Construire l'URL de l'API en fonction de l'environnement
+const getApiUrl = (endpoint) => {
+  if (isProduction) {
+    // En production, on appelle directement la fonction tokens sans ajouter /tokens
+    return `${API_URL}/tokens${endpoint.startsWith('/tokens') ? endpoint.substring(7) : endpoint}`;
+  }
+  // En développement, on garde le préfixe /api
+  return `${API_URL}/api${endpoint}`;
+};
 
 // Cache pour les requêtes
 const cache = new Map();
@@ -22,7 +36,7 @@ class PurchaseService {
       }
 
       console.debug('[Purchase Service] Fetching purchases for:', tokenAddress);
-      const url = `${API_URL}/tokens/${tokenAddress}/purchases`;
+      const url = getApiUrl(`/tokens/${tokenAddress}/top-holder-purchases`);
       console.log('[Purchase Service] Full request URL:', url);
       
       const response = await fetch(url);
