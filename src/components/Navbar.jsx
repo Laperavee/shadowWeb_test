@@ -10,7 +10,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  if (location.pathname === '/shadow-fun' || location.pathname.startsWith('/token/')) {
+  if (location.pathname === '/shadow-fun') {
     return null;
   }
 

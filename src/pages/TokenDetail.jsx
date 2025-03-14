@@ -30,21 +30,72 @@ const TokenDetail = () => {
     notificationSound.current = new Audio('/notification.mp3');
   }, []);
 
+  const fetchDexScreenerData = useCallback(async (tokenAddress, network) => {
+    try {
+      setDexLoading(true);
+      
+      const dexNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
+      setDexScreenerUrl(`https://dexscreener.com/${dexNetwork}/${tokenAddress}?embed=1&theme=dark&trades=0&info=0`);
+      
+      const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
+      const data = await response.json();
+      
+      if (data && data.pairs && data.pairs.length > 0) {
+        const sortedPairs = data.pairs.sort((a, b) => 
+          parseFloat(b.volumeUsd24h || 0) - parseFloat(a.volumeUsd24h || 0)
+        );
+        
+        const mainPair = sortedPairs[0];
+        setDexData(mainPair);
+        
+        if (mainPair) {
+          const marketData = {
+            price: parseFloat(mainPair.priceUsd || 0),
+            marketCap: parseFloat(mainPair.fdv || 0),
+            priceChange24h: parseFloat(mainPair.priceChange?.h24 || 0),
+            volume24h: parseFloat(mainPair.volume?.h24 || 0),
+            liquidity: parseFloat(mainPair.liquidity?.usd || 0) / 1000
+          };
+
+          setToken(prevToken => ({
+            ...prevToken,
+            market_data: marketData
+          }));
+        }
+      }
+    } catch (err) {
+      // Silently handle error
+    } finally {
+      setDexLoading(false);
+    }
+  }, []);
+
+  const fetchTopHolderPurchases = useCallback(async (tokenAddress) => {
+    try {
+      setPurchasesLoading(true);
+      const { data, error } = await tokenService.getTopHolderPurchases(tokenAddress);      
+      if (error) {
+        console.error('[TopHolderPurchases] Error fetching purchases:', error);
+      } else if (data) {
+        setTopHolderPurchases(data || []);
+      } else {
+        setTopHolderPurchases([]);
+      }
+    } catch (err) {
+      console.error('[TopHolderPurchases] Unexpected error:', err);
+    } finally {
+      setPurchasesLoading(false);
+    }
+  }, []);
+
   // Fonction pour jouer le son de notification
-  const playNotificationSound = () => {
+  const playNotificationSound = useCallback(() => {
     if (notificationSound.current) {
       notificationSound.current.play().catch(e => {
-        // Ignore playback errors (often due to browser restrictions)
-        console.error('Notification sound could not be played:', e);
+        // Ignore playback errors
       });
     }
-  };
-
-  // Fonction pour formater les adresses (afficher seulement le début et la fin)
-  const formatAddress = (address) => {
-    if (!address) return '';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-  };
+  }, []);
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -68,7 +119,6 @@ const TokenDetail = () => {
         fetchDexScreenerData(tokenData.token_address, tokenData.network);
         fetchTopHolderPurchases(tokenData.token_address);
         
-        // Récupérer le prix du token natif (AVAX ou ETH)
         const nativeSymbol = tokenData.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH';
         const price = await priceService.getPrice(nativeSymbol);
         setTokenPrice(price);
@@ -81,7 +131,6 @@ const TokenDetail = () => {
 
     fetchToken();
     
-    // S'abonner aux mises à jour de prix
     const unsubscribe = priceService.subscribeToUpdates((prices) => {
       if (token) {
         const nativeSymbol = token.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH';
@@ -92,66 +141,12 @@ const TokenDetail = () => {
     return () => {
       unsubscribe();
     };
-  }, [address]);
+  }, [address, fetchDexScreenerData, fetchTopHolderPurchases]);
 
-  const fetchDexScreenerData = async (tokenAddress, network) => {
-    try {
-      setDexLoading(true);
-      
-      const dexNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
-      setDexScreenerUrl(`https://dexscreener.com/${dexNetwork}/${tokenAddress}?embed=1&theme=dark&trades=0&info=0`);
-      
-      const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
-      const data = await response.json();
-      
-      if (data && data.pairs && data.pairs.length > 0) {
-        // Sort by volume to get the most active pair
-        const sortedPairs = data.pairs.sort((a, b) => 
-          parseFloat(b.volumeUsd24h || 0) - parseFloat(a.volumeUsd24h || 0)
-        );
-        
-        const mainPair = sortedPairs[0];
-        setDexData(mainPair);
-        
-        // Update token with market information
-        if (mainPair) {
-          const marketData = {
-            price: parseFloat(mainPair.priceUsd || 0),
-            marketCap: parseFloat(mainPair.fdv || 0),
-            priceChange24h: parseFloat(mainPair.priceChange?.h24 || 0),
-            volume24h: parseFloat(mainPair.volume?.h24 || 0),
-            liquidity: parseFloat(mainPair.liquidity?.usd || 0) / 1000
-          };
-
-          setToken(prevToken => ({
-            ...prevToken,
-            market_data: marketData
-          }));
-        }
-      }
-    } catch (err) {
-      // Silently handle error
-    } finally {
-      setDexLoading(false);
-    }
-  };
-
-  const fetchTopHolderPurchases = async (tokenAddress) => {
-    try {
-      setPurchasesLoading(true);
-      const { data, error } = await tokenService.getTopHolderPurchases(tokenAddress);      
-      if (error) {
-        console.error('[TopHolderPurchases] Error fetching purchases:', error);
-      } else if (data) {
-        setTopHolderPurchases(data || []);
-      } else {
-        setTopHolderPurchases([]);
-      }
-    } catch (err) {
-      console.error('[TopHolderPurchases] Unexpected error:', err);
-    } finally {
-      setPurchasesLoading(false);
-    }
+  // Fonction pour formater les adresses (afficher seulement le début et la fin)
+  const formatAddress = (address) => {
+    if (!address) return '';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   };
 
   // S'abonner aux achats des top holders en temps réel
