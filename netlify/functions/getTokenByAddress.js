@@ -40,7 +40,7 @@ exports.handler = async (event, context) => {
     const path = event.path;
     const tokenAddress = path.split('/getTokenByAddress/')[1];
 
-    console.log(`Fetching token with address: ${tokenAddress}`);
+    console.log(`[TokenByAddress] Fetching token with address: ${tokenAddress}`);
 
     if (!tokenAddress) {
       return {

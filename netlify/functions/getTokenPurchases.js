@@ -53,26 +53,7 @@ exports.handler = async (event, context) => {
         })
       };
     }
-
-    // First, check if the token exists
-    const { data: tokenData, error: tokenError } = await supabase
-      .from('tokens')
-      .select('token_address')
-      .eq('token_address', tokenAddress)
-      .single();
-
-    if (tokenError || !tokenData) {
-      console.error(`[TokenPurchases] Token not found: ${tokenAddress}`);
-      return {
-        statusCode: 404,
-        headers,
-        body: JSON.stringify({ 
-          success: false, 
-          error: 'Token not found' 
-        })
-      };
-    }
-
+    
     console.log(`[TokenPurchases] Fetching purchases for token: ${tokenAddress}`);
     
     // Get purchases with additional fields

@@ -169,8 +169,6 @@ export const tokenService = {
       if (!result.success || !result.data) {
         return { data: [], error: 'No data returned from API' };
       }
-
-      const { data: token } = await this.getTokenByAddress(tokenAddress);
       
       const formattedData = result.data.map(tx => ({
         type: tx.action ? 'BUY' : 'SELL',
@@ -178,9 +176,7 @@ export const tokenService = {
         price: tx.cost ? `$${parseFloat(tx.cost).toFixed(2)}` : '$0.00',
         timestamp: new Date(tx.created_at),
         txHash: tx.tx_hash,
-        user: tx.user_id,
-        tokenSymbol: token?.token_symbol || 'UNKNOWN',
-        tokenName: token?.token_name || 'Unknown Token'
+        user: tx.user_id
       }));
 
       return { data: formattedData };
