@@ -61,7 +61,7 @@ async function uploadTokenImage(file) {
 export const tokenService = {
   async getTokens(network) {
     try {
-      const url = getApiUrl(`/getTokens?network=${network}`);
+      const url = getApiUrl(`/tokens?network=${network}`);
       console.log(`[TokenService] Constructed URL for fetching tokens: ${url}`);
       
       const response = await fetch(url);
