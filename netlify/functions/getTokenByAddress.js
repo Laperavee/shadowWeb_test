@@ -18,8 +18,8 @@ exports.handler = async (event, context) => {
   }
 
   // Check for required environment variables
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
-    console.error('Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE');
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    console.error('[TokenByAddress] Missing required environment variables');
     return {
       statusCode: 500,
       headers,
@@ -33,34 +33,37 @@ exports.handler = async (event, context) => {
   try {
     const supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE
+      process.env.SUPABASE_ANON_KEY
     );
 
     // Extract token address from path
     const path = event.path;
     const tokenAddress = path.split('/getTokenByAddress/')[1];
 
-    console.log(`[TokenByAddress] Fetching token with address: ${tokenAddress}`);
-
+    console.log(`[TokenByAddress] Processing request for token: ${tokenAddress}`);
+    
     if (!tokenAddress) {
+      console.error('[TokenByAddress] No token address provided');
       return {
         statusCode: 400,
         headers,
         body: JSON.stringify({ 
           success: false, 
-          error: 'Token address is required' 
+          error: 'Token address parameter is required' 
         })
       };
     }
 
+    console.log(`[TokenByAddress] Fetching token data for: ${tokenAddress}`);
+    
     const { data, error } = await supabase
       .from('tokens')
       .select('*')
-      .eq('token_address', tokenAddress)
+      .eq('token_address', tokenAddress.toLowerCase())
       .single();
 
     if (error) {
-      console.error('Error fetching token:', error);
+      console.error('[TokenByAddress] Database error:', error);
       return {
         statusCode: 404,
         headers,
@@ -72,7 +75,7 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log(`Found token data:`, data);
+    console.log(`[TokenByAddress] Found token data:`, data);
 
     return {
       statusCode: 200,
@@ -80,7 +83,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ success: true, data })
     };
   } catch (error) {
-    console.error('Server error:', error);
+    console.error('[TokenByAddress] Server error:', error);
     return {
       statusCode: 500,
       headers,

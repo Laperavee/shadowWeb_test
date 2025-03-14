@@ -18,8 +18,8 @@ exports.handler = async (event, context) => {
   }
 
   // Check for required environment variables
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
-    console.error('Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE');
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    console.error('[Tokens] Missing required environment variables');
     return {
       statusCode: 500,
       headers,
@@ -33,32 +33,25 @@ exports.handler = async (event, context) => {
   try {
     const supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE
+      process.env.SUPABASE_ANON_KEY
     );
 
     const network = event.queryStringParameters?.network;
-    
-    if (!network) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ 
-          success: false, 
-          error: 'Network parameter is required' 
-        })
-      };
-    }
+    console.log(`[Tokens] Fetching tokens for network: ${network || 'all'}`);
 
-    console.log(`Fetching tokens for network: ${network}`);
-    
-    const { data, error } = await supabase
+    let query = supabase
       .from('tokens')
       .select('*')
-      .eq('network', network)
       .order('created_at', { ascending: false });
 
+    if (network) {
+      query = query.eq('network', network);
+    }
+
+    const { data, error } = await query;
+
     if (error) {
-      console.error('Error fetching tokens:', error);
+      console.error('[Tokens] Database error:', error);
       return {
         statusCode: 500,
         headers,
@@ -69,15 +62,22 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log(`Found ${data?.length || 0} tokens for network ${network}`);
+    console.log(`[Tokens] Found ${data?.length || 0} tokens`);
     
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ success: true, data })
+      body: JSON.stringify({ 
+        success: true, 
+        data,
+        debug: {
+          network,
+          count: data?.length || 0
+        }
+      })
     };
   } catch (error) {
-    console.error('Server error:', error);
+    console.error('[Tokens] Server error:', error);
     return {
       statusCode: 500,
       headers,

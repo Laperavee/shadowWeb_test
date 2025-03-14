@@ -18,7 +18,7 @@ exports.handler = async (event, context) => {
   }
 
   // Check for required environment variables
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
     console.error('[TokenPurchases] Missing required environment variables');
     return {
       statusCode: 500,
@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
   try {
     const supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE
+      process.env.SUPABASE_ANON_KEY
     );
 
     // Extract token address from path
