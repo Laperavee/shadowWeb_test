@@ -96,14 +96,15 @@ class RealtimeService {
 
   // Format purchase data to match tokenService format
   formatPurchase(tx) {
-    const date = new Date(tx.created_at);
+    const date = new Date(tx.purchased_at);
     const formattedDate = !isNaN(date.getTime()) 
       ? date.toLocaleString('en-US', {
           year: 'numeric',
           month: 'numeric',
           day: 'numeric',
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
+          hour12: true
         })
       : 'Unknown date';
 
