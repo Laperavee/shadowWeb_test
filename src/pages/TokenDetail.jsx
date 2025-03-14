@@ -167,17 +167,12 @@ const TokenDetail = () => {
   // S'abonner aux achats des top holders en temps réel
   useEffect(() => {
     if (token && token.token_address) {
-      console.log(`🔔 Abonnement aux achats pour le token ${token.token_address}`);
-      
       // S'abonner aux nouveaux achats
       const unsubscribe = realtimeService.subscribeToTokenPurchases(
         token.token_address,
         async (payload) => {
-          console.log('📣 Nouvel événement reçu:', payload);
-          
           // Vérifier si c'est un nouvel achat ou une mise à jour
           if (payload.eventType === 'INSERT') {
-            console.log('✨ Nouvel achat détecté:', payload.new);
             const newPurchase = payload.new;
             
             // Si le prix du token est disponible et que le coût n'est pas défini, le calculer et mettre à jour la base de données
@@ -185,8 +180,6 @@ const TokenDetail = () => {
               try {
                 const tokenAmount = parseFloat(newPurchase.amount) / 1e18;
                 const cost = tokenAmount * token.market_data.price;
-                
-                console.log(`💰 Calcul du coût pour l'achat ${newPurchase.id}: $${cost.toFixed(2)}`);
                 
                 // Mettre à jour la colonne cost dans la base de données
                 const response = await fetch(`/api/token-purchases/${newPurchase.id}/update-cost`, {
@@ -200,11 +193,7 @@ const TokenDetail = () => {
                 });
                 
                 if (response.ok) {
-                  console.log(`✅ Coût mis à jour pour l'achat ${newPurchase.id}: $${cost.toFixed(2)}`);
-                  // Mettre à jour l'achat dans l'état local
                   newPurchase.cost = cost.toString();
-                } else {
-                  console.error('❌ Erreur lors de la mise à jour du coût:', await response.text());
                 }
               } catch (error) {
                 console.error('❌ Erreur lors de la mise à jour du coût:', error);
@@ -212,17 +201,14 @@ const TokenDetail = () => {
             }
             
             // Ajouter le nouvel achat à la liste et mettre à jour l'interface
-            console.log('📊 Mise à jour de la liste des achats avec le nouvel achat');
             setTopHolderPurchases(prevPurchases => {
               // Vérifier si l'achat existe déjà dans la liste
               const exists = prevPurchases.some(p => p.tx_hash === newPurchase.tx_hash);
               if (exists) {
-                console.log('⚠️ Cet achat existe déjà dans la liste, mise à jour uniquement');
                 return prevPurchases.map(p => 
                   p.tx_hash === newPurchase.tx_hash ? newPurchase : p
                 );
               } else {
-                console.log('✅ Ajout du nouvel achat à la liste');
                 return [newPurchase, ...prevPurchases];
               }
             });
@@ -230,7 +216,6 @@ const TokenDetail = () => {
             // Mettre à jour les IDs des nouvelles transactions pour l'animation
             setNewPurchaseIds(prevIds => {
               if (!prevIds.includes(newPurchase.tx_hash)) {
-                console.log('🎬 Ajout de l\'ID à la liste des nouvelles transactions pour l\'animation');
                 return [...prevIds, newPurchase.tx_hash];
               }
               return prevIds;
@@ -240,16 +225,13 @@ const TokenDetail = () => {
             setNewPurchasesCount(count => count + 1);
             
             // Jouer le son de notification
-            console.log('🔊 Lecture du son de notification');
             playNotificationSound();
             
             // Supprimer l'ID de la liste des nouvelles transactions après 5 secondes
             setTimeout(() => {
-              console.log(`⏱️ Suppression de l'animation pour la transaction ${newPurchase.tx_hash}`);
               setNewPurchaseIds(prevIds => prevIds.filter(id => id !== newPurchase.tx_hash));
             }, 5000);
           } else if (payload.eventType === 'UPDATE') {
-            console.log('🔄 Mise à jour d\'un achat détectée:', payload.new);
             const updatedPurchase = payload.new;
             
             // Mettre à jour l'achat dans la liste
@@ -258,15 +240,12 @@ const TokenDetail = () => {
                 purchase.id === updatedPurchase.id ? updatedPurchase : purchase
               );
             });
-            
-            console.log('✅ Achat mis à jour dans la liste');
           }
         }
       );
       
       // Se désabonner quand le composant est démonté ou quand l'adresse du token change
       return () => {
-        console.log(`🔕 Désabonnement des achats pour le token ${token.token_address}`);
         unsubscribe();
       };
     }

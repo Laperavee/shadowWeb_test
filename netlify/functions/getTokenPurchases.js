@@ -77,7 +77,7 @@ exports.handler = async (event, context) => {
         cost,
         action
       `)
-      .eq('token_address', tokenAddress.toLowerCase())
+      .eq('token_address', tokenAddress)
       .order('purchased_at', { ascending: false })
       .limit(50);
 
@@ -88,12 +88,24 @@ exports.handler = async (event, context) => {
         headers,
         body: JSON.stringify({ 
           success: false, 
-          error: error.message 
+          error: error.message,
+          debug: {
+            query: {
+              table: 'token_purchases',
+              filter: `token_address=${tokenAddress.toLowerCase()}`,
+              total_records: count
+            }
+          }
         })
       };
     }
 
     console.log(`✨ [getTokenPurchases] ${purchases?.length || 0} achats trouvés`);
+    console.log('🔍 [getTokenPurchases] Requête utilisée:', {
+      table: 'token_purchases',
+      filter: `token_address=${tokenAddress.toLowerCase()}`,
+      total_records: count
+    });
 
     // Format the data according to the actual schema
     console.log('🔄 [getTokenPurchases] Formatage des données...');
