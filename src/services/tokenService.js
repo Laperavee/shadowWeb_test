@@ -154,7 +154,7 @@ export const tokenService = {
 
   async getTopHolderPurchases(tokenAddress) {
     try {
-      const url = getApiUrl(`/tokens/${tokenAddress}/top-holder-purchases`);
+      const url = getApiUrl(`/token_purchases/${tokenAddress}`);
       console.log(`🔗 URL: ${url}`);
       
       const response = await fetch(url);

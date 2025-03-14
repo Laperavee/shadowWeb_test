@@ -36,7 +36,11 @@ exports.handler = async (event, context) => {
       process.env.SUPABASE_SERVICE_ROLE
     );
 
-    const tokenAddress = event.queryStringParameters?.tokenAddress;
+    // Extract token address from path
+    const path = event.path;
+    const tokenAddress = path.split('/getTokenPurchases/')[1];
+
+    console.log(`Fetching purchases for token: ${tokenAddress}`);
     
     if (!tokenAddress) {
       return {
@@ -54,7 +58,7 @@ exports.handler = async (event, context) => {
     const { data, error } = await supabase
       .from('token_purchases')
       .select('*')
-      .eq('token_address', tokenAddress.toLowerCase());
+      .eq('token_address', tokenAddress);
 
     if (error) {
       console.error('Error fetching token purchases:', error);
