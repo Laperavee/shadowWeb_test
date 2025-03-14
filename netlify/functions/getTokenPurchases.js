@@ -40,9 +40,10 @@ exports.handler = async (event, context) => {
     const path = event.path;
     const tokenAddress = path.split('/getTokenPurchases/')[1];
 
-    console.log(`Fetching purchases for token: ${tokenAddress}`);
+    console.log(`[TokenPurchases] Processing request for token: ${tokenAddress}`);
     
     if (!tokenAddress) {
+      console.error('[TokenPurchases] No token address provided');
       return {
         statusCode: 400,
         headers,
@@ -53,15 +54,43 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log(`Fetching purchases for token: ${tokenAddress}`);
+    // First, check if the token exists
+    const { data: tokenData, error: tokenError } = await supabase
+      .from('tokens')
+      .select('token_address')
+      .eq('token_address', tokenAddress)
+      .single();
+
+    if (tokenError || !tokenData) {
+      console.error(`[TokenPurchases] Token not found: ${tokenAddress}`);
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({ 
+          success: false, 
+          error: 'Token not found' 
+        })
+      };
+    }
+
+    console.log(`[TokenPurchases] Fetching purchases for token: ${tokenAddress}`);
     
+    // Get purchases with additional fields
     const { data, error } = await supabase
       .from('token_purchases')
-      .select('*')
-      .eq('token_address', tokenAddress);
+      .select(`
+        user_id,
+        tx_hash,
+        amount,
+        cost,
+        purchased_at
+      `)
+      .eq('token_address', tokenAddress)
+      .order('purchased_at', { ascending: false })
+      .limit(50);
 
     if (error) {
-      console.error('Error fetching token purchases:', error);
+      console.error('[TokenPurchases] Database error:', error);
       return {
         statusCode: 500,
         headers,
@@ -72,15 +101,36 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log(`Found ${data?.length || 0} purchases for token ${tokenAddress}`);
+    // Format the data
+    const formattedData = (data || []).map(purchase => ({
+      buyer: purchase.buyer || 'Unknown',
+      type: 'BUY',
+      amount: parseFloat(purchase.amount) || 0,
+      estimated_value: parseFloat(purchase.price_usd) || 0,
+      date: purchase.created_at,
+      transaction_hash: purchase.transaction_hash
+    }));
+
+    console.log(`[TokenPurchases] Found ${formattedData.length} purchases for token ${tokenAddress}`);
+    if (formattedData.length > 0) {
+      console.log('[TokenPurchases] Sample purchase:', formattedData[0]);
+    }
     
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ success: true, data })
+      body: JSON.stringify({ 
+        success: true, 
+        data: formattedData,
+        debug: {
+          raw_count: data?.length || 0,
+          formatted_count: formattedData.length,
+          token_address: tokenAddress
+        }
+      })
     };
   } catch (error) {
-    console.error('Server error:', error);
+    console.error('[TokenPurchases] Server error:', error);
     return {
       statusCode: 500,
       headers,
