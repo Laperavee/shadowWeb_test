@@ -8,6 +8,21 @@
   status = 200
 
 [[redirects]]
+  from = "/api/tokens/address/*"
+  to = "/.netlify/functions/getTokenByAddress"
+  status = 200
+
+[[redirects]]
+  from = "/api/tokens"
+  to = "/.netlify/functions/getTokens"
+  status = 200
+
+[[redirects]]
+  from = "/api/token_purchases"
+  to = "/.netlify/functions/getTokenPurchases"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200 

@@ -7,10 +7,32 @@ const API_URL = isProduction ? '/.netlify/functions' : 'http://localhost:3002';
 
 // Construire l'URL de l'API en fonction de l'environnement
 const getApiUrl = (endpoint) => {
+  console.log(`[getApiUrl] Building URL for endpoint: ${endpoint}`);
+  
   if (isProduction) {
+    // Special case for token by address endpoint
+    if (endpoint.startsWith('/tokens/address/')) {
+      return `${API_URL}/getTokenByAddress${endpoint.substring('/tokens/address'.length)}`;
+    }
+    
+    // Special case for tokens endpoint
+    if (endpoint === '/tokens' || endpoint.startsWith('/tokens?')) {
+      return `${API_URL}/getTokens${endpoint.substring('/tokens'.length)}`;
+    }
+    
+    // Special case for token purchases endpoint
+    if (endpoint.startsWith('/token_purchases')) {
+      return `${API_URL}/getTokenPurchases${endpoint.substring('/token_purchases'.length)}`;
+    }
+    
+    // Default case - use tokens function
     return `${API_URL}/tokens${endpoint.startsWith('/tokens') ? endpoint.substring(7) : endpoint}`;
   }
-  return `${API_URL}/api${endpoint}`;
+  
+  // En développement, on garde le préfixe /api
+  const url = `${API_URL}/api${endpoint}`;
+  console.log(`[getApiUrl] Final URL: ${url}`);
+  return url;
 };
 
 async function uploadTokenImage(file) {
@@ -39,7 +61,7 @@ async function uploadTokenImage(file) {
 export const tokenService = {
   async getTokens(network) {
     try {
-      const url = getApiUrl(`/tokens?network=${network}`);
+      const url = getApiUrl(`/getTokens?network=${network}`);
       console.log(`[TokenService] Constructed URL for fetching tokens: ${url}`);
       
       const response = await fetch(url);
@@ -102,14 +124,28 @@ export const tokenService = {
 
   async getTokenByAddress(address) {
     try {
-      const response = await fetch(getApiUrl(`/tokens/address/${address}`));
+      const url = getApiUrl(`/tokens/address/${address}`);
+      console.log(`[TokenService] Fetching token by address: ${address}`);
+      console.log(`[TokenService] URL: ${url}`);
+      
+      const response = await fetch(url);
+      console.log(`[TokenService] Response status: ${response.status}`);
       
       if (!response.ok) {
-        return { data: null, error: 'Token not found' };
+        const errorText = await response.text();
+        console.error(`[TokenService] HTTP Error ${response.status}: ${errorText}`);
+        return { data: null, error: `Token not found: ${response.status} ${response.statusText}` };
       }
 
-      const { data } = await response.json();
-      return { data };
+      const result = await response.json();
+      console.log(`[TokenService] Token data received:`, result);
+      
+      if (!result.success) {
+        console.error('[TokenService] API Error:', result.error);
+        return { data: null, error: result.error || 'Token not found' };
+      }
+
+      return { data: result.data };
     } catch (error) {
       console.error('Error fetching token:', error);
       return { data: null, error };
