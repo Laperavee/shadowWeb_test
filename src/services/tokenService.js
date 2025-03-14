@@ -153,24 +153,32 @@ export const tokenService = {
   },
 
   async getTopHolderPurchases(tokenAddress) {
+    console.log('🚀 [TokenService] Début de getTopHolderPurchases pour:', tokenAddress);
     try {
       const url = getApiUrl(`/token_purchases/${tokenAddress}`);
-      console.log(`[TokenService] Fetching top holder purchases for token: ${tokenAddress}`);
-      console.log(`[TokenService] URL: ${url}`);
+      console.log(`📡 [TokenService] URL construite: ${url}`);
       
+      console.log('⏳ [TokenService] Envoi de la requête...');
       const response = await fetch(url);
+      console.log(`📥 [TokenService] Réponse reçue - Status: ${response.status}`);
       
       if (!response.ok) {
-        console.error(`❌ Erreur HTTP: ${response.status} ${response.statusText}`);
+        console.error(`❌ [TokenService] Erreur HTTP: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('📄 [TokenService] Contenu de l\'erreur:', errorText);
         return { data: [], error: `Failed to fetch transactions: ${response.status} ${response.statusText}` };
       }
 
+      console.log('🔄 [TokenService] Parsing de la réponse JSON...');
       const result = await response.json();
+      console.log('📦 [TokenService] Données reçues:', result);
       
       if (!result.success || !result.data) {
+        console.warn('⚠️ [TokenService] Pas de données dans la réponse');
         return { data: [], error: 'No data returned from API' };
       }
       
+      console.log(`✨ [TokenService] Formatage de ${result.data.length} transactions...`);
       const formattedData = result.data.map(tx => ({
         type: tx.action ? 'BUY' : 'SELL',
         amount: tx.amount ? (parseFloat(tx.amount) / 1e18).toLocaleString() : '0',
@@ -180,9 +188,10 @@ export const tokenService = {
         user: tx.user_id
       }));
 
+      console.log('✅ [TokenService] Données formatées avec succès');
       return { data: formattedData };
     } catch (error) {
-      console.error('❌ Error fetching transactions:', error);
+      console.error('💥 [TokenService] Erreur inattendue:', error);
       return { data: [], error };
     }
   },

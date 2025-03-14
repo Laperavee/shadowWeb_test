@@ -49,11 +49,9 @@ class RealtimeService {
   // S'abonner aux achats des top holders pour un token spécifique
   subscribeToTokenPurchases(tokenAddress, callback) {
     const channelId = `token-purchases-${tokenAddress}`;
-    console.log(`📡 Tentative d'abonnement aux achats du token ${tokenAddress}`);
     
     // Si un canal existe déjà pour ce token, on le désabonne d'abord
     if (this.channels[channelId]) {
-      console.log(`⚠️ Un canal existe déjà pour ${channelId}, désabonnement...`);
       this.unsubscribeFromTokenPurchases(tokenAddress);
     }
 
@@ -69,11 +67,10 @@ class RealtimeService {
             filter: `token_address=eq.${tokenAddress}`
           }, 
           (payload) => {
-            console.log('📣 Nouvel achat de token détecté:', payload);
             if (callback && typeof callback === 'function') {
               callback({
                 ...payload,
-                eventType: 'INSERT'  // S'assurer que eventType est défini
+                eventType: 'INSERT'
               });
             }
           }
@@ -86,25 +83,15 @@ class RealtimeService {
             filter: `token_address=eq.${tokenAddress}`
           }, 
           (payload) => {
-            console.log('📣 Mise à jour d\'un achat de token détectée:', payload);
             if (callback && typeof callback === 'function') {
               callback({
                 ...payload,
-                eventType: 'UPDATE'  // S'assurer que eventType est défini
+                eventType: 'UPDATE'
               });
             }
           }
         )
-        .subscribe((status) => {
-          console.log(`📡 Statut de l'abonnement pour ${channelId}:`, status);
-          
-          // Vérifier si l'abonnement a réussi
-          if (status === 'SUBSCRIBED') {
-            console.log(`✅ Abonnement aux achats du token ${tokenAddress} réussi`);
-          } else if (status === 'CHANNEL_ERROR') {
-            console.error(`❌ Erreur lors de l'abonnement aux achats du token ${tokenAddress}`);
-          }
-        });
+        .subscribe();
 
       // Stocker le callback pour pouvoir le réutiliser
       this.listeners[channelId] = callback;
@@ -134,11 +121,9 @@ class RealtimeService {
     const channelId = `token-purchases-${tokenAddress}`;
     
     if (this.channels[channelId]) {
-      console.log(`🔕 Désabonnement de ${channelId}...`);
       supabase.removeChannel(this.channels[channelId]);
       delete this.channels[channelId];
       delete this.listeners[channelId];
-      console.log(`✅ Désabonnement de ${channelId} réussi`);
     }
   }
 

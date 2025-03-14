@@ -137,18 +137,29 @@ const TokenDetail = () => {
   };
 
   const fetchTopHolderPurchases = async (tokenAddress) => {
+    console.log('🔍 [TopHolderPurchases] Début de la récupération des achats pour:', tokenAddress);
     try {
       setPurchasesLoading(true);
+      console.log('⏳ [TopHolderPurchases] État de chargement activé');
+
+      console.log('📡 [TopHolderPurchases] Appel du service tokenService.getTopHolderPurchases');
       const { data, error } = await tokenService.getTopHolderPurchases(tokenAddress);
       
+      console.log('📦 [TopHolderPurchases] Réponse reçue:', { data, error });
+      
       if (error) {
-        console.error('Error fetching top holder purchases:', error);
-      } else {
+        console.error('❌ [TopHolderPurchases] Erreur lors de la récupération:', error);
+      } else if (data) {
+        console.log(`✅ [TopHolderPurchases] ${data.length} achats récupérés avec succès`);
         setTopHolderPurchases(data || []);
+      } else {
+        console.log('ℹ️ [TopHolderPurchases] Aucun achat trouvé');
+        setTopHolderPurchases([]);
       }
     } catch (err) {
-      console.error('Failed to fetch top holder purchases:', err);
+      console.error('💥 [TopHolderPurchases] Erreur inattendue:', err);
     } finally {
+      console.log('🏁 [TopHolderPurchases] Fin du processus de récupération');
       setPurchasesLoading(false);
     }
   };
@@ -557,12 +568,7 @@ const TokenDetail = () => {
                 <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
                   <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Initial Liquidity</span>
                   <span className="font-bold group-hover:text-white transition-colors">
-                    {parseFloat(token.liquidity).toLocaleString()} {token.network === 'avalanche' ? 'AVAX' : 'ETH'}
-                    {tokenPrice > 0 && (
-                      <span className="block text-sm text-gray-400 mt-1">
-                        ≈ ${(parseFloat(token.liquidity) * tokenPrice).toLocaleString('en-US', {maximumFractionDigits: 2})}
-                      </span>
-                    )}
+                    {parseFloat(token.liquidity).toLocaleString()} AVAX
                   </span>
                 </div>
                 

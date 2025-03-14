@@ -1,6 +1,10 @@
 const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event, context) => {
+  console.log('🚀 [getTokenPurchases] Démarrage de la fonction');
+  console.log('📝 [getTokenPurchases] Méthode HTTP:', event.httpMethod);
+  console.log('🔍 [getTokenPurchases] Path:', event.path);
+
   // Set CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -10,6 +14,7 @@ exports.handler = async (event, context) => {
 
   // Handle OPTIONS request for CORS
   if (event.httpMethod === 'OPTIONS') {
+    console.log('✨ [getTokenPurchases] Requête OPTIONS - CORS');
     return {
       statusCode: 200,
       headers,
@@ -19,7 +24,9 @@ exports.handler = async (event, context) => {
 
   // Check for required environment variables
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    console.error('[TokenPurchases] Missing required environment variables');
+    console.error('❌ [getTokenPurchases] Variables d\'environnement manquantes:');
+    console.error('- SUPABASE_URL:', process.env.SUPABASE_URL ? '✅' : '❌');
+    console.error('- SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? '✅' : '❌');
     return {
       statusCode: 500,
       headers,
@@ -31,6 +38,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    console.log('🔌 [getTokenPurchases] Initialisation du client Supabase');
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_ANON_KEY
@@ -40,10 +48,10 @@ exports.handler = async (event, context) => {
     const path = event.path;
     const tokenAddress = path.split('/getTokenPurchases/')[1];
 
-    console.log(`[TokenPurchases] Processing request for token: ${tokenAddress}`);
+    console.log(`🎯 [getTokenPurchases] Adresse du token extraite: ${tokenAddress}`);
     
     if (!tokenAddress) {
-      console.error('[TokenPurchases] No token address provided');
+      console.error('❌ [getTokenPurchases] Aucune adresse de token fournie');
       return {
         statusCode: 400,
         headers,
@@ -54,7 +62,7 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log(`[TokenPurchases] Fetching purchases for token: ${tokenAddress}`);
+    console.log(`📡 [getTokenPurchases] Requête Supabase pour le token: ${tokenAddress}`);
     
     // Get purchases with the correct column names
     const { data: purchases, error } = await supabase
@@ -74,7 +82,7 @@ exports.handler = async (event, context) => {
       .limit(50);
 
     if (error) {
-      console.error('[TokenPurchases] Database error:', error);
+      console.error('💥 [getTokenPurchases] Erreur Supabase:', error);
       return {
         statusCode: 500,
         headers,
@@ -85,7 +93,10 @@ exports.handler = async (event, context) => {
       };
     }
 
+    console.log(`✨ [getTokenPurchases] ${purchases?.length || 0} achats trouvés`);
+
     // Format the data according to the actual schema
+    console.log('🔄 [getTokenPurchases] Formatage des données...');
     const formattedData = (purchases || []).map(purchase => ({
       buyer: purchase.user_id || 'Unknown',
       type: purchase.action ? 'BUY' : 'SELL',
@@ -95,9 +106,9 @@ exports.handler = async (event, context) => {
       transaction_hash: purchase.tx_hash || ''
     }));
 
-    console.log(`[TokenPurchases] Found ${formattedData.length} purchases for token ${tokenAddress}`);
+    console.log(`✅ [getTokenPurchases] Données formatées avec succès (${formattedData.length} entrées)`);
     if (formattedData.length > 0) {
-      console.log('[TokenPurchases] Sample purchase:', JSON.stringify(formattedData[0], null, 2));
+      console.log('📊 [getTokenPurchases] Exemple d\'achat:', JSON.stringify(formattedData[0], null, 2));
     }
     
     return {
@@ -115,14 +126,16 @@ exports.handler = async (event, context) => {
       })
     };
   } catch (error) {
-    console.error('[TokenPurchases] Server error:', error);
+    console.error('💥 [getTokenPurchases] Erreur inattendue:', error);
+    console.error('Stack trace:', error.stack);
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
         success: false, 
         error: 'Internal server error',
-        details: error.message
+        details: error.message,
+        stack: error.stack
       })
     };
   }
