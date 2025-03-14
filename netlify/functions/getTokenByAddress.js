@@ -17,31 +17,44 @@ exports.handler = async (event, context) => {
     };
   }
 
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE
-  );
-
-  // Extract token address from path parameter
-  const path = event.path;
-  const pathSegments = path.split('/');
-  const addressIndex = pathSegments.indexOf('address') + 1;
-  const tokenAddress = addressIndex < pathSegments.length ? pathSegments[addressIndex] : null;
-
-  console.log(`Fetching token with address: ${tokenAddress}`);
-
-  if (!tokenAddress) {
+  // Check for required environment variables
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
+    console.error('Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE');
     return {
-      statusCode: 400,
+      statusCode: 500,
       headers,
       body: JSON.stringify({ 
         success: false, 
-        error: 'Token address is required' 
+        error: 'Server configuration error: Missing environment variables' 
       })
     };
   }
 
   try {
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE
+    );
+
+    // Extract token address from path parameter
+    const path = event.path;
+    const pathSegments = path.split('/');
+    const addressIndex = pathSegments.indexOf('address') + 1;
+    const tokenAddress = addressIndex < pathSegments.length ? pathSegments[addressIndex] : null;
+
+    console.log(`Fetching token with address: ${tokenAddress}`);
+
+    if (!tokenAddress) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ 
+          success: false, 
+          error: 'Token address is required' 
+        })
+      };
+    }
+
     const { data, error } = await supabase
       .from('tokens')
       .select('*')
