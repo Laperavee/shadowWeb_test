@@ -14,20 +14,14 @@ class MarketDataService {
         console.warn('[Market Data] No token address provided to getMarketData');
         return null;
       }
-
-      console.log('[Market Data] Starting request for:', tokenAddress, 'on network:', network);
-
       const cacheKey = `market-data-${tokenAddress}`;
       const cached = cache.get(cacheKey);
       
       if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-        console.debug('[Market Data] Returning cached data for:', tokenAddress);
         return cached.data;
       }
 
-      console.debug('[Market Data] Fetching data for:', tokenAddress);
       const url = `${API_BASE_URL}/market-data/${tokenAddress}?network=${network || ''}`;
-      console.log('[Market Data] Full request URL:', url);
       
       const response = await fetch(url);
       
@@ -44,7 +38,6 @@ class MarketDataService {
       const result = await response.json();
       
       if (result.success && result.data) {
-        console.debug('[Market Data] Successfully fetched data:', result.data);
         cache.set(cacheKey, {
           data: result.data,
           timestamp: Date.now()

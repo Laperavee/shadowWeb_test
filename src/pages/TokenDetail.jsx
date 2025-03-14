@@ -34,8 +34,8 @@ const TokenDetail = () => {
   const playNotificationSound = () => {
     if (notificationSound.current) {
       notificationSound.current.play().catch(e => {
-        // Ignorer les erreurs de lecture (souvent dues aux restrictions du navigateur)
-        console.log('Notification sound could not be played:', e);
+        // Ignore playback errors (often due to browser restrictions)
+        console.error('Notification sound could not be played:', e);
       });
     }
   };
@@ -137,29 +137,19 @@ const TokenDetail = () => {
   };
 
   const fetchTopHolderPurchases = async (tokenAddress) => {
-    console.log('🔍 [TopHolderPurchases] Début de la récupération des achats pour:', tokenAddress);
     try {
       setPurchasesLoading(true);
-      console.log('⏳ [TopHolderPurchases] État de chargement activé');
-
-      console.log('📡 [TopHolderPurchases] Appel du service tokenService.getTopHolderPurchases');
-      const { data, error } = await tokenService.getTopHolderPurchases(tokenAddress);
-      
-      console.log('📦 [TopHolderPurchases] Réponse reçue:', { data, error });
-      
+      const { data, error } = await tokenService.getTopHolderPurchases(tokenAddress);      
       if (error) {
-        console.error('❌ [TopHolderPurchases] Erreur lors de la récupération:', error);
+        console.error('[TopHolderPurchases] Error fetching purchases:', error);
       } else if (data) {
-        console.log(`✅ [TopHolderPurchases] ${data.length} achats récupérés avec succès`);
         setTopHolderPurchases(data || []);
       } else {
-        console.log('ℹ️ [TopHolderPurchases] Aucun achat trouvé');
         setTopHolderPurchases([]);
       }
     } catch (err) {
-      console.error('💥 [TopHolderPurchases] Erreur inattendue:', err);
+      console.error('[TopHolderPurchases] Unexpected error:', err);
     } finally {
-      console.log('🏁 [TopHolderPurchases] Fin du processus de récupération');
       setPurchasesLoading(false);
     }
   };
@@ -277,9 +267,7 @@ const TokenDetail = () => {
     if (refreshing || !token) return;
     
     try {
-      setRefreshing(true);
-      console.log('🔄 Rafraîchissement manuel des données...');
-      
+      setRefreshing(true);      
       // Rafraîchir les données du token
       const result = await tokenService.getTokenByAddress(token.token_address);
       if (result && result.data) {
@@ -296,9 +284,8 @@ const TokenDetail = () => {
       // Rafraîchir les données de marché
       await fetchDexScreenerData(token.token_address, token.network);
       
-      console.log('✅ Données rafraîchies avec succès');
     } catch (error) {
-      console.error('❌ Erreur lors du rafraîchissement des données:', error);
+      console.error('Error refreshing data:', error);
     } finally {
       setRefreshing(false);
     }
@@ -314,7 +301,6 @@ const TokenDetail = () => {
       
       // Configurer un nouveau timer pour rafraîchir les données toutes les 30 secondes
       refreshTimerRef.current = setInterval(() => {
-        console.log('⏱️ Rafraîchissement automatique des données...');
         refreshData();
       }, 30000); // 30 secondes
       
@@ -641,76 +627,6 @@ const TokenDetail = () => {
                 )}
               </div>
             </div>
-          </div>
-          
-          {/* Recent transactions with improved styling */}
-          <div className="mt-8 bg-gradient-to-r from-gray-900/50 via-black/30 to-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:shadow-[0_0_25px_rgba(255,0,255,0.1)] transition-all duration-300">
-            <h2 className="text-xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-              Recent Transactions
-            </h2>
-            
-            {token.transactions && token.transactions.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left text-gray-400 border-b border-gray-800">
-                      <th className="pb-4 font-medium">Type</th>
-                      <th className="pb-4 font-medium">Amount</th>
-                      <th className="pb-4 font-medium">Price</th>
-                      <th className="pb-4 font-medium">Time</th>
-                      <th className="pb-4 font-medium">Tx Hash</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {token.transactions.slice(0, 10).map((tx, index) => (
-                      <tr key={index} className="border-b border-gray-800/50 hover:bg-gray-900/30 transition-colors">
-                        <td className={`py-4 ${
-                          tx.type === 'BUY' ? 'text-green-400' : 
-                          tx.type === 'SELL' ? 'text-red-400' : 'text-gray-400'
-                        }`}>
-                          <span className={`px-3 py-1 rounded-full text-sm ${
-                            tx.type === 'BUY' 
-                              ? 'bg-green-500/10 border border-green-500/30' 
-                              : 'bg-red-500/10 border border-red-500/30'
-                          }`}>
-                            {tx.type}
-                          </span>
-                        </td>
-                        <td className="py-4 font-medium">{tx.amount}</td>
-                        <td className="py-4 font-medium">${tx.price}</td>
-                        <td className="py-4 text-gray-400">
-                          {new Date(tx.timestamp).toLocaleString()}
-                        </td>
-                        <td className="py-4">
-                          <a 
-                            href={`https://snowtrace.io/tx/${tx.txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
-                          >
-                            {formatAddress(tx.txHash)}
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-gray-900/30 rounded-xl border border-gray-800/50">
-                <p className="text-gray-400 mb-4">No transactions found</p>
-                <a 
-                  href={`https://snowtrace.io/token/${token.token_address}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block px-6 py-2 rounded-xl bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all duration-300 text-sm font-medium"
-                >
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                    View on Explorer
-                  </span>
-                </a>
-              </div>
-            )}
           </div>
           
           {/* Top Holder Purchases Section */}

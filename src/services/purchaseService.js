@@ -23,22 +23,14 @@ class PurchaseService {
       if (!tokenAddress) {
         console.warn('[Purchase Service] No token address provided');
         return null;
-      }
-
-      console.log('[Purchase Service] Starting request for:', tokenAddress);
-      
+      }      
       const cacheKey = `purchases-${tokenAddress}`;
       const cached = cache.get(cacheKey);
       
       if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-        console.debug('[Purchase Service] Returning cached data for:', tokenAddress);
         return cached.data;
       }
-
-      console.debug('[Purchase Service] Fetching purchases for:', tokenAddress);
-      const url = `${API_URL}/tokens/${tokenAddress}/top-holder-purchases`;
-      console.log('[Purchase Service] Full request URL:', url);
-      
+      const url = `${API_URL}/tokens/${tokenAddress}/top-holder-purchases`;      
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -54,7 +46,6 @@ class PurchaseService {
       const result = await response.json();
       
       if (result.success && result.data) {
-        console.debug('[Purchase Service] Successfully fetched purchases:', result.data);
         cache.set(cacheKey, {
           data: result.data,
           timestamp: Date.now()
@@ -76,7 +67,6 @@ class PurchaseService {
   }
 
   clearCache() {
-    console.debug('[Purchase Service] Clearing cache');
     cache.clear();
   }
 }

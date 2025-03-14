@@ -75,7 +75,6 @@ class PriceService {
       // Émettre l'événement de mise à jour des prix
       window.dispatchEvent(new CustomEvent('priceUpdate', { detail: this.priceCache.data }));
       
-      console.log('PriceService - Prices updated:', this.priceCache.data);
       
       return this.priceCache.data;
     } catch (error) {
@@ -102,7 +101,6 @@ class PriceService {
    */
   async getPrices() {
     if (this.isCacheValid()) {
-      console.log('PriceService - Using cached prices');
       return this.priceCache.data;
     }
     

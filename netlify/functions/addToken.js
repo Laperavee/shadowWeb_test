@@ -98,7 +98,6 @@ exports.handler = async (event, context) => {
     
     if (existingToken) {
       // Update existing token
-      console.log(`[AddToken] Token exists, updating: ${tokenToInsert.token_address}`);
       result = await supabase
         .from('tokens')
         .update(tokenToInsert)
@@ -107,7 +106,6 @@ exports.handler = async (event, context) => {
         .single();
     } else {
       // Insert new token
-      console.log(`[AddToken] Inserting new token: ${tokenToInsert.token_address}`);
       result = await supabase
         .from('tokens')
         .insert(tokenToInsert)

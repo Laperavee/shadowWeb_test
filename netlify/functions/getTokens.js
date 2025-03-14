@@ -37,7 +37,6 @@ exports.handler = async (event, context) => {
     );
 
     const network = event.queryStringParameters?.network;
-    console.log(`[Tokens] Fetching tokens for network: ${network || 'all'}`);
 
     let query = supabase
       .from('tokens')
@@ -62,7 +61,6 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log(`[Tokens] Found ${data?.length || 0} tokens`);
     
     return {
       statusCode: 200,

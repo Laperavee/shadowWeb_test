@@ -31,11 +31,6 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Log the full event for debugging
-    console.log('[GetTokenByAddress] Event path:', event.path);
-    console.log('[GetTokenByAddress] Event params:', event.pathParameters);
-    console.log('[GetTokenByAddress] Query params:', event.queryStringParameters);
-
     // Extract token address from various possible locations
     let tokenAddress;
     
@@ -43,9 +38,7 @@ exports.handler = async (event, context) => {
       tokenAddress = event.pathParameters.address;
     } else if (event.path) {
       // Try different path splitting approaches
-      const pathParts = event.path.split('/');
-      console.log('[GetTokenByAddress] Path parts:', pathParts);
-      
+      const pathParts = event.path.split('/');      
       // Find the part that looks like an Ethereum address
       tokenAddress = pathParts.find(part => 
         part.startsWith('0x') && part.length === 42
@@ -53,7 +46,6 @@ exports.handler = async (event, context) => {
     }
 
     
-    console.log('[GetTokenByAddress] Extracted token address:', tokenAddress);
     
     if (!tokenAddress) {
       console.error('[GetTokenByAddress] No token address provided');
@@ -67,26 +59,17 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log(`[GetTokenByAddress] Fetching token: ${tokenAddress}`);
-
     // Initialize Supabase client
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_ANON_KEY
     );
-
-    // Log the query we're about to make
-    console.log(`[GetTokenByAddress] Querying database for token_address: ${tokenAddress}`);
-
     // Query the database for the token
     const { data, error } = await supabase
       .from('tokens')
       .select('*')
       .eq('token_address', tokenAddress)
       .maybeSingle();
-
-    // Log the query results
-    console.log('[GetTokenByAddress] Query result:', { data, error });
 
     if (error) {
       console.error('[GetTokenByAddress] Database error:', error);
@@ -102,7 +85,6 @@ exports.handler = async (event, context) => {
     }
    
     if (!data) {
-      console.log(`[GetTokenByAddress] Token not found: ${tokenAddress}`);
       return {
         statusCode: 404,
         headers,
@@ -119,7 +101,6 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log(`[GetTokenByAddress] Token found:`, data);
     return {
       statusCode: 200,
       headers,

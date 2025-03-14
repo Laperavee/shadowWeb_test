@@ -6,9 +6,7 @@ const isProduction = import.meta.env.PROD;
 const API_URL = isProduction ? '/.netlify/functions' : 'http://localhost:3002';
 
 // Construire l'URL de l'API en fonction de l'environnement
-const getApiUrl = (endpoint) => {
-  console.log(`[getApiUrl] Building URL for endpoint: ${endpoint}`);
-  
+const getApiUrl = (endpoint) => {  
   if (isProduction) {
     // Special case for token by address endpoint
     if (endpoint.startsWith('/tokens/address/')) {
@@ -31,7 +29,6 @@ const getApiUrl = (endpoint) => {
   
   // En développement, on garde le préfixe /api
   const url = `${API_URL}/api${endpoint}`;
-  console.log(`[getApiUrl] Final URL: ${url}`);
   return url;
 };
 
@@ -61,35 +58,23 @@ async function uploadTokenImage(file) {
 export const tokenService = {
   async getTokens(network) {
     try {
-      const url = getApiUrl(`/tokens?network=${network}`);
-      console.log(`[TokenService] Constructed URL for fetching tokens: ${url}`);
-      
+      const url = getApiUrl(`/tokens?network=${network}`);      
       const response = await fetch(url);
-      console.log(`[TokenService] Response status: ${response.status}`);
-      
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`[TokenService] HTTP Error ${response.status}: ${errorText}`);
         throw new Error(`Failed to fetch tokens: ${response.status} ${response.statusText}`);
       }
-
-      const result = await response.json();
-      console.log(`[TokenService] API response received:`, result);
-      
+      const result = await response.json();      
       if (!result.success) {
         console.error('[TokenService] API Error:', result.error);
         throw new Error(result.error || 'Failed to fetch tokens');
       }
-
       const tokens = result.data;
-      
       if (!tokens) {
         console.warn('[TokenService] No tokens returned from API');
         return [];
       }
-
-      console.log(`[TokenService] Successfully loaded ${tokens.length} tokens`);
-
       const uniqueTokens = tokens.reduce((acc, current) => {
         const x = acc.find(item => item.token_address === current.token_address);
         if (!x) {
@@ -124,22 +109,15 @@ export const tokenService = {
 
   async getTokenByAddress(address) {
     try {
-      const url = getApiUrl(`/tokens/address/${address}`);
-      console.log(`[TokenService] Fetching token by address: ${address}`);
-      console.log(`[TokenService] URL: ${url}`);
-      
-      const response = await fetch(url);
-      console.log(`[TokenService] Response status: ${response.status}`);
-      
+      const url = getApiUrl(`/tokens/address/${address}`);      
+      const response = await fetch(url);      
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`[TokenService] HTTP Error ${response.status}: ${errorText}`);
         return { data: null, error: `Token not found: ${response.status} ${response.statusText}` };
       }
 
-      const result = await response.json();
-      console.log(`[TokenService] Token data received:`, result);
-      
+      const result = await response.json();      
       if (!result.success) {
         console.error('[TokenService] API Error:', result.error);
         return { data: null, error: result.error || 'Token not found' };
@@ -172,15 +150,7 @@ export const tokenService = {
       }
       
       const formattedData = result.data.map(tx => {
-        console.log('[TokenService] Raw purchase data:', {
-          purchased_at: tx.purchased_at,
-          created_at: tx.created_at,
-          tx_hash: tx.tx_hash
-        });
-        
-        const date = new Date(tx.purchased_at);
-        console.log('[TokenService] Parsed date object:', date);
-        
+        const date = new Date(tx.purchased_at);        
         const formattedDate = !isNaN(date.getTime()) 
           ? date.toLocaleString('en-US', {
               year: 'numeric',
@@ -191,8 +161,6 @@ export const tokenService = {
               hour12: true
             })
           : 'Unknown date';
-        console.log('[TokenService] Formatted date:', formattedDate);
-
         return {
           action: tx.action ? 'BUY' : 'SELL',
           amount: tx.amount ? (parseFloat(tx.amount) / 1e18).toFixed(3) : '0',
