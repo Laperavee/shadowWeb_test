@@ -76,15 +76,6 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Format the data
-    const formattedData = (data || []).map(purchase => ({
-      user_id: purchase.user_id || 'Unknown',
-      type: purchase.action === 'buy' ? 'BUY' : 'SELL',
-      amount: parseFloat(purchase.amount) || 0,
-      cost: parseFloat(purchase.cost) || 0,
-      purchased_at: purchase.purchased_at,
-      tx_hash: purchase.tx_hash
-    }));
 
     console.log(`[TokenPurchases] Found ${formattedData.length} purchases for token ${tokenAddress}`);
     if (formattedData.length > 0) {
@@ -96,12 +87,7 @@ exports.handler = async (event, context) => {
       headers,
       body: JSON.stringify({ 
         success: true, 
-        data: formattedData,
-        debug: {
-          raw_count: data?.length || 0,
-          formatted_count: formattedData.length,
-          token_address: tokenAddress
-        }
+        data: data
       })
     };
   } catch (error) {
