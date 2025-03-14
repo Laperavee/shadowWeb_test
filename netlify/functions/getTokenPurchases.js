@@ -64,6 +64,14 @@ exports.handler = async (event, context) => {
 
     console.log(`📡 [getTokenPurchases] Requête Supabase pour le token: ${tokenAddress}`);
     
+    // Vérifier d'abord si des données existent pour ce token
+    const { count, error: countError } = await supabase
+      .from('token_purchases')
+      .select('*', { count: 'exact', head: true })
+      .eq('token_address', tokenAddress);
+
+    console.log(`🔍 [getTokenPurchases] Nombre total d'enregistrements trouvés:`, count);
+
     // Get purchases with the correct column names
     const { data: purchases, error } = await supabase
       .from('token_purchases')
@@ -92,8 +100,8 @@ exports.handler = async (event, context) => {
           debug: {
             query: {
               table: 'token_purchases',
-              filter: `token_address=${tokenAddress.toLowerCase()}`,
-              total_records: count
+              filter: `token_address=${tokenAddress}`,
+              total_records: count || 0
             }
           }
         })
@@ -103,8 +111,8 @@ exports.handler = async (event, context) => {
     console.log(`✨ [getTokenPurchases] ${purchases?.length || 0} achats trouvés`);
     console.log('🔍 [getTokenPurchases] Requête utilisée:', {
       table: 'token_purchases',
-      filter: `token_address=${tokenAddress.toLowerCase()}`,
-      total_records: count
+      filter: `token_address=${tokenAddress}`,
+      total_records: count || 0
     });
 
     // Format the data according to the actual schema
