@@ -88,49 +88,49 @@ const TokenDetail = () => {
     }
   }, []);
 
-  // Fonction pour jouer le son de notification
-  const playNotificationSound = useCallback(() => {
-    if (notificationSound.current) {
-      notificationSound.current.play().catch(e => {
-        // Ignore playback errors
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        setLoading(true);
-        setError(null);        
-        const result = await tokenService.getTokenByAddress(address);
-        
-        if (!result || !result.data) {
-          setError('Token not found');
-          setLoading(false);
-          return;
-        }
-        
-        const tokenData = result.data;
-        if (tokenData.network === 'AVAX') {
-          tokenData.network = 'avalanche';
-        }
-        
-        setToken(tokenData);
-        fetchDexScreenerData(tokenData.token_address, tokenData.network);
-        fetchTopHolderPurchases(tokenData.token_address);
-        
-        const nativeSymbol = tokenData.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH';
-        const price = await priceService.getPrice(nativeSymbol);
-        setTokenPrice(price);
-      } catch (err) {
-        setError(err.message || 'Failed to load token data');
-      } finally {
-        setLoading(false);
+  // Fonction principale pour charger les données du token
+  const loadTokenData = useCallback(async (tokenAddress) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const result = await tokenService.getTokenByAddress(tokenAddress);
+      
+      if (!result || !result.data) {
+        setError('Token not found');
+        return;
       }
-    };
+      
+      const tokenData = result.data;
+      if (tokenData.network === 'AVAX') {
+        tokenData.network = 'avalanche';
+      }
+      
+      setToken(tokenData);
+      
+      // Fetch market data
+      const nativeSymbol = tokenData.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH';
+      const price = await priceService.getPrice(nativeSymbol);
+      setTokenPrice(price);
+      
+      // Fetch DEX data and top holder purchases in parallel
+      await Promise.all([
+        fetchDexScreenerData(tokenData.token_address, tokenData.network),
+        fetchTopHolderPurchases(tokenData.token_address)
+      ]);
+      
+    } catch (err) {
+      setError(err.message || 'Failed to load token data');
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchDexScreenerData, fetchTopHolderPurchases]);
 
-    fetchToken();
+  // Initial data load
+  useEffect(() => {
+    loadTokenData(address);
     
+    // Subscribe to price updates
     const unsubscribe = priceService.subscribeToUpdates((prices) => {
       if (token) {
         const nativeSymbol = token.network.toUpperCase() === 'AVALANCHE' ? 'AVAX' : 'ETH';
@@ -141,84 +141,90 @@ const TokenDetail = () => {
     return () => {
       unsubscribe();
     };
-  }, [address, fetchDexScreenerData, fetchTopHolderPurchases]);
+  }, [address, loadTokenData]);
+
+  // Subscribe to real-time purchases
+  useEffect(() => {
+    if (!token?.token_address) return;
+
+    const unsubscribe = realtimeService.subscribeToTokenPurchases(
+      token.token_address,
+      async (payload) => {
+        if (payload.eventType === 'INSERT') {
+          const newPurchase = payload.new;
+          
+          setTopHolderPurchases(prevPurchases => {
+            const exists = prevPurchases.some(p => p.tx_hash === newPurchase.tx_hash);
+            if (exists) {
+              return prevPurchases.map(p => 
+                p.tx_hash === newPurchase.tx_hash ? newPurchase : p
+              );
+            }
+            return [newPurchase, ...prevPurchases];
+          });
+          
+          setNewPurchaseIds(prevIds => {
+            if (!prevIds.includes(newPurchase.tx_hash)) {
+              return [...prevIds, newPurchase.tx_hash];
+            }
+            return prevIds;
+          });
+          
+          setNewPurchasesCount(count => count + 1);
+          playNotificationSound();
+          
+          setTimeout(() => {
+            setNewPurchaseIds(prevIds => 
+              prevIds.filter(id => id !== newPurchase.tx_hash)
+            );
+          }, 5000);
+        } else if (payload.eventType === 'UPDATE') {
+          const updatedPurchase = payload.new;
+          setTopHolderPurchases(prevPurchases => {
+            return prevPurchases.map(purchase => 
+              purchase.tx_hash === updatedPurchase.tx_hash ? updatedPurchase : purchase
+            );
+          });
+        }
+      }
+    );
+    
+    return () => unsubscribe();
+  }, [token, playNotificationSound]);
+
+  // Update DexScreener URL when timeframe changes
+  useEffect(() => {
+    if (!token?.token_address) return;
+    
+    const timeframeParam = timeframe === '24h' ? '1m' : timeframe === '7d' ? '1W' : '1M';
+    const dexNetwork = token.network?.toUpperCase() === 'AVAX' ? 'avalanche' : token.network?.toLowerCase();
+    setDexScreenerUrl(`https://dexscreener.com/${dexNetwork}/${token.token_address}?embed=1&theme=dark&trades=0&info=0&interval=${timeframeParam}`);
+  }, [timeframe, token]);
+
+  // Auto-refresh setup
+  useEffect(() => {
+    if (!token) return;
+    
+    if (refreshTimerRef.current) {
+      clearInterval(refreshTimerRef.current);
+    }
+    
+    refreshTimerRef.current = setInterval(() => {
+      refreshData();
+    }, 30000);
+    
+    return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+    };
+  }, [token, refreshData]);
 
   // Fonction pour formater les adresses (afficher seulement le début et la fin)
   const formatAddress = (address) => {
     if (!address) return '';
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   };
-
-  // S'abonner aux achats des top holders en temps réel
-  useEffect(() => {
-    if (token && token.token_address) {
-      // Subscribe to new purchases
-      const unsubscribe = realtimeService.subscribeToTokenPurchases(
-        token.token_address,
-        async (payload) => {
-          // Check if it's a new purchase or an update
-          if (payload.eventType === 'INSERT') {
-            const newPurchase = payload.new;
-            
-            // Update top holder purchases list
-            setTopHolderPurchases(prevPurchases => {
-              // Check if purchase already exists in the list
-              const exists = prevPurchases.some(p => p.tx_hash === newPurchase.tx_hash);
-              if (exists) {
-                return prevPurchases.map(p => 
-                  p.tx_hash === newPurchase.tx_hash ? newPurchase : p
-                );
-              } else {
-                return [newPurchase, ...prevPurchases];
-              }
-            });
-            
-            // Update new transaction IDs for animation
-            setNewPurchaseIds(prevIds => {
-              if (!prevIds.includes(newPurchase.tx_hash)) {
-                return [...prevIds, newPurchase.tx_hash];
-              }
-              return prevIds;
-            });
-            
-            // Increment new transactions counter
-            setNewPurchasesCount(count => count + 1);
-            
-            // Play notification sound
-            playNotificationSound();
-            
-            // Remove ID from new transactions list after 5 seconds
-            setTimeout(() => {
-              setNewPurchaseIds(prevIds => prevIds.filter(id => id !== newPurchase.tx_hash));
-            }, 5000);
-          } else if (payload.eventType === 'UPDATE') {
-            const updatedPurchase = payload.new;
-            
-            // Update purchase in the list
-            setTopHolderPurchases(prevPurchases => {
-              return prevPurchases.map(purchase => 
-                purchase.tx_hash === updatedPurchase.tx_hash ? updatedPurchase : purchase
-              );
-            });
-          }
-        }
-      );
-      
-      // Unsubscribe when component is unmounted or token address changes
-      return () => {
-        unsubscribe();
-      };
-    }
-  }, [token]);
-
-  // Update DexScreener URL when timeframe changes
-  useEffect(() => {
-    if (token && token.token_address) {
-      const timeframeParam = timeframe === '24h' ? '1m' : timeframe === '7d' ? '1W' : '1M';
-      const dexNetwork = token.network?.toUpperCase() === 'AVAX' ? 'avalanche' : token.network?.toLowerCase();
-      setDexScreenerUrl(`https://dexscreener.com/${dexNetwork}/${token.token_address}?embed=1&theme=dark&trades=0&info=0&interval=${timeframeParam}`);
-    }
-  }, [timeframe, token]);
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -285,28 +291,6 @@ const TokenDetail = () => {
       setRefreshing(false);
     }
   }, [token, refreshing]);
-
-  // Configurer le rafraîchissement automatique
-  useEffect(() => {
-    if (token) {
-      // Nettoyer tout timer existant
-      if (refreshTimerRef.current) {
-        clearInterval(refreshTimerRef.current);
-      }
-      
-      // Configurer un nouveau timer pour rafraîchir les données toutes les 30 secondes
-      refreshTimerRef.current = setInterval(() => {
-        refreshData();
-      }, 30000); // 30 secondes
-      
-      // Nettoyer le timer lors du démontage du composant
-      return () => {
-        if (refreshTimerRef.current) {
-          clearInterval(refreshTimerRef.current);
-        }
-      };
-    }
-  }, [token, refreshData]);
 
   if (loading) {
     return (
