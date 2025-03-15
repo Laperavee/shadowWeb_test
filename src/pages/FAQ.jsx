@@ -13,7 +13,6 @@ export default function FAQ() {
       question: "What is the minimum required liquidity?",
       answer: "The minimum liquidity is 100 units. However, we recommend higher liquidity to ensure better stability."
     },
-    // Add other FAQs
   ];
 
   return (
