@@ -392,15 +392,17 @@ export default function Staking() {
                     />
                     <button 
                       onClick={() => setStakingAmount(stakingData.userStaked.toString())}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1 text-sm text-fuchsia-400 hover:text-fuchsia-300"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 backdrop-blur-sm border border-fuchsia-400/20 px-4 py-1.5 rounded-xl hover:border-fuchsia-400/50 transition-all interactive relative group"
                     >
-                      MAX
+                      <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                        MAX
+                      </span>
                     </button>
                   </div>
                 </div>
                 <motion.button
                   onClick={handleStake}
-                  disabled={isStaking}
+                  disabled={isStaking || stakingAmount <= 0}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all disabled:opacity-50"
@@ -455,12 +457,10 @@ export default function Staking() {
                   <motion.button
                     onClick={handleUnstake}
                     disabled={isStaking || stakingData.userStaked <= 0}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/20 hover:border-red-500/50 transition-all disabled:opacity-50"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 backdrop-blur-sm border border-fuchsia-400/20 px-4 py-1.5 rounded-xl hover:border-fuchsia-400/50 transition-all interactive relative group"
                   >
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">
-                      {isStaking ? "Unstaking..." : "Unstake"}
+                    <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                      Unstake
                     </span>
                   </motion.button>
                 </div>

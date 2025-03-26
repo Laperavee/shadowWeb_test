@@ -57,7 +57,7 @@ function AppContent() {
               <Route path="/features" element={<Features />} />
               <Route path="/shadow-fun" element={<ShadowFun />} />
               <Route path="/token/:address" element={<TokenDetail />} />
-              <Route path="/staking" element={<Staking />} />
+              <Route path="/stacking" element={<Stacking />} />
             </Routes>
           </AnimatePresence>
         </main>
