@@ -183,7 +183,7 @@ export default function Staking() {
           </motion.div>
           <Link
             to="/shadow-fun"
-            className="relative px-6 py-2.5 rounded-xl overflow-hidden group"
+            className="relative px-6 py-2.5 rounded-xl group"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-50 group-hover:opacity-70 transition-opacity" />
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />

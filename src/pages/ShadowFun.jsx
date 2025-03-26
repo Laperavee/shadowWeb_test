@@ -118,7 +118,7 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-20 bg-black border border-gray-800 rounded-lg overflow-hidden z-50">
+        <div className="absolute top-full left-0 mt-2 w-20 bg-black border border-gray-800 rounded-lg z-50">
           {Object.entries(NETWORKS).map(([key, network]) => (
             <div
               key={key}
@@ -585,7 +585,7 @@ export default function ShadowFun() {
               />
               <Link
                 to="/staking"
-                className="relative px-6 py-2.5 rounded-xl overflow-hidden group"
+                className="relative px-6 py-2.5 rounded-xl group"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-50 group-hover:opacity-70 transition-opacity" />
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
@@ -600,7 +600,7 @@ export default function ShadowFun() {
               </Link>
               <motion.button
                 onClick={connectWallet}
-                className="relative px-6 py-2.5 rounded-xl overflow-hidden group"
+                className="relative px-6 py-2.5 rounded-xl group"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -647,7 +647,7 @@ export default function ShadowFun() {
             </div>
             <motion.button
               onClick={() => setActiveTab('create')}
-              className="relative w-full sm:w-auto px-8 py-3.5 rounded-xl overflow-hidden group"
+              className="relative w-full sm:w-auto px-8 py-3.5 rounded-xl group"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               initial={{ opacity: 0, x: 20 }}
@@ -701,7 +701,7 @@ export default function ShadowFun() {
                 <p className="text-gray-400 mb-6">Be the first to create a token on {NETWORKS[selectedChain].chainName}</p>
                 <motion.button
                   onClick={() => setActiveTab('create')}
-                  className="relative px-8 py-3 rounded-xl overflow-hidden group"
+                  className="relative px-8 py-3 rounded-xl group"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -747,7 +747,7 @@ export default function ShadowFun() {
                           />
                         ) : (
                           <motion.div
-                            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20 border-2 border-fuchsia-500/20 flex items-center justify-center overflow-hidden"
+                            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20 border-2 border-fuchsia-500/20 flex items-center justify-center "
                             whileHover={{ scale: 1.05 }}
                           >
                             <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-fuchsia-400 to-cyan-400">
@@ -783,7 +783,7 @@ export default function ShadowFun() {
                       <div className="flex gap-2">
                         <Link
                           to={`/token/${token.token_address}`}
-                          className="flex-1 relative px-4 py-2.5 rounded-xl overflow-hidden group/button"
+                          className="flex-1 relative px-4 py-2.5 rounded-xl group/button"
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity" />
                           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
@@ -793,7 +793,7 @@ export default function ShadowFun() {
                           href={`${NETWORKS[token.network].blockExplorerUrls[0]}/address/${token.token_address}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="relative px-4 py-2.5 rounded-xl overflow-hidden group/button"
+                          className="relative px-4 py-2.5 rounded-xl group/button"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
@@ -820,7 +820,7 @@ export default function ShadowFun() {
                     <motion.button
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
-                      className={`relative px-4 py-2 rounded-xl overflow-hidden ${
+                      className={`relative px-4 py-2 rounded-xl ${
                         currentPage === 1 
                           ? 'opacity-50 cursor-not-allowed' 
                           : 'hover:bg-fuchsia-500/10'
@@ -838,7 +838,7 @@ export default function ShadowFun() {
                         <motion.button
                           key={page}
                           onClick={() => setCurrentPage(page)}
-                          className={`relative w-10 h-10 rounded-xl overflow-hidden ${
+                          className={`relative w-10 h-10 rounded-xl ${
                             currentPage === page
                               ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20'
                               : 'hover:bg-fuchsia-500/10'
@@ -858,7 +858,7 @@ export default function ShadowFun() {
                     <motion.button
                       onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                       disabled={currentPage === totalPages}
-                      className={`relative px-4 py-2 rounded-xl overflow-hidden ${
+                      className={`relative px-4 py-2 rounded-xl ${
                         currentPage === totalPages
                           ? 'opacity-50 cursor-not-allowed'
                           : 'hover:bg-fuchsia-500/10'
