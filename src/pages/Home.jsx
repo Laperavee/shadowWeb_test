@@ -7,18 +7,26 @@ const Home = () => {
   return (
     <main className="min-h-screen">
       {/* Animated background effects */}
-      <div className="fixed inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)] animate-pulse-slow" />
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-fuchsia-900/20 to-cyan-900/30 animate-gradient-slow" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.9),transparent_50%,rgba(0,0,0,0.9))]" />
-        <div className="absolute inset-0">
-          <div className="absolute w-96 h-96 -top-48 -left-48 bg-purple-500/30 rounded-full blur-3xl animate-blob" />
-          <div className="absolute w-96 h-96 -top-48 -right-48 bg-cyan-500/30 rounded-full blur-3xl animate-blob animation-delay-2000" />
-          <div className="absolute w-96 h-96 -bottom-48 -left-48 bg-fuchsia-500/30 rounded-full blur-3xl animate-blob animation-delay-4000" />
-          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-purple-500/30 rounded-full blur-3xl animate-blob animation-delay-6000" />
-        </div>
-      </div>
-
+      <div className="absolute inset-0 bg-grid-animation bg-grid-size opacity-5" style={{ backgroundPosition: 'center' }} />
+         
+         {/* Dynamic Glowing Orbs */}
+         <motion.div 
+           style={{ y: backgroundY }}
+           className="absolute -top-1/4 left-1/4 w-[800px] h-[800px]"
+         >
+           <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-[150px] animate-pulse" />
+           <div className="absolute inset-0 bg-purple-500/10 rounded-full blur-[100px] animate-pulse delay-300" />
+           <div className="absolute inset-0 bg-purple-500/5 rounded-full blur-[50px] animate-pulse delay-700" />
+         </motion.div>
+ 
+         <motion.div 
+           style={{ y: backgroundY }}
+           className="absolute -bottom-1/4 right-1/4 w-[800px] h-[800px]"
+         >
+           <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-[150px] animate-pulse delay-500" />
+           <div className="absolute inset-0 bg-blue-500/10 rounded-full blur-[100px] animate-pulse delay-700" />
+           <div className="absolute inset-0 bg-blue-500/5 rounded-full blur-[50px] animate-pulse delay-1000" />
+         </motion.div>
       <div className="relative z-10">
         {/* Hero Section */}
         <section className="min-h-screen flex items-center justify-center px-4">
