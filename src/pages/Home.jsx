@@ -15,10 +15,7 @@ export default function Home() {
   return (
     <main ref={containerRef} className="min-h-screen bg-black overflow-x-hidden">
       {/* Enhanced animated background effects */}
-      <div className="fixed inset-0">
-        {/* Matrix-like grid with enhanced effects */}
-        <div className="absolute inset-0 bg-grid-animation bg-grid-size opacity-5" style={{ backgroundPosition: 'center' }} />
-        
+      <div className="fixed inset-0">        
         {/* Dynamic Glowing Orbs */}
         <motion.div 
           style={{ y: backgroundY }}
