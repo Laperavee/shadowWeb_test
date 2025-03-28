@@ -1,6 +1,7 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useRef } from 'react';
+import NewsCarousel from '../components/NewsCarousel';
 
 export default function Home() {
   const containerRef = useRef(null);
@@ -72,20 +73,18 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <Link
-                  to="/shadow-fun"
-                  className="relative px-8 py-3 rounded-xl group"
+                <motion.button
+                  onClick={() => window.location.href = '/shadow-fun'}
+                  className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all interactive relative group"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-50 group-hover:opacity-70 transition-opacity" />
-                  <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-                  <div className="relative flex items-center gap-2">
-                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <span className="relative text-white font-semibold">Create Token</span>
-                  </div>
-                </Link>
-                <motion.a
+                  <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                    Launch App
+                  </span>
+                </motion.button>
+                <motion.button
                   onClick={(e) => {
                     e.preventDefault();
                     document.getElementById('features').scrollIntoView({ 
@@ -94,17 +93,38 @@ export default function Home() {
                       duration: 2000
                     });
                   }}
-                  href="#features"
-                  className="relative px-8 py-3 rounded-xl group cursor-pointer"
-                  initial={{ opacity: 1 }}
-                  whileHover={{ opacity: 0.7 }}
-                  transition={{ duration: 1 }}
+                  className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all interactive relative group"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className="absolute inset-0 bg-white/5 group-hover:bg-white/10 transition-all duration-1000 ease-in-out" />
-                  <span className="relative text-white font-semibold">Learn More</span>
-                </motion.a>
+                  <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                    Learn More
+                  </span>
+                </motion.button>
               </motion.div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* News Section */}
+        <section className="py-20 px-4">
+          <div className="container mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-4">
+                Latest News
+              </h2>
+              <p className="text-gray-400">
+                Stay updated with the latest developments in the Shadow Protocol ecosystem
+              </p>
+            </motion.div>
+
+            <NewsCarousel />
           </div>
         </section>
 
