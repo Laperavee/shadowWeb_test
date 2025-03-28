@@ -28,11 +28,6 @@ export default function Home() {
     <main ref={containerRef} className="min-h-screen bg-black overflow-x-hidden">
       {/* Animated background effects */}
       <div className="fixed inset-0">
-        {/* Grid animation */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.8)_2px,transparent_2px),linear-gradient(to_bottom,rgba(0,0,0,0.8)_2px,transparent_2px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,black,transparent)]" />
-        </div>
-
         {/* Gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 via-transparent to-blue-500/10" />
         
@@ -43,9 +38,10 @@ export default function Home() {
               style={{ y: backgroundY }}
               className="absolute -top-1/4 left-1/4 w-[800px] h-[800px]"
               animate={{
-                opacity: [0.1, 0.2, 0.1],
-                scale: [1, 1.1, 1],
-                x: [0, 20, 0]
+                opacity: [0.1, 0.3, 0.1],
+                scale: [1, 1.2, 1],
+                x: [0, 50, 0],
+                y: [0, 30, 0]
               }}
               transition={{
                 duration: 8,
@@ -53,16 +49,17 @@ export default function Home() {
                 ease: "easeInOut"
               }}
             >
-              <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-[100px]" />
+              <div className="absolute inset-0 bg-purple-500/30 rounded-full blur-[100px]" />
             </motion.div>
 
             <motion.div 
               style={{ y: backgroundY }}
               className="absolute -bottom-1/4 right-1/4 w-[800px] h-[800px]"
               animate={{
-                opacity: [0.1, 0.15, 0.1],
-                scale: [1, 1.1, 1],
-                x: [0, -20, 0]
+                opacity: [0.1, 0.25, 0.1],
+                scale: [1, 1.2, 1],
+                x: [0, -50, 0],
+                y: [0, -30, 0]
               }}
               transition={{
                 duration: 10,
@@ -70,14 +67,16 @@ export default function Home() {
                 ease: "easeInOut"
               }}
             >
-              <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-[100px]" />
+              <div className="absolute inset-0 bg-blue-500/30 rounded-full blur-[100px]" />
             </motion.div>
 
             <motion.div 
               className="absolute top-1/2 left-1/2 w-[600px] h-[600px]"
               animate={{
-                opacity: [0.05, 0.1, 0.05],
-                scale: [1, 1.2, 1]
+                opacity: [0.05, 0.2, 0.05],
+                scale: [1, 1.3, 1],
+                x: [0, 30, 0],
+                y: [0, -20, 0]
               }}
               transition={{
                 duration: 12,
@@ -85,14 +84,16 @@ export default function Home() {
                 ease: "easeInOut"
               }}
             >
-              <div className="absolute inset-0 bg-fuchsia-500/20 rounded-full blur-[100px]" />
+              <div className="absolute inset-0 bg-fuchsia-500/30 rounded-full blur-[100px]" />
             </motion.div>
 
             <motion.div 
               className="absolute bottom-1/4 left-1/3 w-[400px] h-[400px]"
               animate={{
-                opacity: [0.05, 0.15, 0.05],
-                scale: [1, 1.1, 1]
+                opacity: [0.05, 0.25, 0.05],
+                scale: [1, 1.2, 1],
+                x: [0, -30, 0],
+                y: [0, 20, 0]
               }}
               transition={{
                 duration: 15,
@@ -100,7 +101,7 @@ export default function Home() {
                 ease: "easeInOut"
               }}
             >
-              <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-[100px]" />
+              <div className="absolute inset-0 bg-cyan-500/30 rounded-full blur-[100px]" />
             </motion.div>
           </>
         )}
