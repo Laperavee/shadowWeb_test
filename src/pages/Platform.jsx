@@ -104,9 +104,7 @@ export default function Platform() {
   return (
     <main ref={containerRef} className="bg-black min-h-screen">
       {/* Background qui s'étend sur toute la page */}
-      <div className="fixed inset-0">
-        <div className="grid-animation opacity-5" />
-        
+      <div className="fixed inset-0">        
         {/* Dynamic Glowing Orbs */}
         <motion.div 
           style={{ y: backgroundY }}

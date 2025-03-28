@@ -18,9 +18,6 @@ export default function BackgroundEffects() {
 
   return (
     <div className="fixed inset-0 pointer-events-none">
-      {/* Grille cyberpunk */}
-      <div className="absolute inset-0 grid-animation opacity-20" />
-
       {/* Gradient dynamique qui suit la souris */}
       <motion.div
         className="absolute w-[800px] h-[800px] rounded-full opacity-30 blur-3xl"

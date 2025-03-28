@@ -313,7 +313,6 @@ const TokenDetail = () => {
     <main className="min-h-screen bg-black text-white">
       {/* Background effects */}
       <div className="fixed inset-0">
-        <div className="grid-animation opacity-5" />
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-fuchsia-900/20 to-cyan-900/30 animate-gradient-slow" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.8),transparent_50%,rgba(0,0,0,0.8))]" />

@@ -59,9 +59,7 @@ export default function LoadingScreen() {
           className="fixed inset-0 z-50 bg-black cursor-none"
         >
           {/* Background Effects */}
-          <div className="absolute inset-0">
-            <div className="absolute inset-0 grid-animation opacity-5" />
-            
+          <div className="absolute inset-0">            
             {/* Orbs */}
             <div className="absolute -top-1/4 left-1/4 w-[800px] h-[800px]">
               <div className="absolute inset-0 bg-fuchsia-500/20 rounded-full blur-[150px] animate-pulse" />
