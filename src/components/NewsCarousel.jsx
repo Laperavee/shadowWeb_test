@@ -67,7 +67,8 @@ const NewsCarousel = () => {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -100 }}
           transition={{ duration: 0.5 }}
-          className="absolute inset-0"
+          className="absolute inset-0 cursor-pointer"
+          onClick={() => window.location.href = `/post/${news[currentIndex].id}`}
         >
           <div 
             className="absolute inset-0 bg-cover bg-center"
@@ -104,19 +105,12 @@ const NewsCarousel = () => {
               transition={{ delay: 0.4 }}
             >
               <span className="text-gray-400 text-sm">
-                {new Date(news[currentIndex].date).toLocaleDateString()}
+                {news[currentIndex].date ? new Date(news[currentIndex].date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                }) : 'No date available'}
               </span>
-              <motion.button
-                onClick={() => window.location.href = `/post/${news[currentIndex].id}`}
-                className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all interactive relative group"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                  Read More
-                </span>
-              </motion.button>
             </motion.div>
           </div>
         </motion.div>
