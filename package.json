@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@heroicons/react": "^2.1.1",
     "@supabase/supabase-js": "^2.49.1",
     "chart.js": "^4.4.8",
     "cors": "^2.8.5",
