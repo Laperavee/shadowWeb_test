@@ -24,134 +24,252 @@ export default function HowItWorks() {
           className="text-center mb-12 sm:mb-20"
         >
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400 mb-4 sm:mb-6">
-            Technical Deep Dive
+            How Shadow Protocol Works
           </h1>
           <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto px-4">
-            Explore the technical architecture and smart contract interactions that power Shadow Protocol
+            Discover the technical architecture and features that power Shadow Protocol
           </p>
         </motion.div>
 
-        {/* Interactive Flow Diagram */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12 mb-12 sm:mb-20">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-4 sm:space-y-6"
-          >
-            {technicalSteps.map((step, index) => (
-              <div
-                key={step.title}
-                className={`group relative bg-black/50 backdrop-blur-xl border rounded-2xl p-4 sm:p-6 cursor-pointer transition-all duration-300 ${
-                  activeStep === index
-                    ? 'border-fuchsia-500/50 bg-fuchsia-500/5'
-                    : 'border-gray-800 hover:border-fuchsia-500/30'
-                }`}
-                onClick={() => setActiveStep(index)}
-              >
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-2">{step.title}</h3>
-                <p className="text-sm sm:text-base text-gray-400">{step.description}</p>
-              </div>
-            ))}
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-4 sm:p-6"
-          >
-            <div className="sticky top-6">
-              <h3 className="text-lg sm:text-xl font-bold text-white mb-4">{technicalSteps[activeStep].title}</h3>
-              <pre className="bg-black/50 rounded-xl p-3 sm:p-4 overflow-x-auto text-xs sm:text-sm">
-                <code className="text-fuchsia-400">
-                  {technicalSteps[activeStep].code}
-                </code>
-              </pre>
-              <div className="mt-4 space-y-3 sm:space-y-4">
-                {technicalSteps[activeStep].details.map((detail, index) => (
-                  <div key={index} className="flex items-start gap-2 sm:gap-3">
-                    <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
-                      <span className="text-xs sm:text-sm text-fuchsia-400">{index + 1}</span>
-                    </div>
-                    <p className="text-sm sm:text-base text-gray-400">{detail}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Architecture Section */}
-        <section className="mb-12 sm:mb-20">
-          <motion.h2
+        {/* Key Features Section */}
+        <section className="mb-20">
+          <motion.h2 
+            className="text-3xl md:text-4xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-16"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-2xl sm:text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-8 sm:mb-12"
           >
-            Smart Contract Architecture
+            Key Features
           </motion.h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            {contracts.map((contract, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
               <motion.div
-                key={contract.name}
+                key={feature.title}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="group relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-4 sm:p-6 hover:border-fuchsia-500/30"
+                className="group relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:border-fuchsia-500/30 transition-all duration-300"
               >
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20 flex items-center justify-center mb-4">
-                  {contract.icon}
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-3">{contract.name}</h3>
-                <p className="text-sm sm:text-base text-gray-400 mb-4">{contract.description}</p>
-                <div className="space-y-2">
-                  {contract.functions.map((func, i) => (
-                    <div key={i} className="text-xs sm:text-sm text-fuchsia-400 font-mono bg-black/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
-                      {func}
-                    </div>
-                  ))}
+                <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20 flex items-center justify-center mb-4">
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+                  <p className="text-gray-400">{feature.description}</p>
                 </div>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* Integration Guide */}
+        {/* How It Works Section */}
+        <section className="mb-20">
+          <motion.h2 
+            className="text-3xl md:text-4xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            How It Works
+          </motion.h2>
+          <div className="max-w-4xl mx-auto">
+            {steps.map((step, index) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                className="relative flex items-start gap-8 mb-12"
+              >
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 flex items-center justify-center border border-fuchsia-500/20">
+                  <span className="text-xl font-bold text-white">{index + 1}</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
+                  <p className="text-gray-400">{step.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Security Features Section */}
+        <section className="mb-20">
+          <motion.h2 
+            className="text-3xl md:text-4xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            Security Features
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {securityFeatures.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="group relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:border-fuchsia-500/30 transition-all duration-300"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative">
+                  <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+                  <p className="text-gray-400">{feature.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Technical Implementation Section */}
         <section>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-2xl sm:text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-8 sm:mb-12"
           >
-            Integration Guide
+            Technical Implementation
           </motion.h2>
-          <div className="max-w-4xl mx-auto space-y-4 sm:space-y-8">
-            {integrationSteps.map((step, index) => (
-              <motion.div
-                key={step.title}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-4 sm:p-6"
-              >
-                <div className="flex items-start gap-4 sm:gap-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 flex items-center justify-center border border-fuchsia-500/20">
-                    <span className="text-xl sm:text-2xl font-bold text-white">{index + 1}</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">{step.title}</h3>
-                    <p className="text-sm sm:text-base text-gray-400 mb-3 sm:mb-4">{step.description}</p>
-                    <pre className="bg-black/50 rounded-xl p-3 sm:p-4 overflow-x-auto text-xs sm:text-sm">
-                      <code className="text-fuchsia-400">{step.code}</code>
-                    </pre>
-                  </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12 mb-12 sm:mb-20">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-4 sm:space-y-6"
+            >
+              {technicalSteps.map((step, index) => (
+                <div
+                  key={step.title}
+                  className={`group relative bg-black/50 backdrop-blur-xl border rounded-2xl p-4 sm:p-6 cursor-pointer transition-all duration-300 ${
+                    activeStep === index
+                      ? 'border-fuchsia-500/50 bg-fuchsia-500/5'
+                      : 'border-gray-800 hover:border-fuchsia-500/30'
+                  }`}
+                  onClick={() => setActiveStep(index)}
+                >
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-2">{step.title}</h3>
+                  <p className="text-sm sm:text-base text-gray-400">{step.description}</p>
                 </div>
-              </motion.div>
-            ))}
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-4 sm:p-6"
+            >
+              <div className="sticky top-6">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">{technicalSteps[activeStep].title}</h3>
+                <pre className="bg-black/50 rounded-xl p-3 sm:p-4 overflow-x-auto text-xs sm:text-sm">
+                  <code className="text-fuchsia-400">
+                    {technicalSteps[activeStep].code}
+                  </code>
+                </pre>
+                <div className="mt-4 space-y-3 sm:space-y-4">
+                  {technicalSteps[activeStep].details.map((detail, index) => (
+                    <div key={index} className="flex items-start gap-2 sm:gap-3">
+                      <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
+                        <span className="text-xs sm:text-sm text-fuchsia-400">{index + 1}</span>
+                      </div>
+                      <p className="text-sm sm:text-base text-gray-400">{detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           </div>
         </section>
       </div>
     </main>
   );
 }
+
+const features = [
+  {
+    title: "Token Deployment",
+    description: "Deploy ERC20 tokens with customizable parameters including name, symbol, supply, and liquidity.",
+    icon: (
+      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+      </svg>
+    )
+  },
+  {
+    title: "Uniswap V3 Integration",
+    description: "Automatic liquidity pool creation and management with sophisticated price calculation mechanisms.",
+    icon: (
+      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    )
+  },
+  {
+    title: "Position Management",
+    description: "Track and manage Uniswap V3 positions with automated fee collection and distribution.",
+    icon: (
+      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    )
+  },
+  {
+    title: "Fee Management",
+    description: "Sophisticated fee collection system with automated distribution to stakeholders.",
+    icon: (
+      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    )
+  },
+  {
+    title: "Price Management",
+    description: "Advanced price calculation utilities with TWAP oracle integration for accurate pricing.",
+    icon: (
+      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+      </svg>
+    )
+  }
+];
+
+const steps = [
+  {
+    title: "Token Creation",
+    description: "Start by configuring your token parameters including name, symbol, supply, and initial liquidity."
+  },
+  {
+    title: "Address Prediction & Salt Generation",
+    description: "The system generates a unique salt and predicts the token address to ensure Uniswap V3 compatibility."
+  },
+  {
+    title: "Price Calculation",
+    description: "Advanced algorithms calculate optimal pricing using TWAP oracles and sophisticated price management mechanisms."
+  },
+  {
+    title: "Pool Creation",
+    description: "Automatic creation and initialization of Uniswap V3 pool with calculated parameters and initial liquidity."
+  },
+  {
+    title: "Position Management",
+    description: "Track and manage your liquidity positions with automated fee collection and distribution systems."
+  }
+];
+
+const securityFeatures = [
+  {
+    title: "Access Control",
+    description: "Robust permission system with role-based access control for critical functions."
+  },
+  {
+    title: "Atomic Transactions",
+    description: "All deployment steps are atomic - if any step fails, the entire transaction reverts ensuring fund safety."
+  },
+  {
+    title: "Parameter Validation",
+    description: "Comprehensive parameter validation and security checks before any operation."
+  },
+  {
+    title: "Anti-Sniper Protection",
+    description: "Advanced salt generation mechanism to prevent front-running and sniping attacks."
+  }
+];
 
 const technicalSteps = [
   {
@@ -208,87 +326,5 @@ const technicalSteps = [
       "Position rebalancing strategies",
       "Fee collection and distribution"
     ]
-  }
-];
-
-const contracts = [
-  {
-    name: "Shadow.sol",
-    description: "Main deployment and management contract",
-    icon: (
-      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-      </svg>
-    ),
-    functions: [
-      "deployToken()",
-      "generateSalt()",
-      "predictTokenAddress()"
-    ]
-  },
-  {
-    name: "Token.sol",
-    description: "ERC20 token implementation with advanced features",
-    icon: (
-      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    functions: [
-      "initialize()",
-      "transfer()",
-      "approve()"
-    ]
-  },
-  {
-    name: "LogCalculator.sol",
-    description: "Price calculation and mathematical utilities",
-    icon: (
-      <svg className="w-6 h-6 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      </svg>
-    ),
-    functions: [
-      "calculateTick()",
-      "getSqrtRatio()",
-      "getPrice()"
-    ]
-  }
-];
-
-const integrationSteps = [
-  {
-    title: "Initialize Connection",
-    description: "Set up the connection to Shadow Protocol",
-    code: `const shadow = new ethers.Contract(
-  SHADOW_ADDRESS,
-  SHADOW_ABI,
-  signer
-);`
-  },
-  {
-    title: "Prepare Deployment Parameters",
-    description: "Configure your token deployment parameters",
-    code: `const params = {
-  name: "MyToken",
-  symbol: "MTK",
-  supply: ethers.parseEther("1000000"),
-  liquidity: ethers.parseEther("10"),
-  fee: 3000 // 0.3%
-};`
-  },
-  {
-    title: "Deploy Token",
-    description: "Execute the token deployment transaction",
-    code: `const tx = await shadow.deployToken(
-  params.name,
-  params.symbol,
-  params.supply,
-  params.liquidity,
-  params.fee,
-  salt,
-  deployer,
-  { value: deploymentFee }
-);`
   }
 ]; 
