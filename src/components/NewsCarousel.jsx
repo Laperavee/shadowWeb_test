@@ -105,11 +105,7 @@ const NewsCarousel = () => {
               transition={{ delay: 0.4 }}
             >
               <span className="text-gray-400 text-sm">
-                {news[currentIndex].created_at ? new Date(news[currentIndex].created_at).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                }) : 'No date available'}
+                {news[currentIndex].created_at}
               </span>
             </motion.div>
           </div>
