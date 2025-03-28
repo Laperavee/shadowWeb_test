@@ -30,7 +30,8 @@ export default function Navbar() {
 
   const menuItems = [
     { title: "How it Works", path: "/how-it-works" },
-    { title: "Features", path: "/features" }
+    { title: "Features", path: "/features" },
+    { title: "News", path: "/posts" }
   ];
 
   return (
@@ -178,6 +179,30 @@ export default function Navbar() {
                     Launch App
                   </button>
                 </motion.div>
+                <motion.a
+                  href="#features"
+                  className="text-gray-300 hover:text-white transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Features
+                </motion.a>
+                <motion.a
+                  href="#how-it-works"
+                  className="text-gray-300 hover:text-white transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  How it Works
+                </motion.a>
+                <motion.a
+                  href="/posts"
+                  className="text-gray-300 hover:text-white transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  News
+                </motion.a>
               </motion.div>
             </motion.div>
           )}

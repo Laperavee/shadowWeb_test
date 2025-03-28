@@ -80,7 +80,7 @@ export default function Home() {
               >
                 <Link
                   to="/shadow-fun"
-                  className="relative px-8 py-3 rounded-xl overflow-hidden group"
+                  className="relative px-8 py-3 rounded-xl group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-50 group-hover:opacity-70 transition-opacity" />
                   <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
@@ -101,7 +101,7 @@ export default function Home() {
                     });
                   }}
                   href="#features"
-                  className="relative px-8 py-3 rounded-xl overflow-hidden group cursor-pointer"
+                  className="relative px-8 py-3 rounded-xl group cursor-pointer"
                   initial={{ opacity: 1 }}
                   whileHover={{ opacity: 0.7 }}
                   transition={{ duration: 1 }}

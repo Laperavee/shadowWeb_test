@@ -9,6 +9,8 @@ import HowItWorks from './pages/HowItWorks';
 import ShadowFun from './pages/ShadowFun';
 import TokenDetail from './pages/TokenDetail';
 import Staking from './pages/Staking';
+import PostsIndex from './pages/PostsIndex';
+import PostDetail from './pages/PostDetail';
 
 // Components for managing effects
 import SoundProvider from './context/SoundContext';
@@ -57,7 +59,9 @@ function AppContent() {
               <Route path="/features" element={<Features />} />
               <Route path="/shadow-fun" element={<ShadowFun />} />
               <Route path="/token/:address" element={<TokenDetail />} />
-              <Route path="/staking" element={<staking />} />
+              <Route path="/staking" element={<Staking />} />
+              <Route path="/posts" element={<PostsIndex />} />
+              <Route path="/post/:id" element={<PostDetail />} />
             </Routes>
           </AnimatePresence>
         </main>
