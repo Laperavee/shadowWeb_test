@@ -57,7 +57,7 @@ const PostsIndex = () => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen p-4"
+      className="min-h-screen p-4 pt-24"
     >
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-8">Latest News</h1>
