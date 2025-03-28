@@ -1,10 +1,11 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import NewsCarousel from '../components/NewsCarousel';
 
 export default function Home() {
   const containerRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(true);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"]
@@ -12,88 +13,61 @@ export default function Home() {
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(document.visibilityState === 'visible');
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   return (
     <main ref={containerRef} className="min-h-screen bg-black overflow-x-hidden">
-      {/* Enhanced animated background effects */}
+      {/* Simplified background effects */}
       <div className="fixed inset-0">        
-        {/* Dynamic Glowing Orbs with random positions and animations */}
-        <motion.div 
-          style={{ y: backgroundY }}
-          className="absolute -top-1/4 left-1/4 w-[800px] h-[800px]"
-          animate={{
-            x: [0, 100, 0],
-            y: [0, -50, 0],
-            scale: [1, 1.2, 1],
-            opacity: [0.2, 0.4, 0.2]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-[150px]" />
-          <div className="absolute inset-0 bg-purple-500/10 rounded-full blur-[100px]" />
-          <div className="absolute inset-0 bg-purple-500/5 rounded-full blur-[50px]" />
-        </motion.div>
+        {/* Static gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-blue-900/20" />
+        
+        {/* Animated orbs only when tab is visible */}
+        {isVisible && (
+          <>
+            <motion.div 
+              style={{ y: backgroundY }}
+              className="absolute -top-1/4 left-1/4 w-[800px] h-[800px]"
+              animate={{
+                opacity: [0.1, 0.2, 0.1]
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              <div className="absolute inset-0 bg-purple-500/10 rounded-full blur-[100px]" />
+            </motion.div>
 
-        <motion.div 
-          style={{ y: backgroundY }}
-          className="absolute -bottom-1/4 right-1/4 w-[800px] h-[800px]"
-          animate={{
-            x: [0, -100, 0],
-            y: [0, 50, 0],
-            scale: [1, 1.1, 1],
-            opacity: [0.15, 0.35, 0.15]
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-[150px]" />
-          <div className="absolute inset-0 bg-blue-500/10 rounded-full blur-[100px]" />
-          <div className="absolute inset-0 bg-blue-500/5 rounded-full blur-[50px]" />
-        </motion.div>
-
-        {/* Additional floating orbs with random movements */}
-        <motion.div 
-          className="absolute top-1/3 left-1/3 w-[400px] h-[400px]"
-          animate={{
-            x: [0, 150, 0],
-            y: [0, -100, 0],
-            scale: [1, 1.3, 1],
-            opacity: [0.1, 0.3, 0.1]
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <div className="absolute inset-0 bg-fuchsia-500/15 rounded-full blur-[100px]" />
-        </motion.div>
-
-        <motion.div 
-          className="absolute bottom-1/3 right-1/3 w-[400px] h-[400px]"
-          animate={{
-            x: [0, -150, 0],
-            y: [0, 100, 0],
-            scale: [1, 1.2, 1],
-            opacity: [0.1, 0.25, 0.1]
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <div className="absolute inset-0 bg-cyan-500/15 rounded-full blur-[100px]" />
-        </motion.div>
+            <motion.div 
+              style={{ y: backgroundY }}
+              className="absolute -bottom-1/4 right-1/4 w-[800px] h-[800px]"
+              animate={{
+                opacity: [0.1, 0.15, 0.1]
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              <div className="absolute inset-0 bg-blue-500/10 rounded-full blur-[100px]" />
+            </motion.div>
+          </>
+        )}
 
         {/* Subtle noise texture */}
-        <div className="absolute inset-0 bg-noise bg-repeat opacity-[0.15]" />
+        <div className="absolute inset-0 bg-noise bg-repeat opacity-[0.1]" />
       </div>
 
       <div className="relative z-10">
