@@ -45,7 +45,7 @@ const NewsCarousel = () => {
   if (error) {
     return (
       <div className="flex items-center justify-center h-[400px]">
-        <div className="text-red-500">Une erreur est survenue lors du chargement des actualités.</div>
+        <div className="text-red-500">An error occurred while loading the news.</div>
       </div>
     );
   }
@@ -53,7 +53,7 @@ const NewsCarousel = () => {
   if (!news.length) {
     return (
       <div className="flex items-center justify-center h-[400px]">
-        <div className="text-gray-400">Aucune actualité disponible.</div>
+        <div className="text-gray-400">No news available.</div>
       </div>
     );
   }
@@ -70,6 +70,15 @@ const NewsCarousel = () => {
           className="absolute inset-0"
         >
           <div className="relative h-full">
+            <img
+              src={news[currentIndex].image}
+              alt={news[currentIndex].title}
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+              }}
+            />
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent z-10" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)] animate-pulse-slow" />
@@ -90,7 +99,7 @@ const NewsCarousel = () => {
                   transition={{ delay: 0.4 }}
                   className="text-gray-300 text-lg mb-6 line-clamp-3"
                 >
-                  {news[currentIndex].content}
+                  {news[currentIndex].description}
                 </motion.p>
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
@@ -106,12 +115,12 @@ const NewsCarousel = () => {
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
                     <div className="relative flex items-center justify-center gap-2">
                       <span className="text-white font-semibold">
-                        Lire la suite
+                        Read more
                       </span>
                     </div>
                   </Link>
                   <span className="text-gray-400">
-                    {new Date(news[currentIndex].created_at).toLocaleDateString('fr-FR', {
+                    {new Date(news[currentIndex].created_at).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
