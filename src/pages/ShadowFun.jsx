@@ -502,7 +502,13 @@ export default function ShadowFun() {
       const receipt = await tx.wait();
       
       // Récupérer les événements de la transaction
-      const events = receipt.logs || [];
+      const transactionReceipt = await provider.getTransactionReceipt(receipt.hash);
+      
+      if (!transactionReceipt) {
+        throw new Error("Transaction not found");
+      }
+
+      const events = transactionReceipt.logs || [];
       
       // Chercher l'événement PoolCreated
       const poolCreatedEvent = events.find(log => {
