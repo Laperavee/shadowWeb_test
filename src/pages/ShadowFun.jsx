@@ -529,9 +529,15 @@ export default function ShadowFun() {
       });
 
       if (tokenCreatedEvent && poolCreatedEvent) {
-        const tokenAddress = tokenCreatedEvent.args ? 
-          tokenCreatedEvent.args[0] : 
-          `0x${tokenCreatedEvent.topics[1].slice(26)}`;
+        // Récupérer l'adresse du token
+        let tokenAddress;
+        if (tokenCreatedEvent.args) {
+          tokenAddress = tokenCreatedEvent.args[0];
+        } else if (tokenCreatedEvent.topics && tokenCreatedEvent.topics[1]) {
+          tokenAddress = `0x${tokenCreatedEvent.topics[1].slice(26)}`;
+        } else {
+          throw new Error('Could not extract token address from event');
+        }
         
         // Récupérer l'adresse de la pool depuis l'événement PoolCreated
         let poolAddress;
