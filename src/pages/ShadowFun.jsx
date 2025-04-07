@@ -224,6 +224,31 @@ export default function ShadowFun() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  const insertTestToken = async () => {
+    try {
+      const testToken = {
+        token_address: "0x" + Math.random().toString(16).substr(2, 40),
+        token_name: "Test Token " + Math.floor(Math.random() * 1000),
+        token_symbol: "TEST" + Math.floor(Math.random() * 1000),
+        supply: Math.floor(Math.random() * 1000000),
+        liquidity: Math.floor(Math.random() * 1000),
+        max_wallet_percentage: Math.floor(Math.random() * 10) + 1,
+        network: selectedChain,
+        deployer_address: "0x" + Math.random().toString(16).substr(2, 40),
+        token_image: null,
+        tx_hash: "0x" + Math.random().toString(16).substr(2, 64),
+        pool_address: "0x" + Math.random().toString(16).substr(2, 40)
+      };
+
+      await tokenService.insertToken(testToken);
+      addNotification("Test token inserted successfully!", "success");
+      loadTokens(); // Recharger la liste des tokens
+    } catch (error) {
+      console.error('Error inserting test token:', error);
+      addNotification("Failed to insert test token", "error");
+    }
+  };
+
   const loadTokens = async () => {
     try {
       setIsLoading(true);
@@ -675,24 +700,42 @@ export default function ShadowFun() {
                 Join our community of traders and find the next gem.
               </motion.p>
             </div>
-            <motion.button
-              onClick={() => setActiveTab('create')}
-              className="relative w-full sm:w-auto px-8 py-3.5 rounded-xl group"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-              <div className="relative flex items-center justify-center gap-3">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className="text-white font-semibold">Create Token</span>
-              </div>
-            </motion.button>
+            <div className="flex gap-4">
+              <motion.button
+                onClick={insertTestToken}
+                className="relative px-4 py-2.5 rounded-xl group/button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-10 group-hover/button:opacity-20 transition-opacity rounded-xl" />
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                <div className="relative flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                    Insert Test Token
+                  </span>
+                </div>
+              </motion.button>
+              <motion.button
+                onClick={() => setActiveTab('create')}
+                className="relative px-4 py-2.5 rounded-xl group/button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                <div className="relative flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                    Create Token
+                  </span>
+                </div>
+              </motion.button>
+            </div>
           </motion.div>
 
           {/* Enhanced loading state */}
@@ -813,25 +856,6 @@ export default function ShadowFun() {
 
                       <div className="flex gap-2">
                         <motion.a
-                          href={`${NETWORKS[token.network].blockExplorerUrls[0]}/address/${token.token_address}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="relative px-4 py-2.5 rounded-xl group/button"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-10 group-hover/button:opacity-20 transition-opacity rounded-xl" />
-                          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-                          <div className="relative flex items-center justify-center gap-2">
-                            <svg className="w-4 h-4 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                              Snowtrace
-                            </span>
-                          </div>
-                        </motion.a>
-                        <motion.a
                           href={`https://dexscreener.com/avalanche/${token.token_address}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -848,6 +872,22 @@ export default function ShadowFun() {
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-400">
                               Dexscreener
                             </span>
+                          </div>
+                        </motion.a>
+                        <motion.a
+                          href={`${NETWORKS[token.network].blockExplorerUrls[0]}/address/${token.token_address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="relative px-4 py-2.5 rounded-xl group/button"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-10 group-hover/button:opacity-20 transition-opacity rounded-xl" />
+                          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                          <div className="relative flex items-center justify-center">
+                            <svg className="w-4 h-4 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
                           </div>
                         </motion.a>
                       </div>
