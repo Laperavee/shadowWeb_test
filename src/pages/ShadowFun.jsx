@@ -501,12 +501,17 @@ export default function ShadowFun() {
       setDeploymentStatus('Waiting for confirmation...');
       const receipt = await tx.wait();
       
+      // Attendre quelques blocs pour s'assurer que la transaction est bien confirmée
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
       // Récupérer les événements de la transaction
       const transactionReceipt = await provider.getTransactionReceipt(receipt.hash);
       
       if (!transactionReceipt) {
         throw new Error("Transaction not found");
       }
+
+      console.log('Transaction receipt:', transactionReceipt);
 
       const events = transactionReceipt.logs || [];
       
@@ -527,6 +532,15 @@ export default function ShadowFun() {
           return false;
         }
       });
+
+      console.log('Found events:', {
+        poolCreatedEvent,
+        tokenCreatedEvent
+      });
+
+      if (!tokenCreatedEvent || !poolCreatedEvent) {
+        throw new Error("Token creation events not found in transaction");
+      }
 
       if (tokenCreatedEvent && poolCreatedEvent) {
         // Récupérer l'adresse du token
@@ -636,8 +650,8 @@ export default function ShadowFun() {
         setTokens(tokens);
       }
       
-      // Forcer une redirection avec rechargement de page pour s'assurer que la page du token s'affiche correctement
-      window.location.href = `/token/${tokenAddress}`;
+      // Ne pas rediriger automatiquement
+      // window.location.href = `/token/${tokenAddress}`;
     } catch (error) {
       console.error('Error saving token:', error);
       console.error('Error details:', {
