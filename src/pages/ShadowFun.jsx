@@ -207,6 +207,7 @@ export default function ShadowFun() {
     tokenImage: null
   });
 
+  const [shadowContract, setShadowContract] = useState(null);
   const [isDeploying, setIsDeploying] = useState(false);
   const [deploymentStatus, setDeploymentStatus] = useState('');
 
@@ -430,14 +431,9 @@ export default function ShadowFun() {
       return;
     }
 
-    if (!formData.name || !formData.symbol || !formData.totalSupply || !formData.liquidity || !formData.maxWalletPercentage) {
-      addNotification("Please fill all fields", "error");
-      return;
-    }
-
     try {
       setIsDeploying(true);
-      setDeploymentStatus('Initializing deployment...');
+      setDeploymentStatus("Deploying token...");
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -505,26 +501,10 @@ export default function ShadowFun() {
       const receipt = await tx.wait();
       
       // Chercher l'événement PoolCreated
-      const poolCreatedEvent = receipt.logs.find(log => {
-        try {
-          return log.topics[0] === ethers.id(
-            "PoolCreated(address,address,uint24,int24,address)"
-          );
-        } catch {
-          return false;
-        }
-      });
+      const poolCreatedEvent = receipt.events.find(e => e.event === 'PoolCreated');
 
       // Chercher l'événement TokenCreated
-      const tokenCreatedEvent = receipt.logs.find(log => {
-        try {
-          return log.topics[0] === ethers.id(
-            "TokenCreated(address,uint256,address,string,string,uint256)"
-          );
-        } catch {
-          return false;
-        }
-      });
+      const tokenCreatedEvent = receipt.events.find(e => e.event === 'TokenCreated');
 
       if (tokenCreatedEvent && poolCreatedEvent) {
         const tokenAddress = tokenCreatedEvent.args ? 
@@ -532,9 +512,20 @@ export default function ShadowFun() {
           `0x${tokenCreatedEvent.topics[1].slice(26)}`;
         
         // Récupérer l'adresse de la pool depuis l'événement PoolCreated
-        const poolAddress = poolCreatedEvent.args ? 
-          poolCreatedEvent.args[4] : // L'adresse de la pool est le 5ème argument
-          `0x${poolCreatedEvent.topics[4].slice(26)}`;
+        let poolAddress;
+        if (poolCreatedEvent.args) {
+          poolAddress = poolCreatedEvent.args[4]; // L'adresse de la pool est le 5ème argument
+        } else if (poolCreatedEvent.data) {
+          // Extraire l'adresse de la pool depuis les données de l'événement
+          // Les données contiennent tickSpacing (32 bytes) suivi de l'adresse de la pool (32 bytes)
+          poolAddress = `0x${poolCreatedEvent.data.slice(66)}`; // 66 = 2 (0x) + 64 (32 bytes)
+        } else {
+          throw new Error('Could not extract pool address from event');
+        }
+        
+        if (!tokenAddress || !poolAddress) {
+          throw new Error('Failed to extract token or pool address from events');
+        }
         
         setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
         addNotification("Token deployed successfully!", "success");
