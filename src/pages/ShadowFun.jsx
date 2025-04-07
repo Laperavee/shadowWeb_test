@@ -500,11 +500,26 @@ export default function ShadowFun() {
       setDeploymentStatus('Waiting for confirmation...');
       const receipt = await tx.wait();
       
+      // Récupérer les événements de la transaction
+      const events = receipt.logs || [];
+      
       // Chercher l'événement PoolCreated
-      const poolCreatedEvent = receipt.events.find(e => e.event === 'PoolCreated');
+      const poolCreatedEvent = events.find(log => {
+        try {
+          return log.topics[0] === ethers.id("PoolCreated(address,address,uint24,int24,address)");
+        } catch {
+          return false;
+        }
+      });
 
       // Chercher l'événement TokenCreated
-      const tokenCreatedEvent = receipt.events.find(e => e.event === 'TokenCreated');
+      const tokenCreatedEvent = events.find(log => {
+        try {
+          return log.topics[0] === ethers.id("TokenCreated(address,uint256,address,string,string,uint256)");
+        } catch {
+          return false;
+        }
+      });
 
       if (tokenCreatedEvent && poolCreatedEvent) {
         const tokenAddress = tokenCreatedEvent.args ? 
