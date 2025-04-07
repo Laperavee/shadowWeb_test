@@ -582,11 +582,7 @@ export default function ShadowFun() {
 
   const saveTokenToDatabase = async (tokenAddress, deployerAddress, txHash, poolAddress) => {
     try {
-      if (!txHash) {
-        throw new Error('Transaction hash is required');
-      }
-
-      await tokenService.insertToken({
+      console.log('Saving token to database with data:', {
         token_address: tokenAddress,
         token_name: formData.name,
         token_symbol: formData.symbol,
@@ -600,6 +596,26 @@ export default function ShadowFun() {
         pool_address: poolAddress
       });
 
+      const response = await tokenService.insertToken({
+        token_address: tokenAddress,
+        token_name: formData.name,
+        token_symbol: formData.symbol,
+        supply: parseFloat(formData.totalSupply),
+        liquidity: parseFloat(formData.liquidity),
+        max_wallet_percentage: parseFloat(formData.maxWalletPercentage),
+        network: selectedChain,
+        deployer_address: deployerAddress,
+        token_image: formData.tokenImage,
+        tx_hash: txHash,
+        pool_address: poolAddress
+      });
+
+      console.log('Insert response:', response);
+
+      if (response && response.error) {
+        throw new Error(response.error);
+      }
+
       addNotification("Token saved to database", "success");
       
       // Mettre à jour la liste des tokens
@@ -612,7 +628,12 @@ export default function ShadowFun() {
       window.location.href = `/token/${tokenAddress}`;
     } catch (error) {
       console.error('Error saving token:', error);
-      addNotification("Failed to save token to database", "error");
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response
+      });
+      addNotification(`Failed to save token to database: ${error.message}`, "error");
     }
   };
 
