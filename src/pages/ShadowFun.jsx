@@ -466,6 +466,18 @@ export default function ShadowFun() {
       setDeploymentStatus('Waiting for confirmation...');
       const receipt = await tx.wait();
       
+      // Chercher l'événement PoolCreated
+      const poolCreatedEvent = receipt.logs.find(log => {
+        try {
+          return log.topics[0] === ethers.id(
+            "PoolCreated(address,address,uint24,int24,address)"
+          );
+        } catch {
+          return false;
+        }
+      });
+
+      // Chercher l'événement TokenCreated
       const tokenCreatedEvent = receipt.logs.find(log => {
         try {
           return log.topics[0] === ethers.id(
@@ -476,15 +488,20 @@ export default function ShadowFun() {
         }
       });
 
-      if (tokenCreatedEvent) {
+      if (tokenCreatedEvent && poolCreatedEvent) {
         const tokenAddress = tokenCreatedEvent.args ? 
           tokenCreatedEvent.args[0] : 
           `0x${tokenCreatedEvent.topics[1].slice(26)}`;
         
+        // Récupérer l'adresse de la pool depuis l'événement PoolCreated
+        const poolAddress = poolCreatedEvent.args ? 
+          poolCreatedEvent.args[4] : // L'adresse de la pool est le 5ème argument
+          `0x${poolCreatedEvent.topics[4].slice(26)}`;
+        
         setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
         addNotification("Token deployed successfully!", "success");
         
-        await saveTokenToDatabase(tokenAddress, deployerAddress, receipt.hash);
+        await saveTokenToDatabase(tokenAddress, deployerAddress, receipt.hash, poolAddress);
         
         // Réinitialiser le formulaire
         setFormData({
@@ -510,7 +527,7 @@ export default function ShadowFun() {
     }
   };
 
-  const saveTokenToDatabase = async (tokenAddress, deployerAddress, txHash) => {
+  const saveTokenToDatabase = async (tokenAddress, deployerAddress, txHash, poolAddress) => {
     try {
       if (!txHash) {
         throw new Error('Transaction hash is required');
@@ -526,7 +543,8 @@ export default function ShadowFun() {
         network: selectedChain,
         deployer_address: deployerAddress,
         token_image: formData.tokenImage,
-        tx_hash: txHash
+        tx_hash: txHash,
+        pool_address: poolAddress
       });
 
       addNotification("Token saved to database", "success");

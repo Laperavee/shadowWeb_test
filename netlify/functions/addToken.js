@@ -74,16 +74,17 @@ exports.handler = async (event, context) => {
     // Prepare the token data with default values
     const tokenToInsert = {
       token_address: tokenData.token_address,
-      network: tokenData.network,
       created_at: tokenData.created_at || new Date().toISOString(),
       liquidity: tokenData.liquidity || 0,
       supply: tokenData.supply || 0,
+      network: tokenData.network,
       deployer_address: tokenData.deployer_address.toLowerCase() || null,
       max_wallet_percentage: tokenData.max_wallet_percentage || null,
       token_name: tokenData.token_name || null,
       token_symbol: tokenData.token_symbol || null,
       image_url: tokenData.image_url || null,
-      is_featured: tokenData.is_featured || false
+      is_featured: tokenData.is_featured || false,
+      pool_address: tokenData.pool_address || null
     };
 
     // Check if token already exists
