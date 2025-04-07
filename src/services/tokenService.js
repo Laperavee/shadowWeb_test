@@ -22,6 +22,11 @@ const getApiUrl = (endpoint) => {
     if (endpoint.startsWith('/token_purchases')) {
       return `${API_URL}/getTokenPurchases${endpoint.substring('/token_purchases'.length)}`;
     }
+
+    // Special case for addToken endpoint
+    if (endpoint === '/addToken') {
+      return `${API_URL}/addToken`;
+    }
     
     // Default case - use tokens function
     return `${API_URL}/tokens${endpoint.startsWith('/tokens') ? endpoint.substring(7) : endpoint}`;

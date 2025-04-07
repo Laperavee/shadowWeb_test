@@ -240,12 +240,25 @@ export default function ShadowFun() {
         pool_address: "0x" + Math.random().toString(16).substr(2, 40)
       };
 
-      await tokenService.insertToken(testToken);
+      console.log('Attempting to insert test token:', testToken);
+      
+      const response = await tokenService.insertToken(testToken);
+      console.log('Insert response:', response);
+      
+      if (response && response.error) {
+        throw new Error(response.error);
+      }
+      
       addNotification("Test token inserted successfully!", "success");
       loadTokens(); // Recharger la liste des tokens
     } catch (error) {
       console.error('Error inserting test token:', error);
-      addNotification("Failed to insert test token", "error");
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response
+      });
+      addNotification(`Failed to insert test token: ${error.message}`, "error");
     }
   };
 
