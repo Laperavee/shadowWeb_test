@@ -81,7 +81,7 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-48 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10">
           {Object.entries(NETWORKS).map(([key, network]) => (
             <button
               key={key}
