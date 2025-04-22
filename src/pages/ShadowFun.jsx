@@ -65,23 +65,8 @@ const NETWORK_LIMITS = {
   }
 };
 
-const NetworkSelector = () => {
-  const { chainId } = useNetwork();
-  const { switchNetwork } = useSwitchNetwork();
+const NetworkSelector = ({ selectedChain, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const currentNetwork = Object.values(NETWORKS).find(
-    network => network.chainId === chainId?.toString()
-  ) || NETWORKS.AVAX;
-
-  const handleNetworkChange = async (network) => {
-    try {
-      await switchNetwork?.(parseInt(network.chainId, 16));
-      setIsOpen(false);
-    } catch (error) {
-      console.error("Error switching network:", error);
-    }
-  };
 
   return (
     <div className="relative">
@@ -89,8 +74,8 @@ const NetworkSelector = () => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-black/30 transition-all duration-300"
       >
-        <img src={currentNetwork.logo} alt={currentNetwork.chainName} className="w-6 h-6" />
-        <span className="text-white">{currentNetwork.chainName}</span>
+        <img src={NETWORKS[selectedChain].logo} alt={NETWORKS[selectedChain].chainName} className="w-6 h-6" />
+        <span className="text-white">{NETWORKS[selectedChain].chainName}</span>
         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
@@ -98,12 +83,15 @@ const NetworkSelector = () => {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 overflow-hidden">
-          {Object.values(NETWORKS).map((network) => (
+          {Object.entries(NETWORKS).map(([key, network]) => (
             <button
-              key={network.chainId}
-              onClick={() => handleNetworkChange(network)}
+              key={key}
+              onClick={() => {
+                onChange(key);
+                setIsOpen(false);
+              }}
               className={`w-full px-4 py-2 text-left flex items-center space-x-2 ${
-                network.chainId === currentNetwork.chainId
+                key === selectedChain
                   ? "bg-white/10"
                   : "hover:bg-white/5"
               }`}
@@ -732,7 +720,7 @@ export default function ShadowFun() {
               </Link>
             </motion.div>
             <div className="flex items-center gap-4 flex-wrap justify-center">
-              <NetworkSelector />
+              <NetworkSelector selectedChain={selectedChain} onChange={setSelectedChain} />
               <Link
                 to="/posts"
                 className="relative px-6 py-2.5 rounded-xl group"
