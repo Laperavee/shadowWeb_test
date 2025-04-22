@@ -30,7 +30,7 @@ const NETWORKS = {
   BASE: {
     chainId: "0x2105",
     chainName: "Base",
-    logo: baseLogo, // TODO: Ajouter le logo de Base
+    logo: baseLogo,
     disabled: false,
     nativeCurrency: {
       name: "ETH",
@@ -153,6 +153,7 @@ export default function ShadowFun() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('tokens');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [selectedChain, setSelectedChain] = useState('AVAX');
   
   const [formData, setFormData] = useState({
     name: '',
@@ -170,8 +171,6 @@ export default function ShadowFun() {
   const [isDeploying, setIsDeploying] = useState(false);
   const [deploymentStatus, setDeploymentStatus] = useState('');
   const [testTxHash, setTestTxHash] = useState('');
-
-  const [selectedChain, setSelectedChain] = useState('AVAX');
 
   const [notifications, setNotifications] = useState([]);
 
