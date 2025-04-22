@@ -3,11 +3,13 @@ import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import ShadowArtifact from '../artifact/Shadow.json';
 import avaxLogo from '../../dist/assets/avax_logo.png';
+import baseLogo from '../../dist/assets/base_logo.png';
 import { CONTRACTS } from '../config/contracts';
 import { tokenService } from '../services/tokenService';
 import { realtimeService } from '../services/realtimeService';
 import { priceService } from '../services/priceService';
 import { Link, useNavigate } from 'react-router-dom';
+import { useNetwork, useSwitchNetwork } from 'use-network';
 
 const SHADOW_ABI = ShadowArtifact.abi;
 
@@ -24,6 +26,19 @@ const NETWORKS = {
     },
     rpcUrls: ["https://api.avax.network/ext/bc/C/rpc"],
     blockExplorerUrls: ["https://snowtrace.io"]
+  },
+  BASE: {
+    chainId: "0x2105",
+    chainName: "Base",
+    logo: baseLogo, // TODO: Ajouter le logo de Base
+    disabled: false,
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18
+    },
+    rpcUrls: ["https://mainnet.base.org"],
+    blockExplorerUrls: ["https://basescan.org"]
   }
 };
 
@@ -50,96 +65,52 @@ const NETWORK_LIMITS = {
   }
 };
 
-const switchNetwork = async (chainId) => {
-  if (typeof window.ethereum !== 'undefined') {
-    try {
-      const targetNetwork = NETWORKS[chainId];
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: targetNetwork.chainId }]
-      });
-    } catch (switchError) {
-      if (switchError.code === 4902) {
-        try {
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [NETWORKS[chainId]]
-          });
-        } catch (addError) {
-          throw addError;
-        }
-      } else {
-        throw switchError;
-      }
-    }
-  }
-};
-
-const NetworkSelector = ({ selectedChain, onChange }) => {
+const NetworkSelector = () => {
+  const { chainId } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleNetworkChange = async (newChain) => {
-    if (NETWORKS[newChain].disabled) return;
+  const currentNetwork = Object.values(NETWORKS).find(
+    network => network.chainId === chainId?.toString()
+  ) || NETWORKS.AVAX;
+
+  const handleNetworkChange = async (network) => {
     try {
-      if (window.ethereum && window.ethereum.selectedAddress) {
-        await switchNetwork(newChain);
-      }
-      onChange(newChain);
+      await switchNetwork?.(parseInt(network.chainId, 16));
       setIsOpen(false);
     } catch (error) {
-      addNotification(`Failed to switch to ${NETWORKS[newChain].chainName}. Please try again.`, "error");
+      console.error("Error switching network:", error);
     }
   };
 
   return (
     <div className="relative">
-      <div 
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-20 h-10 px-3 gap-3 rounded-lg bg-black border border-gray-800 cursor-pointer hover:border-fuchsia-500/50"
+        className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-black/30 transition-all duration-300"
       >
-        <img
-          src={NETWORKS[selectedChain].logo}
-          alt={NETWORKS[selectedChain].chainName}
-          className="w-6 h-6"
-        />
-        <svg 
-          className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            strokeWidth={2} 
-            d="M19 9l-7 7-7-7"
-          />
+        <img src={currentNetwork.logo} alt={currentNetwork.chainName} className="w-6 h-6" />
+        <span className="text-white">{currentNetwork.chainName}</span>
+        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
-      </div>
+      </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-20 bg-black border border-gray-800 rounded-lg z-50">
-          {Object.entries(NETWORKS).map(([key, network]) => (
-            <div
-              key={key}
-              onClick={() => !network.disabled && handleNetworkChange(key)}
-              className={`relative flex items-center justify-center h-10 ${
-                network.disabled 
-                  ? 'opacity-50 cursor-not-allowed' 
-                  : 'cursor-pointer hover:bg-gray-900'
-              } ${selectedChain === key ? 'bg-gray-900' : ''}`}
+        <div className="absolute right-0 mt-2 w-48 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 overflow-hidden">
+          {Object.values(NETWORKS).map((network) => (
+            <button
+              key={network.chainId}
+              onClick={() => handleNetworkChange(network)}
+              className={`w-full px-4 py-2 text-left flex items-center space-x-2 ${
+                network.chainId === currentNetwork.chainId
+                  ? "bg-white/10"
+                  : "hover:bg-white/5"
+              }`}
             >
-              <img
-                src={network.logo}
-                alt={network.chainName}
-                className="w-6 h-6"
-              />
-              {network.disabled && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                  <span className="text-xs font-bold text-white">SOON</span>
-                </div>
-              )}
-            </div>
+              <img src={network.logo} alt={network.chainName} className="w-6 h-6" />
+              <span className="text-white">{network.chainName}</span>
+            </button>
           ))}
         </div>
       )}
@@ -761,10 +732,7 @@ export default function ShadowFun() {
               </Link>
             </motion.div>
             <div className="flex items-center gap-4 flex-wrap justify-center">
-              <NetworkSelector
-                selectedChain={selectedChain}
-                onChange={setSelectedChain}
-              />
+              <NetworkSelector />
               <Link
                 to="/posts"
                 className="relative px-6 py-2.5 rounded-xl group"
