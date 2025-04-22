@@ -82,17 +82,20 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 min-w-[160px] rounded-lg bg-black/20 backdrop-blur-sm border border-white/10">
-          {Object.entries(NETWORKS).map(([key, network]) => (
+          {Object.entries(NETWORKS).map(([key, network], index, array) => (
             <button
               key={key}
               onClick={() => {
                 onChange(key);
                 setIsOpen(false);
               }}
-              className={`w-full px-4 py-2 text-left flex items-center space-x-2 rounded-lg ${
+              className={`w-full px-4 py-2 text-left flex items-center space-x-2 ${
                 key === selectedChain
                   ? "bg-white/10"
                   : "hover:bg-white/5"
+              } ${
+                index === 0 ? "rounded-t-lg" : 
+                index === array.length - 1 ? "rounded-b-lg" : ""
               }`}
             >
               <img src={network.logo} alt={network.chainName} className="w-6 h-6" />
