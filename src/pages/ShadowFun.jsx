@@ -974,7 +974,7 @@ export default function ShadowFun() {
                       visible: { opacity: 1, y: 0 }
                     }}
                     className="group relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:border-fuchsia-500/30 transition-all duration-300 cursor-pointer"
-                    onClick={() => window.location.href = `/token/${token.token_address}`}
+                    onClick={() => navigate(`/token/${token.token_address}`)}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative">

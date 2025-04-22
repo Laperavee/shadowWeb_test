@@ -118,9 +118,6 @@ const TokenDetail = () => {
   // Initial data load
   useEffect(() => {
     const loadTokenData = async () => {
-      // Ne pas réinitialiser le loading si on a déjà les données
-      if (token) return;
-      
       try {
         setLoading(true);
         setError(null);
@@ -168,7 +165,7 @@ const TokenDetail = () => {
     });
     
     return () => unsubscribe();
-  }, [address, fetchDexScreenerData, fetchTopHolderPurchases, token]);
+  }, [address, fetchDexScreenerData, fetchTopHolderPurchases]);
 
   // Subscribe to real-time purchases
   useEffect(() => {
