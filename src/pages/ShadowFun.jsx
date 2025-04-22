@@ -9,7 +9,6 @@ import { tokenService } from '../services/tokenService';
 import { realtimeService } from '../services/realtimeService';
 import { priceService } from '../services/priceService';
 import { Link, useNavigate } from 'react-router-dom';
-import { useNetwork, useSwitchNetwork } from 'use-network';
 
 const SHADOW_ABI = ShadowArtifact.abi;
 
