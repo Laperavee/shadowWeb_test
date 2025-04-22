@@ -841,31 +841,12 @@ export default function ShadowFun() {
             </div>
             <div className="flex gap-4">
               <motion.button
-                onClick={insertTestToken}
-                className="relative px-4 py-2.5 rounded-xl group/button"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-10 group-hover/button:opacity-20 transition-opacity rounded-xl" />
-                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-                <div className="relative flex items-center justify-center gap-2">
-                  <svg className="w-4 h-4 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                    Insert Test Token
-                  </span>
-                </div>
-              </motion.button>
-
-              <motion.button
                 onClick={() => setActiveTab('create')}
                 className="relative px-4 py-2.5 rounded-xl group/button"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
-                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
                 <div className="relative flex items-center justify-center gap-2">
                   <svg className="w-4 h-4 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -875,33 +856,6 @@ export default function ShadowFun() {
                   </span>
                 </div>
               </motion.button>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  placeholder="Enter transaction hash"
-                  className="px-4 py-2.5 bg-black/30 border border-gray-700 rounded-lg focus:outline-none focus:border-fuchsia-500/50 transition-colors"
-                  value={testTxHash}
-                  onChange={(e) => setTestTxHash(e.target.value)}
-                />
-                <motion.button
-                  onClick={testPoolAddressExtraction}
-                  className="relative px-4 py-2.5 rounded-xl group/button"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-fuchsia-500 opacity-10 group-hover/button:opacity-20 transition-opacity rounded-xl" />
-                  <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-                  <div className="relative flex items-center justify-center gap-2">
-                    <svg className="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-400">
-                      Test Pool Address
-                    </span>
-                  </div>
-                </motion.button>
-              </div>
             </div>
           </motion.div>
 
