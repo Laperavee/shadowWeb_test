@@ -89,7 +89,7 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
                 onChange(key);
                 setIsOpen(false);
               }}
-              className={`w-full px-4 py-2 text-left flex items-center space-x-2 ${
+              className={`w-full px-4 py-2 text-left flex items-center space-x-2 rounded-lg ${
                 key === selectedChain
                   ? "bg-white/10"
                   : "hover:bg-white/5"
