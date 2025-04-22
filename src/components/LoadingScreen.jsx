@@ -45,8 +45,11 @@ export default function LoadingScreen() {
     return () => {
       clearInterval(timer);
       clearInterval(textInterval);
+      setIsLoading(false);
     };
   }, []);
+
+  if (!isLoading) return null;
 
   return (
     <AnimatePresence>

@@ -69,3 +69,5 @@ supabase/.temp/
 *.pem
 .cache/
 .vercel 
+# Local Netlify folder
+.netlify
