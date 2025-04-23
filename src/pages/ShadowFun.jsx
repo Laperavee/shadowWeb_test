@@ -441,6 +441,9 @@ export default function ShadowFun() {
 
       const network = await provider.getNetwork();
       console.log('Current network:', network);
+      console.log('Selected chain:', selectedChain);
+      console.log('Contract address:', CONTRACTS[selectedChain].SHADOW_ADDRESS);
+      console.log('Contract ABI:', SHADOW_CREATOR_ABI[selectedChain]);
 
       // Connexion au contrat ShadowCreator avec le bon ABI et la bonne adresse
       const shadowCreator = new ethers.Contract(
@@ -451,8 +454,11 @@ export default function ShadowFun() {
 
       // Vérifier que le contrat est bien déployé sur le réseau actuel
       try {
-        await shadowCreator.deployed();
+        console.log('Checking if contract is deployed...');
+        const isDeployed = await shadowCreator.deployed();
+        console.log('Contract deployment check result:', isDeployed);
       } catch (error) {
+        console.error('Contract deployment check error:', error);
         throw new Error(`ShadowCreator contract not found on ${NETWORKS[selectedChain].chainName}. Please check the contract address.`);
       }
 
