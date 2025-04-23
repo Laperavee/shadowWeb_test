@@ -1091,15 +1091,15 @@ export default function ShadowFun() {
                 
                 <form onSubmit={handleCreateToken} className="space-y-6">
                   <div className="space-y-4">
-                    <div className="mb-6">
+                    <div className="mb-4">
                       <label className="block text-gray-400 mb-2">Token Image</label>
-                      <div className="flex items-center justify-center w-full">
-                        <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50">
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                      <div className="flex items-center gap-4">
+                        <label className="flex-1 flex items-center justify-center px-4 py-2 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50">
+                          <div className="flex items-center gap-2">
+                            <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <p className="mb-2 text-sm text-gray-500">Click to upload token image</p>
+                            <span className="text-sm text-gray-400">Click to upload image</span>
                           </div>
                           <input 
                             type="file" 
@@ -1108,6 +1108,9 @@ export default function ShadowFun() {
                             onChange={(e) => setFormData({...formData, tokenImage: e.target.files[0]})}
                           />
                         </label>
+                        {formData.tokenImage && (
+                          <span className="text-sm text-gray-400">{formData.tokenImage.name}</span>
+                        )}
                       </div>
                     </div>
 
@@ -1138,8 +1141,14 @@ export default function ShadowFun() {
                           type="number"
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.totalSupply}
-                          onChange={(e) => setFormData({...formData, totalSupply: e.target.value})}
-                          placeholder="Enter total supply"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const limits = NETWORK_LIMITS[selectedChain];
+                            if (value === '' || (parseFloat(value) >= limits.minSupply && parseFloat(value) <= limits.maxSupply)) {
+                              setFormData({...formData, totalSupply: value});
+                            }
+                          }}
+                          placeholder={`Enter total supply (${NETWORK_LIMITS[selectedChain].minSupply} - ${NETWORK_LIMITS[selectedChain].maxSupply})`}
                         />
                       </div>
                       <div>
@@ -1148,8 +1157,14 @@ export default function ShadowFun() {
                           type="number"
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.liquidity}
-                          onChange={(e) => setFormData({...formData, liquidity: e.target.value})}
-                          placeholder={`Enter initial liquidity in ${NETWORKS[selectedChain].nativeCurrency.symbol}`}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const limits = NETWORK_LIMITS[selectedChain];
+                            if (value === '' || (parseFloat(value) >= limits.minLiquidity && parseFloat(value) <= limits.maxLiquidity)) {
+                              setFormData({...formData, liquidity: value});
+                            }
+                          }}
+                          placeholder={`Enter initial liquidity (${NETWORK_LIMITS[selectedChain].minLiquidity} - ${NETWORK_LIMITS[selectedChain].maxLiquidity} ${NETWORKS[selectedChain].nativeCurrency.symbol})`}
                         />
                       </div>
                       <div>
@@ -1158,8 +1173,14 @@ export default function ShadowFun() {
                           type="number"
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.maxWalletPercentage}
-                          onChange={(e) => setFormData({...formData, maxWalletPercentage: e.target.value})}
-                          placeholder="Enter max wallet percentage"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            const limits = NETWORK_LIMITS[selectedChain];
+                            if (value === '' || (parseFloat(value) >= limits.minWalletPercentage && parseFloat(value) <= limits.maxWalletPercentage)) {
+                              setFormData({...formData, maxWalletPercentage: value});
+                            }
+                          }}
+                          placeholder={`Enter max wallet percentage (${NETWORK_LIMITS[selectedChain].minWalletPercentage}% - ${NETWORK_LIMITS[selectedChain].maxWalletPercentage}%)`}
                         />
                       </div>
                       <div className="flex items-center gap-2">
