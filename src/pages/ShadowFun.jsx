@@ -186,6 +186,12 @@ export default function ShadowFun() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  const [formErrors, setFormErrors] = useState({
+    totalSupply: '',
+    liquidity: '',
+    maxWalletPercentage: ''
+  });
+
   const insertTestToken = async () => {
     try {
       const testToken = {
@@ -377,9 +383,36 @@ export default function ShadowFun() {
     };
   }, [selectedChain]);
 
+  const validateForm = () => {
+    const errors = {};
+    const limits = NETWORK_LIMITS[selectedChain];
+    
+    const totalSupply = parseFloat(formData.totalSupply);
+    if (isNaN(totalSupply) || totalSupply < limits.minSupply || totalSupply > limits.maxSupply) {
+      errors.totalSupply = `Supply must be between ${limits.minSupply} and ${limits.maxSupply}`;
+    }
+
+    const liquidity = parseFloat(formData.liquidity);
+    if (isNaN(liquidity) || liquidity < limits.minLiquidity || liquidity > limits.maxLiquidity) {
+      errors.liquidity = `Liquidity must be between ${limits.minLiquidity} and ${limits.maxLiquidity} ${NETWORKS[selectedChain].nativeCurrency.symbol}`;
+    }
+
+    const maxWalletPercentage = parseFloat(formData.maxWalletPercentage);
+    if (isNaN(maxWalletPercentage) || maxWalletPercentage < limits.minWalletPercentage || maxWalletPercentage > limits.maxWalletPercentage) {
+      errors.maxWalletPercentage = `Max wallet percentage must be between ${limits.minWalletPercentage}% and ${limits.maxWalletPercentage}%`;
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleCreateToken = async (e) => {
     e.preventDefault();
     
+    if (!validateForm()) {
+      return;
+    }
+
     const { SHADOW_ADDRESS, SHADOW_TOKEN_ADDRESS } = CONTRACTS[selectedChain];
     
     if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
@@ -1141,15 +1174,12 @@ export default function ShadowFun() {
                           type="number"
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.totalSupply}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            const limits = NETWORK_LIMITS[selectedChain];
-                            if (value === '' || (parseFloat(value) >= limits.minSupply && parseFloat(value) <= limits.maxSupply)) {
-                              setFormData({...formData, totalSupply: value});
-                            }
-                          }}
+                          onChange={(e) => setFormData({...formData, totalSupply: e.target.value})}
                           placeholder={`Enter total supply (${NETWORK_LIMITS[selectedChain].minSupply} - ${NETWORK_LIMITS[selectedChain].maxSupply})`}
                         />
+                        {formErrors.totalSupply && (
+                          <p className="mt-1 text-sm text-red-500">{formErrors.totalSupply}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-gray-400 mb-2">Initial Liquidity ({NETWORKS[selectedChain].nativeCurrency.symbol})</label>
@@ -1157,15 +1187,12 @@ export default function ShadowFun() {
                           type="number"
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.liquidity}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            const limits = NETWORK_LIMITS[selectedChain];
-                            if (value === '' || (parseFloat(value) >= limits.minLiquidity && parseFloat(value) <= limits.maxLiquidity)) {
-                              setFormData({...formData, liquidity: value});
-                            }
-                          }}
+                          onChange={(e) => setFormData({...formData, liquidity: e.target.value})}
                           placeholder={`Enter initial liquidity (${NETWORK_LIMITS[selectedChain].minLiquidity} - ${NETWORK_LIMITS[selectedChain].maxLiquidity} ${NETWORKS[selectedChain].nativeCurrency.symbol})`}
                         />
+                        {formErrors.liquidity && (
+                          <p className="mt-1 text-sm text-red-500">{formErrors.liquidity}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-gray-400 mb-2">Max Wallet Percentage</label>
@@ -1173,15 +1200,12 @@ export default function ShadowFun() {
                           type="number"
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.maxWalletPercentage}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            const limits = NETWORK_LIMITS[selectedChain];
-                            if (value === '' || (parseFloat(value) >= limits.minWalletPercentage && parseFloat(value) <= limits.maxWalletPercentage)) {
-                              setFormData({...formData, maxWalletPercentage: value});
-                            }
-                          }}
+                          onChange={(e) => setFormData({...formData, maxWalletPercentage: e.target.value})}
                           placeholder={`Enter max wallet percentage (${NETWORK_LIMITS[selectedChain].minWalletPercentage}% - ${NETWORK_LIMITS[selectedChain].maxWalletPercentage}%)`}
                         />
+                        {formErrors.maxWalletPercentage && (
+                          <p className="mt-1 text-sm text-red-500">{formErrors.maxWalletPercentage}</p>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <input
