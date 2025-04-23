@@ -1119,8 +1119,75 @@ export default function ShadowFun() {
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.name}
                           onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          placeholder="Enter token name"
                         />
                       </div>
+                      <div>
+                        <label className="block text-gray-400 mb-2">Token Symbol</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          value={formData.symbol}
+                          onChange={(e) => setFormData({...formData, symbol: e.target.value})}
+                          placeholder="Enter token symbol"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-400 mb-2">Total Supply</label>
+                        <input
+                          type="number"
+                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          value={formData.totalSupply}
+                          onChange={(e) => setFormData({...formData, totalSupply: e.target.value})}
+                          placeholder="Enter total supply"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-400 mb-2">Initial Liquidity ({NETWORKS[selectedChain].nativeCurrency.symbol})</label>
+                        <input
+                          type="number"
+                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          value={formData.liquidity}
+                          onChange={(e) => setFormData({...formData, liquidity: e.target.value})}
+                          placeholder={`Enter initial liquidity in ${NETWORKS[selectedChain].nativeCurrency.symbol}`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-400 mb-2">Max Wallet Percentage</label>
+                        <input
+                          type="number"
+                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          value={formData.maxWalletPercentage}
+                          onChange={(e) => setFormData({...formData, maxWalletPercentage: e.target.value})}
+                          placeholder="Enter max wallet percentage"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="isFeatured"
+                          className="rounded border-gray-700 text-fuchsia-500 focus:ring-fuchsia-500"
+                          checked={formData.isFeatured}
+                          onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
+                        />
+                        <label htmlFor="isFeatured" className="text-gray-400">Featured Token</label>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('tokens')}
+                        className="px-6 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isDeploying}
+                        className="px-6 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                      >
+                        {isDeploying ? 'Deploying...' : 'Create Token'}
+                      </button>
                     </div>
                   </div>
                 </form>
