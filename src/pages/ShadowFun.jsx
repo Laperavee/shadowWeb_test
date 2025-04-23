@@ -383,7 +383,7 @@ export default function ShadowFun() {
     const { SHADOW_ADDRESS, SHADOW_TOKEN_ADDRESS } = CONTRACTS[selectedChain];
     
     if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
-      addNotification("Contract addresses not configured for this network", "error");
+      addNotification(`Contract addresses not configured for ${NETWORKS[selectedChain].chainName}`, "error");
       return;
     }
 
@@ -394,14 +394,21 @@ export default function ShadowFun() {
 
     try {
       setIsDeploying(true);
-      setDeploymentStatus("Deploying token...");
+      setDeploymentStatus("Checking network...");
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const userAddress = await signer.getAddress();
       const deployerAddress = userAddress;
 
+      // Vérifier que le réseau actuel correspond au réseau sélectionné
+      const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+      if (currentChainId !== NETWORKS[selectedChain].chainId) {
+        throw new Error(`Please switch to ${NETWORKS[selectedChain].chainName} network to create a token`);
+      }
+
       const network = await provider.getNetwork();
+      console.log('Current network:', network);
 
       // Connexion au contrat Shadow
       const shadow = new ethers.Contract(
@@ -410,12 +417,26 @@ export default function ShadowFun() {
         signer
       );
 
+      // Vérifier que le contrat est bien déployé sur le réseau actuel
+      try {
+        await shadow.deployed();
+      } catch (error) {
+        throw new Error(`Shadow contract not found on ${NETWORKS[selectedChain].chainName}. Please check the contract address.`);
+      }
+
       // Connexion au contrat SHADOW token
       const shadowToken = new ethers.Contract(
         SHADOW_TOKEN_ADDRESS,
         ["function approve(address spender, uint256 amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)"],
         signer
       );
+
+      // Vérifier que le token est bien déployé sur le réseau actuel
+      try {
+        await shadowToken.deployed();
+      } catch (error) {
+        throw new Error(`SHADOW token not found on ${NETWORKS[selectedChain].chainName}. Please check the token address.`);
+      }
 
       // Vérifier les frais de déploiement en SHADOW
       const shadowFee = await shadow.shadowDeploymentFee();
@@ -1095,250 +1116,19 @@ export default function ShadowFun() {
                         <label className="block text-gray-400 mb-2">Token Name</label>
                         <input
                           type="text"
-                          className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
-                            formData.name && !validateText(formData.name, 'name')
-                              ? 'border-red-500/50 focus:border-red-500/75' 
-                              : 'border-gray-700 focus:border-fuchsia-500/50'
-                          }`}
+                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.name}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, '');
-                            setFormData({...formData, name: value});
-                          }}
-                          placeholder="e.g. Shadow Token"
+                          onChange={(e) => setFormData({...formData, name: e.target.value})}
                         />
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-400 mb-2">Token Symbol</label>
-                        <input
-                          type="text"
-                          className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
-                            formData.symbol && !validateText(formData.symbol, 'symbol')
-                              ? 'border-red-500/50 focus:border-red-500/75' 
-                              : 'border-gray-700 focus:border-fuchsia-500/50'
-                          }`}
-                          value={formData.symbol}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                            setFormData({...formData, symbol: value});
-                          }}
-                          placeholder="e.g. SHDW"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-400 mb-2">Total Supply</label>
-                        <input
-                          type="text"
-                          className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
-                            formData.totalSupply && !validateInput(formData.totalSupply, NETWORK_LIMITS[selectedChain].minSupply, NETWORK_LIMITS[selectedChain].maxSupply, true)
-                              ? 'border-red-500/50 focus:border-red-500/75' 
-                              : 'border-gray-700 focus:border-fuchsia-500/50'
-                          }`}
-                          value={formData.totalSupply}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^0-9]/g, '');
-                            setFormData({...formData, totalSupply: value});
-                          }}
-                          placeholder={`${formatNumber(NETWORK_LIMITS[selectedChain].minSupply)} to ${formatNumber(NETWORK_LIMITS[selectedChain].maxSupply)}`}
-                        />
-                        {formData.totalSupply && !validateInput(formData.totalSupply, NETWORK_LIMITS[selectedChain].minSupply, NETWORK_LIMITS[selectedChain].maxSupply, true) && (
-                          <motion.p 
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mt-2 text-sm text-red-400 flex items-center gap-2"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            {getErrorMessage('totalSupply', selectedChain)}
-                          </motion.p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-400 mb-2">
-                          {getLiquidityLabel(selectedChain)}
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="text"
-                            className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
-                              formData.liquidity && (
-                                parseFloat(formData.liquidity) < NETWORK_LIMITS[selectedChain].minLiquidity ||
-                                parseFloat(formData.liquidity) > NETWORK_LIMITS[selectedChain].maxLiquidity
-                              ) 
-                                ? 'border-red-500/50 focus:border-red-500/75' 
-                                : 'border-gray-700 focus:border-fuchsia-500/50'
-                            }`}
-                            value={formData.liquidity}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/[^0-9.]/g, '');
-                              setFormData({...formData, liquidity: value});
-                            }}
-                            placeholder={getLiquidityPlaceholder(selectedChain)}
-                          />
-                          {formData.liquidity && tokenPrices[NETWORKS[selectedChain].nativeCurrency.symbol] > 0 && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                              ≈ ${(parseFloat(formData.liquidity) * tokenPrices[NETWORKS[selectedChain].nativeCurrency.symbol]).toLocaleString('en-US', {maximumFractionDigits: 2})}
-                            </div>
-                          )}
-                        </div>
-                        {formData.liquidity && (
-                          parseFloat(formData.liquidity) < NETWORK_LIMITS[selectedChain].minLiquidity ||
-                          parseFloat(formData.liquidity) > NETWORK_LIMITS[selectedChain].maxLiquidity
-                        ) && (
-                          <motion.p 
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mt-2 text-sm text-red-400 flex items-center gap-2"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            Liquidity must be between {formatNumber(NETWORK_LIMITS[selectedChain].minLiquidity)} and {formatNumber(NETWORK_LIMITS[selectedChain].maxLiquidity)} {NETWORK_LIMITS[selectedChain].currency}
-                          </motion.p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-400 mb-2">Max Wallet Percentage</label>
-                        <input
-                          type="text"
-                          className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
-                            formData.maxWalletPercentage && !validateInput(formData.maxWalletPercentage, NETWORK_LIMITS[selectedChain].minWalletPercentage, NETWORK_LIMITS[selectedChain].maxWalletPercentage)
-                              ? 'border-red-500/50 focus:border-red-500/75' 
-                              : 'border-gray-700 focus:border-fuchsia-500/50'
-                          }`}
-                          value={formData.maxWalletPercentage}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^0-9.]/g, '');
-                            setFormData({...formData, maxWalletPercentage: value});
-                          }}
-                          placeholder={`${NETWORK_LIMITS[selectedChain].minWalletPercentage} to ${NETWORK_LIMITS[selectedChain].maxWalletPercentage}%`}
-                        />
-                        {formData.maxWalletPercentage && !validateInput(formData.maxWalletPercentage, NETWORK_LIMITS[selectedChain].minWalletPercentage, NETWORK_LIMITS[selectedChain].maxWalletPercentage) && (
-                          <motion.p 
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mt-2 text-sm text-red-400 flex items-center gap-2"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            {getErrorMessage('maxWalletPercentage', selectedChain)}
-                          </motion.p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-400 mb-2">
-                          Developer First Buy ({NETWORKS[selectedChain].nativeCurrency.symbol})
-                        </label>
-                        <input
-                          type="text"
-                          className={`w-full px-4 py-2 bg-black/30 border rounded-lg focus:outline-none transition-colors ${
-                            formData.deploymentFee && (
-                              parseFloat(formData.deploymentFee) < NETWORK_LIMITS[selectedChain].minDeploymentFee ||
-                              parseFloat(formData.deploymentFee) > (parseFloat(formData.liquidity) * 0.2)
-                            ) 
-                              ? 'border-red-500/50 focus:border-red-500/75' 
-                              : 'border-gray-700 focus:border-fuchsia-500/50'
-                          }`}
-                          value={formData.deploymentFee}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^0-9.]/g, '');
-                            setFormData({...formData, deploymentFee: value});
-                          }}
-                          placeholder={`${NETWORK_LIMITS[selectedChain].minDeploymentFee} to ${(parseFloat(formData.liquidity || 0) * 0.2).toFixed(2)} ${NETWORK_LIMITS[selectedChain].currency}`}
-                        />
-                        {formData.deploymentFee && (
-                          parseFloat(formData.deploymentFee) < NETWORK_LIMITS[selectedChain].minDeploymentFee ||
-                          parseFloat(formData.deploymentFee) > (parseFloat(formData.liquidity) * 0.2)
-                        ) && (
-                          <motion.p 
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mt-2 text-sm text-red-400 flex items-center gap-2"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            Fee must be between ${NETWORK_LIMITS[selectedChain].minDeploymentFee} and ${(parseFloat(formData.liquidity || 0) * 0.2).toFixed(2)} ${NETWORK_LIMITS[selectedChain].currency}
-                          </motion.p>
-                        )}
                       </div>
                     </div>
                   </div>
-
-                  <motion.button
-                    type="submit"
-                    className="w-full mt-6 px-6 py-3 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={(e) => {
-                      if (!isWalletConnected) {
-                        e.preventDefault();
-                        connectWallet();
-                      }
-                    }}
-                  >
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                      {!isWalletConnected 
-                        ? "Connect Wallet to Create"
-                        : "Create Token"
-                      }
-                    </span>
-                  </motion.button>
                 </form>
               </div>
             </motion.div>
           </div>
         )}
       </div>
-
-      {isDeploying && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-fuchsia-500/20 rounded-xl p-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fuchsia-500 mx-auto mb-4"></div>
-            <p className="text-fuchsia-400 text-center">{deploymentStatus}</p>
-          </div>
-        </div>
-      )}
-
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-        {notifications.map(({ id, message, type }) => (
-          <motion.div
-            key={id}
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
-            className={`p-4 rounded-lg shadow-lg backdrop-blur-sm flex items-center gap-3 ${
-              type === 'error' 
-                ? 'bg-red-500/10 border border-red-500/50 text-red-400'
-                : type === 'success'
-                ? 'bg-green-500/10 border border-green-500/50 text-green-400'
-                : 'bg-gray-900/50 border border-fuchsia-500/50 text-fuchsia-400'
-            }`}
-          >
-            {type === 'error' ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            ) : type === 'success' ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            )}
-            {message}
-          </motion.div>
-        ))}
-      </div>
     </main>
   );
-} 
+}
