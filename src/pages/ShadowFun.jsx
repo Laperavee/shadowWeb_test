@@ -391,36 +391,59 @@ export default function ShadowFun() {
   }, [selectedChain]);
 
   const validateForm = () => {
+    console.log('Validating form with data:', formData);
     const errors = {};
-    const limits = NETWORK_LIMITS[selectedChain];
-    
+    let isValid = true;
+
+    // Validation du nom
+    if (!formData.name.trim()) {
+      errors.name = 'Token name is required';
+      isValid = false;
+    }
+
+    // Validation du symbole
+    if (!formData.symbol.trim()) {
+      errors.symbol = 'Token symbol is required';
+      isValid = false;
+    }
+
+    // Validation de la supply totale
     const totalSupply = parseFloat(formData.totalSupply);
-    if (isNaN(totalSupply) || totalSupply < limits.minSupply || totalSupply > limits.maxSupply) {
-      errors.totalSupply = `Supply must be between ${limits.minSupply} and ${limits.maxSupply}`;
+    if (isNaN(totalSupply) || totalSupply <= 0) {
+      errors.totalSupply = 'Total supply must be greater than 0';
+      isValid = false;
     }
 
+    // Validation de la liquidité
     const liquidity = parseFloat(formData.liquidity);
-    if (isNaN(liquidity) || liquidity < limits.minLiquidity || liquidity > limits.maxLiquidity) {
-      errors.liquidity = `Liquidity must be between ${limits.minLiquidity} and ${limits.maxLiquidity} ${NETWORKS[selectedChain].nativeCurrency.symbol}`;
+    if (isNaN(liquidity) || liquidity <= 0) {
+      errors.liquidity = 'Liquidity must be greater than 0';
+      isValid = false;
     }
 
+    // Validation du pourcentage max wallet
     const maxWalletPercentage = parseFloat(formData.maxWalletPercentage);
-    if (isNaN(maxWalletPercentage) || maxWalletPercentage < limits.minWalletPercentage || maxWalletPercentage > limits.maxWalletPercentage) {
-      errors.maxWalletPercentage = `Max wallet percentage must be between ${limits.minWalletPercentage}% and ${limits.maxWalletPercentage}%`;
+    if (isNaN(maxWalletPercentage) || maxWalletPercentage <= 0 || maxWalletPercentage > 100) {
+      errors.maxWalletPercentage = 'Max wallet percentage must be between 0 and 100';
+      isValid = false;
     }
 
+    console.log('Validation errors:', errors);
     setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    return isValid;
   };
 
   const handleCreateToken = async (e) => {
     e.preventDefault();
     console.log('Create token button clicked');
+    console.log('Form data:', formData);
     
     if (!validateForm()) {
       console.log('Form validation failed');
       return;
     }
+
+    console.log('Form validation passed, proceeding with token creation...');
 
     if (!isWalletConnected) {
       addNotification("Please connect your wallet first!", "error");
