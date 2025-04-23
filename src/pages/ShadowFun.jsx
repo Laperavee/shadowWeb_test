@@ -161,8 +161,17 @@ export default function ShadowFun() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('tokens');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [selectedChain, setSelectedChain] = useState('AVAX');
-  
+  const [userAddress, setUserAddress] = useState('');
+  const [selectedChain, setSelectedChain] = useState(() => {
+    // Récupérer le réseau sauvegardé ou utiliser AVAX par défaut
+    const savedChain = localStorage.getItem('selectedChain');
+    return savedChain || 'AVAX';
+  });
+  const [shadowContract, setShadowContract] = useState(null);
+  const [shadowToken, setShadowToken] = useState(null);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [deploymentStatus, setDeploymentStatus] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     symbol: '',
@@ -170,33 +179,25 @@ export default function ShadowFun() {
     liquidity: '',
     maxWalletPercentage: '',
     deploymentFee: '0.00001',
-    isFeatured: false,
     deployerAddress: '',
     tokenImage: null
   });
-
-  const [shadowContract, setShadowContract] = useState(null);
-  const [isDeploying, setIsDeploying] = useState(false);
-  const [deploymentStatus, setDeploymentStatus] = useState('');
-  const [testTxHash, setTestTxHash] = useState('');
-
+  const [formErrors, setFormErrors] = useState({});
+  const [tokens, setTokens] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [tokenPrices, setTokenPrices] = useState({
     AVAX: 0,
     ETH: 0
   });
 
-  const [tokens, setTokens] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const [formErrors, setFormErrors] = useState({
-    totalSupply: '',
-    liquidity: '',
-    maxWalletPercentage: ''
-  });
+  // Sauvegarder le réseau sélectionné quand il change
+  useEffect(() => {
+    localStorage.setItem('selectedChain', selectedChain);
+  }, [selectedChain]);
 
   const insertTestToken = async () => {
     try {
@@ -313,7 +314,7 @@ export default function ShadowFun() {
         
         const shadow = new ethers.Contract(
           shadowAddress,
-          SHADOW_ABI,
+          SHADOW_CREATOR_ABI[selectedChain],
           signer
         );
         
@@ -414,8 +415,10 @@ export default function ShadowFun() {
 
   const handleCreateToken = async (e) => {
     e.preventDefault();
+    console.log('Create token button clicked');
     
     if (!validateForm()) {
+      console.log('Form validation failed');
       return;
     }
 
@@ -427,6 +430,7 @@ export default function ShadowFun() {
     try {
       setIsDeploying(true);
       setDeploymentStatus("Checking network...");
+      console.log('Starting token creation process...');
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -435,6 +439,9 @@ export default function ShadowFun() {
 
       // Vérifier que le réseau actuel correspond au réseau sélectionné
       const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+      console.log('Current chain ID:', currentChainId);
+      console.log('Expected chain ID:', NETWORKS[selectedChain].chainId);
+      
       if (currentChainId !== NETWORKS[selectedChain].chainId) {
         throw new Error(`Please switch to ${NETWORKS[selectedChain].chainName} network to create a token`);
       }
