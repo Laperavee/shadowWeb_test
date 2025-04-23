@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import ShadowArtifact from '../artifact/Shadow.json';
 import avaxLogo from '../../dist/assets/avax_logo.png';
 import baseLogo from '../../dist/assets/base_logo.png';
 import { CONTRACTS } from '../config/contracts';
@@ -9,8 +8,15 @@ import { tokenService } from '../services/tokenService';
 import { realtimeService } from '../services/realtimeService';
 import { priceService } from '../services/priceService';
 import { Link, useNavigate } from 'react-router-dom';
+import ShadowCreatorAvaxArtifact from '../artifact/ShadowCreatorAvax.json';
+import ShadowCreatorBaseArtifact from '../artifact/ShadowCreatorBase.json';
 
-const SHADOW_ABI = ShadowArtifact.abi;
+
+const SHADOW_CREATOR_ABI = {
+  AVAX: ShadowCreatorAvaxArtifact.abi,
+  BASE: ShadowCreatorBaseArtifact.abi
+};
+
 
 const NETWORKS = {
   AVAX: {
@@ -413,13 +419,6 @@ export default function ShadowFun() {
       return;
     }
 
-    const { SHADOW_ADDRESS, SHADOW_TOKEN_ADDRESS } = CONTRACTS[selectedChain];
-    
-    if (!SHADOW_ADDRESS || !SHADOW_TOKEN_ADDRESS) {
-      addNotification(`Contract addresses not configured for ${NETWORKS[selectedChain].chainName}`, "error");
-      return;
-    }
-
     if (!isWalletConnected) {
       addNotification("Please connect your wallet first!", "error");
       return;
@@ -443,60 +442,38 @@ export default function ShadowFun() {
       const network = await provider.getNetwork();
       console.log('Current network:', network);
 
-      // Connexion au contrat Shadow
-      const shadow = new ethers.Contract(
-        SHADOW_ADDRESS,
-        SHADOW_ABI,
+      // Connexion au contrat ShadowCreator avec le bon ABI et la bonne adresse
+      const shadowCreator = new ethers.Contract(
+        CONTRACTS[selectedChain].SHADOW_ADDRESS,
+        SHADOW_CREATOR_ABI[selectedChain],
         signer
       );
 
       // Vérifier que le contrat est bien déployé sur le réseau actuel
       try {
-        await shadow.deployed();
+        await shadowCreator.deployed();
       } catch (error) {
-        throw new Error(`Shadow contract not found on ${NETWORKS[selectedChain].chainName}. Please check the contract address.`);
+        throw new Error(`ShadowCreator contract not found on ${NETWORKS[selectedChain].chainName}. Please check the contract address.`);
       }
 
-      // Connexion au contrat SHADOW token
-      const shadowToken = new ethers.Contract(
-        SHADOW_TOKEN_ADDRESS,
-        ["function approve(address spender, uint256 amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)"],
-        signer
-      );
-
-      // Vérifier que le token est bien déployé sur le réseau actuel
-      try {
-        await shadowToken.deployed();
-      } catch (error) {
-        throw new Error(`SHADOW token not found on ${NETWORKS[selectedChain].chainName}. Please check the token address.`);
+      // Vérifier si la création de tokens est activée
+      const isCreationEnabled = await shadowCreator.isCreationEnabled();
+      if (!isCreationEnabled) {
+        throw new Error("Token creation is currently disabled");
       }
-
-      // Vérifier les frais de déploiement en SHADOW
-      const shadowFee = await shadow.shadowDeploymentFee();
-      const allowance = await shadowToken.allowance(userAddress, SHADOW_ADDRESS);
-
-      if (allowance < shadowFee) {
-        setDeploymentStatus('Approving SHADOW tokens...');
-        const approveTx = await shadowToken.approve(SHADOW_ADDRESS, ethers.parseEther('1000'));
-        await approveTx.wait();
-      }
-    
-      const maxWalletPercentage = parseFloat(formData.maxWalletPercentage)*10;
 
       setDeploymentStatus('Generating salt...');
-      const result = await shadow.generateSalt.staticCall(
+      const result = await shadowCreator.generateSalt(
         deployerAddress,
         formData.name,
         formData.symbol,
-        BigInt(ethers.parseEther(formData.totalSupply)),
-        maxWalletPercentage,
-        formData.isFeatured
+        BigInt(ethers.parseEther(formData.totalSupply))
       );
 
       const [salt, predictedAddress] = result;
 
       setDeploymentStatus('Deploying token...');
-      const tx = await shadow.deployToken(
+      const tx = await shadowCreator.deployToken(
         formData.name,
         formData.symbol,
         BigInt(ethers.parseEther(formData.totalSupply)),
@@ -504,8 +481,6 @@ export default function ShadowFun() {
         10000,
         salt,
         deployerAddress,
-        parseInt(maxWalletPercentage),
-        formData.isFeatured,
         {
           value: ethers.parseEther(formData.deploymentFee),
           gasLimit: 8000000
@@ -529,88 +504,48 @@ export default function ShadowFun() {
 
       const events = transactionReceipt.logs || [];
       
-      // Chercher l'événement PoolCreated
-      const poolCreatedEvent = events.find(log => {
-        try {
-          return log.topics[0] === ethers.id("PoolCreated(address,address,uint24,int24,address)");
-        } catch {
-          return false;
-        }
-      });
-
       // Chercher l'événement TokenCreated
       const tokenCreatedEvent = events.find(log => {
         try {
-          return log.topics[0] === ethers.id("TokenCreated(address,uint256,address,string,string,uint256)");
+          return log.topics[0] === ethers.id("TokenCreated(address,address,string,string,uint256)");
         } catch {
           return false;
         }
       });
 
-      console.log('Found events:', {
-        poolCreatedEvent,
-        tokenCreatedEvent
+      if (!tokenCreatedEvent) {
+        throw new Error("Token creation event not found in transaction");
+      }
+
+      // Récupérer l'adresse du token
+      let tokenAddress;
+      if (tokenCreatedEvent.args) {
+        tokenAddress = tokenCreatedEvent.args[0];
+      } else if (tokenCreatedEvent.topics && tokenCreatedEvent.topics[1]) {
+        tokenAddress = `0x${tokenCreatedEvent.topics[1].slice(26)}`;
+      } else {
+        throw new Error('Could not extract token address from event');
+      }
+      
+      setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
+      addNotification("Token deployed successfully!", "success");
+      
+      await saveTokenToDatabase(tokenAddress, deployerAddress, receipt.hash);
+      
+      // Réinitialiser le formulaire
+      setFormData({
+        name: '',
+        symbol: '',
+        totalSupply: '',
+        liquidity: '',
+        maxWalletPercentage: '',
+        deploymentFee: '0.00001',
+        deployerAddress: '',
+        tokenImage: null
       });
 
-      if (!tokenCreatedEvent || !poolCreatedEvent) {
-        throw new Error("Token creation events not found in transaction");
-      }
-
-      if (tokenCreatedEvent && poolCreatedEvent) {
-        // Récupérer l'adresse du token
-        let tokenAddress;
-        if (tokenCreatedEvent.args) {
-          tokenAddress = tokenCreatedEvent.args[0];
-        } else if (tokenCreatedEvent.topics && tokenCreatedEvent.topics[1]) {
-          tokenAddress = `0x${tokenCreatedEvent.topics[1].slice(26)}`;
-        } else {
-          throw new Error('Could not extract token address from event');
-        }
-        
-        // Récupérer l'adresse de la pool depuis l'événement PoolCreated
-        let poolAddress;
-        if (poolCreatedEvent.args) {
-          poolAddress = poolCreatedEvent.args[4]; // L'adresse de la pool est le 5ème argument
-        } else if (poolCreatedEvent.data) {
-          // Les données contiennent :
-          // - tickSpacing (32 bytes)
-          // - pool address (32 bytes)
-          // On extrait l'adresse de la pool qui est après le tickSpacing
-          const data = poolCreatedEvent.data.startsWith('0x') ? 
-            poolCreatedEvent.data.slice(2) : 
-            poolCreatedEvent.data;
-          
-          // On prend les 64 derniers caractères (32 bytes) qui représentent l'adresse de la pool
-          const poolAddressHex = data.slice(-64);
-          poolAddress = `0x${poolAddressHex}`;
-        } else {
-          throw new Error('Could not extract pool address from event');
-        }
-        
-        if (!tokenAddress || !poolAddress) {
-          throw new Error('Failed to extract token or pool address from events');
-        }
-        
-        setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
-        addNotification("Token deployed successfully!", "success");
-        
-        await saveTokenToDatabase(tokenAddress, deployerAddress, receipt.hash, poolAddress);
-        
-        // Réinitialiser le formulaire
-        setFormData({
-          name: '',
-          symbol: '',
-          totalSupply: '',
-          liquidity: '',
-          maxWalletPercentage: '',
-          deploymentFee: '0.00001',
-          deployerAddress: '',
-          tokenImage: null
-        });
-
-        // Fermer le modal de création
-        setActiveTab('tokens');
-      }
+      // Fermer le modal de création
+      setActiveTab('tokens');
 
     } catch (error) {
       console.error('Error in token creation:', error);
@@ -620,7 +555,7 @@ export default function ShadowFun() {
     }
   };
 
-  const saveTokenToDatabase = async (tokenAddress, deployerAddress, txHash, poolAddress) => {
+  const saveTokenToDatabase = async (tokenAddress, deployerAddress, txHash) => {
     try {
       console.log('Saving token to database with data:', {
         token_address: tokenAddress,
@@ -632,8 +567,7 @@ export default function ShadowFun() {
         network: selectedChain,
         deployer_address: deployerAddress,
         token_image: formData.tokenImage,
-        tx_hash: txHash,
-        pool_address: poolAddress
+        tx_hash: txHash
       });
 
       const response = await tokenService.insertToken({
@@ -646,8 +580,7 @@ export default function ShadowFun() {
         network: selectedChain,
         deployer_address: deployerAddress,
         token_image: formData.tokenImage,
-        tx_hash: txHash,
-        pool_address: poolAddress
+        tx_hash: txHash
       });
 
       console.log('Insert response:', response);
