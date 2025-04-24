@@ -482,16 +482,6 @@ export default function ShadowFun() {
         signer
       );
 
-      // Vérifier que le contrat est bien déployé sur le réseau actuel
-      try {
-        console.log('Checking if contract is deployed...');
-        const isDeployed = await shadowCreator.deployed();
-        console.log('Contract deployment check result:', isDeployed);
-      } catch (error) {
-        console.error('Contract deployment check error:', error);
-        throw new Error(`ShadowCreator contract not found on ${NETWORKS[selectedChain].chainName}. Please check the contract address.`);
-      }
-
       // Vérifier si la création de tokens est activée
       const isCreationEnabled = await shadowCreator.isCreationEnabled();
       if (!isCreationEnabled) {
