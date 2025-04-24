@@ -445,12 +445,20 @@ export default function ShadowFun() {
 
     console.log('Form validation passed, proceeding with token creation...');
 
-    if (!isWalletConnected) {
-      addNotification("Please connect your wallet first!", "error");
+    if (!window.ethereum) {
+      addNotification("Please install MetaMask!", "error");
       return;
     }
 
     try {
+      // Vérifier si le wallet est connecté
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts.length === 0) {
+        console.log('No wallet connected, requesting connection...');
+        await connectWallet();
+        return;
+      }
+
       setIsDeploying(true);
       setDeploymentStatus("Checking network...");
       console.log('Starting token creation process...');
@@ -458,7 +466,7 @@ export default function ShadowFun() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const userAddress = await signer.getAddress();
-      const deployerAddress = userAddress;
+      console.log('Connected wallet address:', userAddress);
 
       // Vérifier que le réseau actuel correspond au réseau sélectionné
       const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
@@ -482,23 +490,31 @@ export default function ShadowFun() {
         signer
       );
 
+      console.log('Contract connected, checking if creation is enabled...');
+
       // Vérifier si la création de tokens est activée
       const isCreationEnabled = await shadowCreator.isCreationEnabled();
       if (!isCreationEnabled) {
         throw new Error("Token creation is currently disabled");
       }
 
+      console.log('Token creation is enabled, generating salt...');
       setDeploymentStatus('Generating salt...');
+
       const result = await shadowCreator.generateSalt(
-        deployerAddress,
+        userAddress,
         formData.name,
         formData.symbol,
         BigInt(ethers.parseEther(formData.totalSupply))
       );
 
       const [salt, predictedAddress] = result;
+      console.log('Salt generated:', salt);
+      console.log('Predicted token address:', predictedAddress);
 
       setDeploymentStatus('Deploying token...');
+      console.log('Starting token deployment...');
+
       const tx = await shadowCreator.deployToken(
         formData.name,
         formData.symbol,
@@ -506,14 +522,16 @@ export default function ShadowFun() {
         ethers.parseUnits(formData.liquidity),
         10000,
         salt,
-        deployerAddress,
+        userAddress,
         {
           value: ethers.parseEther(formData.deploymentFee),
           gasLimit: 8000000
         }
       );
 
+      console.log('Transaction sent, waiting for confirmation...');
       setDeploymentStatus('Waiting for confirmation...');
+
       const receipt = await tx.wait();
       
       // Attendre quelques blocs pour s'assurer que la transaction est bien confirmée
@@ -556,7 +574,7 @@ export default function ShadowFun() {
       setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
       addNotification("Token deployed successfully!", "success");
       
-      await saveTokenToDatabase(tokenAddress, deployerAddress, receipt.hash);
+      await saveTokenToDatabase(tokenAddress, userAddress, receipt.hash);
       
       // Réinitialiser le formulaire
       setFormData({
