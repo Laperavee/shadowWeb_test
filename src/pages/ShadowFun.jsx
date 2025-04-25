@@ -493,11 +493,14 @@ export default function ShadowFun() {
       console.log('Token creation is enabled, generating salt...');
       setDeploymentStatus('Generating salt...');
 
+      console.log('Max wallet percentage:', formData.maxWalletPercentage);
+      
       const result = await shadowCreator.generateSalt(
         userAddress,
         formData.name,
         formData.symbol,
         BigInt(ethers.parseEther(formData.totalSupply)),
+        BigInt(formData.maxWalletPercentage),
         false
       );
 
