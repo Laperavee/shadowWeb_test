@@ -490,14 +490,6 @@ export default function ShadowFun() {
         signer
       );
 
-      console.log('Contract connected, checking if creation is enabled...');
-
-      // Vérifier si la création de tokens est activée
-      const isCreationEnabled = await shadowCreator.isCreationEnabled();
-      if (!isCreationEnabled) {
-        throw new Error("Token creation is currently disabled");
-      }
-
       console.log('Token creation is enabled, generating salt...');
       setDeploymentStatus('Generating salt...');
 
