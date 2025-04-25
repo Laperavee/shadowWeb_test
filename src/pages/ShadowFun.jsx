@@ -9,12 +9,12 @@ import { realtimeService } from '../services/realtimeService';
 import { priceService } from '../services/priceService';
 import { Link, useNavigate } from 'react-router-dom';
 import ShadowCreatorAvaxArtifact from '../artifact/ShadowCreatorAvax.json';
-import ShadowCreatorBaseArtifact from '../artifact/ShadowCreatorBase.json';
+import ShadowBaseArtifact from '../artifact/ShadowBase.json';
 
 
 const SHADOW_CREATOR_ABI = {
   AVAX: ShadowCreatorAvaxArtifact.abi,
-  BASE: ShadowCreatorBaseArtifact.abi
+  BASE: ShadowBaseArtifact.abi
 };
 
 
