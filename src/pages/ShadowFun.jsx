@@ -492,113 +492,120 @@ export default function ShadowFun() {
 
       console.log('Token creation is enabled, generating salt...');
       setDeploymentStatus('Generating salt...');
-      
+
       // Convertir les valeurs en BigInt
       const totalSupplyBigInt = BigInt(ethers.parseEther(formData.totalSupply));
-      const maxWalletPercentageBigInt = BigInt(Math.floor(parseFloat(formData.maxWalletPercentage) * 10));
+      const maxWalletPercentageBigInt = BigInt(formData.maxWalletPercentage * 10);
+      const fee = 10000;
       
       console.log('Total supply (BigInt):', totalSupplyBigInt);
       console.log('Max wallet percentage (BigInt):', maxWalletPercentageBigInt);
+      console.log('Fee:', fee);
       
-      const result = await shadowCreator.generateSalt(
-        userAddress,
-        formData.name,
-        formData.symbol,
-        totalSupplyBigInt,
-        maxWalletPercentageBigInt,
-        false
-      );
+      try {
+        const result = await shadowCreator.generateSalt(
+          userAddress,
+          formData.name,
+          formData.symbol,
+          totalSupplyBigInt,
+          maxWalletPercentageBigInt,
+          false
+        );
 
-      const [salt, predictedAddress] = result;
-      console.log('Salt generated:', salt);
-      console.log('Predicted token address:', predictedAddress);
+        const [salt, predictedAddress] = result;
+        console.log('Salt generated:', salt);
+        console.log('Predicted token address:', predictedAddress);
 
-      setDeploymentStatus('Deploying token...');
-      console.log('Starting token deployment...');
+        setDeploymentStatus('Deploying token...');
+        console.log('Starting token deployment...');
 
-      const tx = await shadowCreator.deployToken(
-        formData.name,
-        formData.symbol,
-        totalSupplyBigInt,
-        ethers.parseUnits(formData.liquidity),
-        10000,
-        salt,
-        userAddress,
-        maxWalletPercentageBigInt,
-        false,
-        {
-          value: ethers.parseEther(formData.deploymentFee),
-          gasLimit: 8000000
+        const tx = await shadowCreator.deployToken(
+          formData.name,
+          formData.symbol,
+          totalSupplyBigInt,
+          ethers.parseUnits(formData.liquidity),
+          fee,
+          salt,
+          userAddress,
+          maxWalletPercentageBigInt,
+          false,
+          {
+            value: ethers.parseEther(formData.deploymentFee),
+            gasLimit: 8000000
+          }
+        );
+
+        console.log('Transaction sent, waiting for confirmation...');
+        setDeploymentStatus('Waiting for confirmation...');
+
+        const receipt = await tx.wait();
+        
+        // Attendre quelques blocs pour s'assurer que la transaction est bien confirmée
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        // Récupérer les événements de la transaction
+        const transactionReceipt = await provider.getTransactionReceipt(receipt.hash);
+        
+        if (!transactionReceipt) {
+          throw new Error("Transaction not found");
         }
-      );
 
-      console.log('Transaction sent, waiting for confirmation...');
-      setDeploymentStatus('Waiting for confirmation...');
+        console.log('Transaction receipt:', transactionReceipt);
 
-      const receipt = await tx.wait();
-      
-      // Attendre quelques blocs pour s'assurer que la transaction est bien confirmée
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      // Récupérer les événements de la transaction
-      const transactionReceipt = await provider.getTransactionReceipt(receipt.hash);
-      
-      if (!transactionReceipt) {
-        throw new Error("Transaction not found");
-      }
+        const events = transactionReceipt.logs || [];
+        
+        // Chercher l'événement TokenCreated
+        const tokenCreatedEvent = events.find(log => {
+          try {
+            return log.topics[0] === ethers.id("TokenCreated(address,address,string,string,uint256)");
+          } catch {
+            return false;
+          }
+        });
 
-      console.log('Transaction receipt:', transactionReceipt);
-
-      const events = transactionReceipt.logs || [];
-      
-      // Chercher l'événement TokenCreated
-      const tokenCreatedEvent = events.find(log => {
-        try {
-          return log.topics[0] === ethers.id("TokenCreated(address,address,string,string,uint256)");
-        } catch {
-          return false;
+        if (!tokenCreatedEvent) {
+          throw new Error("Token creation event not found in transaction");
         }
-      });
 
-      if (!tokenCreatedEvent) {
-        throw new Error("Token creation event not found in transaction");
+        // Récupérer l'adresse du token
+        let tokenAddress;
+        if (tokenCreatedEvent.args) {
+          tokenAddress = tokenCreatedEvent.args[0];
+        } else if (tokenCreatedEvent.topics && tokenCreatedEvent.topics[1]) {
+          tokenAddress = `0x${tokenCreatedEvent.topics[1].slice(26)}`;
+        } else {
+          throw new Error('Could not extract token address from event');
+        }
+        
+        setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
+        addNotification("Token deployed successfully!", "success");
+        
+        await saveTokenToDatabase(tokenAddress, userAddress, receipt.hash);
+        
+        // Réinitialiser le formulaire
+        setFormData({
+          name: '',
+          symbol: '',
+          totalSupply: '',
+          liquidity: '',
+          maxWalletPercentage: '',
+          deploymentFee: '0.00001',
+          deployerAddress: '',
+          tokenImage: null
+        });
+
+        // Fermer le modal de création
+        setActiveTab('tokens');
+
+      } catch (error) {
+        console.error('Error in token creation:', error);
+        addNotification(error.message || "Error creating token", "error");
+      } finally {
+        setIsDeploying(false);
       }
-
-      // Récupérer l'adresse du token
-      let tokenAddress;
-      if (tokenCreatedEvent.args) {
-        tokenAddress = tokenCreatedEvent.args[0];
-      } else if (tokenCreatedEvent.topics && tokenCreatedEvent.topics[1]) {
-        tokenAddress = `0x${tokenCreatedEvent.topics[1].slice(26)}`;
-      } else {
-        throw new Error('Could not extract token address from event');
-      }
-      
-      setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
-      addNotification("Token deployed successfully!", "success");
-      
-      await saveTokenToDatabase(tokenAddress, userAddress, receipt.hash);
-      
-      // Réinitialiser le formulaire
-      setFormData({
-        name: '',
-        symbol: '',
-        totalSupply: '',
-        liquidity: '',
-        maxWalletPercentage: '',
-        deploymentFee: '0.00001',
-        deployerAddress: '',
-        tokenImage: null
-      });
-
-      // Fermer le modal de création
-      setActiveTab('tokens');
-
     } catch (error) {
       console.error('Error in token creation:', error);
       addNotification(error.message || "Error creating token", "error");
-    } finally {
-      setIsDeploying(false);
     }
   };
 
