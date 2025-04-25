@@ -497,7 +497,8 @@ export default function ShadowFun() {
         userAddress,
         formData.name,
         formData.symbol,
-        BigInt(ethers.parseEther(formData.totalSupply))
+        BigInt(ethers.parseEther(formData.totalSupply)),
+        false
       );
 
       const [salt, predictedAddress] = result;
@@ -515,6 +516,8 @@ export default function ShadowFun() {
         10000,
         salt,
         userAddress,
+        formData.maxWalletPercentage,
+        false,
         {
           value: ethers.parseEther(formData.deploymentFee),
           gasLimit: 8000000
