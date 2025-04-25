@@ -492,15 +492,20 @@ export default function ShadowFun() {
 
       console.log('Token creation is enabled, generating salt...');
       setDeploymentStatus('Generating salt...');
-
-      console.log('Max wallet percentage:', formData.maxWalletPercentage);
+      
+      // Convertir les valeurs en BigInt
+      const totalSupplyBigInt = BigInt(ethers.parseEther(formData.totalSupply));
+      const maxWalletPercentageBigInt = BigInt(Math.floor(parseFloat(formData.maxWalletPercentage) * 10));
+      
+      console.log('Total supply (BigInt):', totalSupplyBigInt);
+      console.log('Max wallet percentage (BigInt):', maxWalletPercentageBigInt);
       
       const result = await shadowCreator.generateSalt(
         userAddress,
         formData.name,
         formData.symbol,
-        BigInt(ethers.parseEther(formData.totalSupply)),
-        BigInt(formData.maxWalletPercentage),
+        totalSupplyBigInt,
+        maxWalletPercentageBigInt,
         false
       );
 
@@ -514,12 +519,12 @@ export default function ShadowFun() {
       const tx = await shadowCreator.deployToken(
         formData.name,
         formData.symbol,
-        BigInt(ethers.parseEther(formData.totalSupply)),
+        totalSupplyBigInt,
         ethers.parseUnits(formData.liquidity),
         10000,
         salt,
         userAddress,
-        formData.maxWalletPercentage,
+        maxWalletPercentageBigInt,
         false,
         {
           value: ethers.parseEther(formData.deploymentFee),
