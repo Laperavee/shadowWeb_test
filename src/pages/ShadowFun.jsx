@@ -48,9 +48,9 @@ const NETWORKS = {
 
 const NETWORK_LIMITS = {
   AVAX: {
-    minLiquidity: 100,
-    maxLiquidity: 90000,
-    minSupply: 1,
+    minLiquidity: 1000,
+    maxLiquidity: 100000,
+    minSupply: 100000,
     maxSupply: 1000000000,
     minWalletPercentage: 0.1,
     maxWalletPercentage: 10,
@@ -62,7 +62,7 @@ const NETWORK_LIMITS = {
   BASE: {
     minLiquidity: 10,
     maxLiquidity: 1000,
-    minSupply: 1,
+    minSupply: 100000,
     maxSupply: 1000000000,
     minWalletPercentage: 0.1,
     maxWalletPercentage: 10,
@@ -117,23 +117,6 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
   );
 };
 
-const getLiquidityLabel = (chain) => {
-  const { minLiquidity, maxLiquidity, currency } = NETWORK_LIMITS[chain];
-  return `Initial Liquidity (${currency})`;
-};
-
-const getLiquidityPlaceholder = (chain) => {
-  const { minLiquidity, maxLiquidity, currency } = NETWORK_LIMITS[chain];
-  return `${formatNumber(minLiquidity)} to ${formatNumber(maxLiquidity)} ${currency}`;
-};
-
-const validateInput = (value, min, max, isInteger = false) => {
-  const numValue = parseFloat(value);
-  if (isNaN(numValue)) return false;
-  if (isInteger && !Number.isInteger(numValue)) return false;
-  return numValue >= min && numValue <= max;
-};
-
 const validateText = (value, field) => {
   const patterns = {
     name: /^[a-zA-Z0-9\s]{1,50}$/,
@@ -154,10 +137,6 @@ const getErrorMessage = (field, chain) => {
     default:
       return 'Invalid input';
   }
-};
-
-const formatNumber = (num) => {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
 };
 
 export default function ShadowFun() {
@@ -280,44 +259,6 @@ export default function ShadowFun() {
 
     checkWalletConnection();
   }, [selectedChain]);
-
-  const insertTestToken = async () => {
-    try {
-      const testToken = {
-        token_address: "0x" + Math.random().toString(16).substr(2, 40),
-        token_name: "Test Token " + Math.floor(Math.random() * 1000),
-        token_symbol: "TEST" + Math.floor(Math.random() * 1000),
-        supply: Math.floor(Math.random() * 1000000),
-        liquidity: Math.floor(Math.random() * 1000),
-        max_wallet_percentage: Math.floor(Math.random() * 10) + 1,
-        network: selectedChain,
-        deployer_address: "0x" + Math.random().toString(16).substr(2, 40),
-        token_image: null,
-        tx_hash: "0x" + Math.random().toString(16).substr(2, 64),
-        pool_address: "0x" + Math.random().toString(16).substr(2, 40)
-      };
-
-      console.log('Attempting to insert test token:', testToken);
-      
-      const response = await tokenService.insertToken(testToken);
-      console.log('Insert response:', response);
-      
-      if (response && response.error) {
-        throw new Error(response.error);
-      }
-      
-      addNotification("Test token inserted successfully!", "success");
-      loadTokens(); // Recharger la liste des tokens
-    } catch (error) {
-      console.error('Error inserting test token:', error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        response: error.response
-      });
-      addNotification(`Failed to insert test token: ${error.message}`, "error");
-    }
-  };
 
   const loadTokens = async () => {
     try {
@@ -733,70 +674,6 @@ export default function ShadowFun() {
     }
   };
 
-  const testPoolAddressExtraction = async () => {
-    if (!testTxHash) {
-      addNotification("Please enter a transaction hash", "error");
-      return;
-    }
-
-    try {
-      setIsDeploying(true);
-      setDeploymentStatus("Testing pool address extraction...");
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const receipt = await provider.getTransactionReceipt(testTxHash);
-      
-      if (!receipt) {
-        throw new Error("Transaction not found");
-      }
-
-      // Récupérer les événements de la transaction
-      const events = receipt.logs || [];
-      
-      // Chercher l'événement PoolCreated
-      const poolCreatedEvent = events.find(log => {
-        try {
-          return log.topics[0] === ethers.id("PoolCreated(address,address,uint24,int24,address)");
-        } catch {
-          return false;
-        }
-      });
-
-      if (!poolCreatedEvent) {
-        throw new Error("PoolCreated event not found in transaction");
-      }
-
-      // Récupérer l'adresse de la pool depuis l'événement PoolCreated
-      let poolAddress;
-      if (poolCreatedEvent.args) {
-        poolAddress = poolCreatedEvent.args[4]; // L'adresse de la pool est le 5ème argument
-      } else if (poolCreatedEvent.data) {
-        // Les données contiennent :
-        // - tickSpacing (32 bytes)
-        // - pool address (32 bytes)
-        // On extrait l'adresse de la pool qui est après le tickSpacing
-        const data = poolCreatedEvent.data.startsWith('0x') ? 
-          poolCreatedEvent.data.slice(2) : 
-          poolCreatedEvent.data;
-        
-        // On prend les 64 derniers caractères (32 bytes) qui représentent l'adresse de la pool
-        const poolAddressHex = data.slice(-64);
-        poolAddress = `0x${poolAddressHex}`;
-      } else {
-        throw new Error('Could not extract pool address from event');
-      }
-
-      setDeploymentStatus(`Pool address found: ${poolAddress}`);
-      addNotification(`Successfully extracted pool address: ${poolAddress}`, "success");
-
-    } catch (error) {
-      console.error('Error in pool address extraction:', error);
-      addNotification(error.message || "Error extracting pool address", "error");
-    } finally {
-      setIsDeploying(false);
-    }
-  };
-
   // Calculer le montant maximum d'achat (20% de la liquidité)
   const calculateMaxBuyAmount = (liquidity) => {
     if (!liquidity) return 0
@@ -1194,6 +1071,12 @@ export default function ShadowFun() {
                           <span className="text-gray-400">Liquidity</span>
                           <span className="font-medium text-white">
                             {token.liquidity} {NETWORKS[token.network].nativeCurrency.symbol}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
+                          <span className="text-gray-400">Website</span>
+                          <span className="font-medium text-white">
+                            {token.website_url || 'no-website'}
                           </span>
                         </div>
                       </div>
