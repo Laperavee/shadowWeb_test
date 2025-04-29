@@ -512,17 +512,16 @@ export default function ShadowFun() {
         throw new Error(`Please switch to ${NETWORKS[selectedChain].chainName} network to create a token`);
       }
 
-      const shadowCreator = new ethers.Contract(
+      const shadow = new ethers.Contract(
         CONTRACTS[selectedChain].SHADOW_ADDRESS,
         SHADOW_CREATOR_ABI[selectedChain],
         signer
       );
 
-      console.log('shadowCreator:', shadowCreator);
+      console.log('shadow:', shadow);
 
       setDeploymentStatus('Generating salt...');
 
-      const totalSupplyBigInt = ethers.parseEther(formData.totalSupply);
       const maxWalletPercentage = (formData.maxWalletPercentage * 10).toString();
       const fee = 10000;
       
@@ -533,7 +532,7 @@ export default function ShadowFun() {
       const websiteUrl = formData.websiteUrl.trim() || 'empty';
 
       // Récupérer l'adresse du WETH
-      const wethAddress = await shadowCreator.weth();
+      const wethAddress = await shadow.weth();
       console.log('Adresse WETH:', wethAddress);
 
       // Approbation du WETH
@@ -553,54 +552,45 @@ export default function ShadowFun() {
         deployer: userAddress,
         name: formData.name,
         symbol: formData.symbol,
-        supply: totalSupplyBigInt.toString(),
+        supply: formData.totalSupply,
         maxWalletPercentage: maxWalletPercentage,
         twitterName: twitterName,
         websiteUrl: websiteUrl
       });
       
-      let salt;
-      let predictedAddress;
-      
-      try {
-        const result = await shadowCreator.generateSalt(
-          userAddress,
-          formData.name,
-          formData.symbol,
-          totalSupplyBigInt,
-          maxWalletPercentage,
-          twitterName,
-          websiteUrl
-        );
-        console.log('Résultat de generateSalt:', result);
-        [salt, predictedAddress] = result;
-        console.log('Salt généré:', salt);
-        console.log('Adresse prédite:', predictedAddress);
-      } catch (error) {
-        console.error('Erreur lors de generateSalt:', error);
-        throw error;
-      }
+      const result = await shadow.generateSalt(
+        userAddress,
+        formData.name,
+        formData.symbol,
+        ethers.parseEther(formData.totalSupply),
+        maxWalletPercentage,
+        twitterName,
+        websiteUrl
+      );
+      console.log('Résultat de generateSalt:', result);
+      const salt = result[0];
+      console.log('Salt généré:', salt);
 
       setDeploymentStatus('Deploying token...');
 
       console.log('Paramètres pour deployToken:', {
         name: formData.name,
         symbol: formData.symbol,
-        totalSupply: totalSupplyBigInt.toString(),
-        liquidity: ethers.parseEther(formData.liquidity).toString(),
+        supply: ethers.parseEther(formData.totalSupply),
+        liquidity: ethers.parseEther(formData.liquidity),
         fee: fee.toString(),
         salt: salt,
         deployer: userAddress,
         maxWalletPercentage: maxWalletPercentage,
-        firstBuyAmount: ethers.parseEther(formData.firstBuyAmount).toString(),
+        firstBuyAmount: ethers.parseEther(formData.firstBuyAmount),
         twitterName: twitterName,
         websiteUrl: websiteUrl
       });
 
-      const tx = await shadowCreator.deployToken(
+      const tx = await shadow.deployToken(
         formData.name,
         formData.symbol,
-        totalSupplyBigInt,
+        ethers.parseEther(formData.totalSupply),
         ethers.parseEther(formData.liquidity),
         fee,
         salt,
