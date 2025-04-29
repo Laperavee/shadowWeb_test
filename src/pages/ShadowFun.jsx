@@ -56,6 +56,8 @@ const NETWORK_LIMITS = {
     minWalletPercentage: 0.1,
     maxWalletPercentage: 10,
     minDeploymentFee: 0.00001,
+    minFirstBuyAmount: 0.1,
+    firstBuyPercentage: 20,
     currency: 'AVAX'
   },
   BASE: {
@@ -66,6 +68,8 @@ const NETWORK_LIMITS = {
     minWalletPercentage: 0.1,
     maxWalletPercentage: 10,
     minDeploymentFee: 0.00001,
+    minFirstBuyAmount: 0.01,
+    firstBuyPercentage: 20,
     currency: 'ETH'
   }
 };
@@ -420,6 +424,10 @@ export default function ShadowFun() {
     if (isNaN(liquidity) || liquidity <= 0) {
       errors.liquidity = 'Liquidity must be greater than 0';
       isValid = false;
+    } else if (liquidity < NETWORK_LIMITS[selectedChain].minLiquidity || 
+               liquidity > NETWORK_LIMITS[selectedChain].maxLiquidity) {
+      errors.liquidity = getErrorMessage('liquidity', selectedChain);
+      isValid = false;
     }
 
     // Validation du pourcentage max wallet
@@ -431,12 +439,14 @@ export default function ShadowFun() {
 
     // Validation du firstBuyAmount
     const firstBuyAmount = parseFloat(formData.firstBuyAmount);
+    const maxFirstBuyAmount = liquidity * (NETWORK_LIMITS[selectedChain].firstBuyPercentage / 100);
+    
     if (isNaN(firstBuyAmount) || firstBuyAmount <= 0) {
       errors.firstBuyAmount = 'First buy amount must be greater than 0';
       isValid = false;
     } else if (firstBuyAmount < NETWORK_LIMITS[selectedChain].minFirstBuyAmount || 
-               firstBuyAmount > NETWORK_LIMITS[selectedChain].maxFirstBuyAmount) {
-      errors.firstBuyAmount = `First buy amount must be between ${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} and ${NETWORK_LIMITS[selectedChain].maxFirstBuyAmount} ${NETWORKS[selectedChain].nativeCurrency.symbol}`;
+               firstBuyAmount > maxFirstBuyAmount) {
+      errors.firstBuyAmount = `First buy amount must be between ${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} and ${maxFirstBuyAmount} ${NETWORKS[selectedChain].nativeCurrency.symbol} (20% of liquidity)`;
       isValid = false;
     }
 
@@ -1215,7 +1225,7 @@ export default function ShadowFun() {
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.firstBuyAmount}
                           onChange={(e) => setFormData({...formData, firstBuyAmount: e.target.value})}
-                          placeholder={`Enter first buy amount (${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} - ${NETWORK_LIMITS[selectedChain].maxFirstBuyAmount} ${NETWORKS[selectedChain].nativeCurrency.symbol})`}
+                          placeholder={`Enter first buy amount (${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} - 20% of liquidity)`}
                         />
                         {formErrors.firstBuyAmount && (
                           <p className="mt-1 text-sm text-red-500">{formErrors.firstBuyAmount}</p>
