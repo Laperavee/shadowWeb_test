@@ -186,7 +186,8 @@ export default function ShadowFun() {
     deploymentFee: '0.00001',
     deployerAddress: '',
     tokenImage: null,
-    twitterConnected: false
+    twitterConnected: false,
+    websiteUrl: ''
   });
   const [formErrors, setFormErrors] = useState({});
   const [tokens, setTokens] = useState([]);
@@ -442,6 +443,11 @@ export default function ShadowFun() {
       isValid = false;
     }
 
+    // Validation de l'URL du site web
+    if (formData.websiteUrl && !formData.websiteUrl.match(/^https?:\/\/.+\..+/)) {
+      errors.websiteUrl = 'Please enter a valid website URL';
+    }
+
     // Validation de la supply totale
     const totalSupply = parseFloat(formData.totalSupply);
     if (isNaN(totalSupply) || totalSupply <= 0) {
@@ -562,7 +568,9 @@ export default function ShadowFun() {
           formData.name,
           formData.symbol,
           totalSupplyBigInt,
-          maxWalletPercentageBigInt
+          maxWalletPercentageBigInt,
+          twitterHandle,
+          formData.websiteUrl
         );
 
         const [salt, predictedAddress] = result;
@@ -582,6 +590,8 @@ export default function ShadowFun() {
           userAddress,
           maxWalletPercentageBigInt,
           firstBuyAmount,
+          twitterHandle,
+          formData.websiteUrl,
           {
             value: ethers.parseEther(formData.deploymentFee),
             gasLimit: 8000000
@@ -646,7 +656,8 @@ export default function ShadowFun() {
           deploymentFee: '0.00001',
           deployerAddress: '',
           tokenImage: null,
-          twitterConnected: false
+          twitterConnected: false,
+          websiteUrl: ''
         });
 
         // Fermer le modal de création
@@ -676,7 +687,7 @@ export default function ShadowFun() {
         network: selectedChain,
         deployer_address: deployerAddress,
         token_image: formData.tokenImage,
-        tx_hash: txHash
+        tx_hash: txHash,
       });
 
       const response = await tokenService.insertToken({
@@ -689,7 +700,8 @@ export default function ShadowFun() {
         network: selectedChain,
         deployer_address: deployerAddress,
         token_image: formData.tokenImage,
-        tx_hash: txHash
+        tx_hash: txHash,
+        website_url: formData.websiteUrl
       });
 
       console.log('Insert response:', response);
@@ -1378,6 +1390,19 @@ export default function ShadowFun() {
                         />
                         {formErrors.firstBuyAmount && (
                           <p className="mt-1 text-sm text-red-500">{formErrors.firstBuyAmount}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-gray-400 mb-2">Website URL (Optional)</label>
+                        <input
+                          type="url"
+                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          value={formData.websiteUrl}
+                          onChange={(e) => setFormData({...formData, websiteUrl: e.target.value})}
+                          placeholder="https://example.com"
+                        />
+                        {formErrors.websiteUrl && (
+                          <p className="mt-1 text-sm text-red-500">{formErrors.websiteUrl}</p>
                         )}
                       </div>
                     </div>
