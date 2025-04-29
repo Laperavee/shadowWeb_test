@@ -164,6 +164,7 @@ export default function ShadowFun() {
   const [activeTab, setActiveTab] = useState('tokens');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [userAddress, setUserAddress] = useState('');
+  const [twitterHandle, setTwitterHandle] = useState('');
   const [selectedChain, setSelectedChain] = useState(() => {
     // Récupérer le réseau sauvegardé ou utiliser AVAX par défaut
     const savedChain = localStorage.getItem('selectedChain');
@@ -204,6 +205,23 @@ export default function ShadowFun() {
   useEffect(() => {
     localStorage.setItem('selectedChain', selectedChain);
   }, [selectedChain]);
+
+  useEffect(() => {
+    const checkTwitterAuth = async () => {
+      try {
+        const response = await fetch('/.netlify/functions/get-twitter-info');
+        const data = await response.json();
+        
+        if (data.twitterHandle) {
+          setTwitterHandle(data.twitterHandle);
+        }
+      } catch (error) {
+        console.error('Error checking Twitter auth:', error);
+      }
+    };
+
+    checkTwitterAuth();
+  }, []);
 
   const insertTestToken = async () => {
     try {
@@ -877,6 +895,20 @@ export default function ShadowFun() {
                       </svg>
                       <span className="text-white">Connect Wallet</span>
                     </button>
+                    <button
+                      onClick={() => {
+                        handleTwitterConnect();
+                        setIsConnectMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left flex items-center space-x-2 hover:bg-white/5 rounded-b-lg"
+                    >
+                      <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                      </svg>
+                      <span className="text-white">
+                        {twitterHandle ? `@${twitterHandle}` : 'Connect Twitter'}
+                      </span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -1288,25 +1320,6 @@ export default function ShadowFun() {
                           <p className="mt-1 text-sm text-red-500">{formErrors.firstBuyAmount}</p>
                         )}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <motion.button
-                        type="button"
-                        onClick={handleTwitterConnect}
-                        className="relative px-4 py-2 rounded-xl group/button"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
-                        <div className="relative flex items-center justify-center gap-2">
-                          <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                          </svg>
-                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-500">
-                            {formData.twitterConnected ? 'Connected to Twitter' : 'Connect Twitter'}
-                          </span>
-                        </div>
-                      </motion.button>
                     </div>
                     <div className="flex items-center gap-2">
                       <motion.button

@@ -6,20 +6,30 @@ exports.handler = async function(event, context) {
     const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'twitter',
-      options: {
-        redirectTo: 'https://gaopzywnpatpifgakags.supabase.co/auth/v1/callback',
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent'
-        }
-      }
-    });
-
-    if (error) {
-      throw error;
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      throw sessionError;
     }
+
+    if (!session) {
+      return {
+        statusCode: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ error: 'Not authenticated' })
+      };
+    }
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    
+    if (userError) {
+      throw userError;
+    }
+
+    const twitterHandle = userData.user.user_metadata.user_name;
 
     return {
       statusCode: 200,
@@ -27,7 +37,7 @@ exports.handler = async function(event, context) {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       },
-      body: JSON.stringify({ url: data.url })
+      body: JSON.stringify({ twitterHandle })
     };
   } catch (error) {
     return {
