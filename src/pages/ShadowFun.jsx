@@ -557,7 +557,6 @@ export default function ShadowFun() {
         firstBuyAmount: formData.firstBuyAmount.toString(),
         twitterName: twitterName,
         websiteUrl: websiteUrl,
-        value: ethers.parseEther(formData.deploymentFee).toString()
       });
 
       const tx = await shadowCreator.deployToken(
@@ -569,7 +568,7 @@ export default function ShadowFun() {
         salt,
         userAddress,
         maxWalletPercentageBigInt,
-        formData.firstBuyAmount,
+        ethers.parseEther(formData.firstBuyAmount),
         twitterName,
         websiteUrl,
         {
