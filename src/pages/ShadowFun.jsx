@@ -781,19 +781,25 @@ export default function ShadowFun() {
   const handleTwitterConnect = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/.netlify/functions/twitter-auth');
+      // Récupérer l'URL actuelle pour la redirection
+      const currentUrl = window.location.href;
+      
+      const response = await fetch(`/.netlify/functions/twitter-auth?redirectTo=${encodeURIComponent(currentUrl)}`);
+      const data = await response.json();
       
       if (!response.ok) {
-        throw new Error('Failed to connect to Twitter');
+        throw new Error(data.error || 'Failed to connect to Twitter');
       }
 
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
+      if (!data.url) {
+        throw new Error('No authentication URL received');
       }
+
+      // Rediriger directement vers l'URL d'authentification
+      window.location.href = data.url;
     } catch (error) {
       console.error('Error connecting to Twitter:', error);
-      addNotification("Failed to connect to Twitter", "error");
+      addNotification(error.message || "Failed to connect to Twitter", "error");
     }
   };
 
