@@ -9,7 +9,7 @@ exports.handler = async function(event, context) {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'twitter',
       options: {
-        redirectTo: `${event.headers.host}/twitter-auth`
+        redirectTo: 'https://gaopzywnpatpifgakags.supabase.co/auth/v1/callback'
       }
     });
 
@@ -18,14 +18,20 @@ exports.handler = async function(event, context) {
     }
 
     return {
-      statusCode: 302,
+      statusCode: 200,
       headers: {
-        Location: data.url
-      }
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ url: data.url })
     };
   } catch (error) {
     return {
       statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
       body: JSON.stringify({ error: error.message })
     };
   }
