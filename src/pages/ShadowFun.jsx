@@ -522,8 +522,8 @@ export default function ShadowFun() {
 
       setDeploymentStatus('Generating salt...');
 
-      const totalSupplyBigInt = BigInt(ethers.parseEther(formData.totalSupply));
-      const maxWalletPercentageBigInt = BigInt(formData.maxWalletPercentage * 10);
+      const totalSupplyBigInt = ethers.parseEther(formData.totalSupply);
+      const maxWalletPercentage = formData.maxWalletPercentage * 10;
       const fee = 10000;
       
       // S'assurer que le handle Twitter a le @
@@ -537,7 +537,7 @@ export default function ShadowFun() {
         name: formData.name,
         symbol: formData.symbol,
         supply: totalSupplyBigInt.toString(),
-        maxWalletPercentage: maxWalletPercentageBigInt.toString(),
+        maxWalletPercentage: maxWalletPercentage,
         twitterName: twitterName,
         websiteUrl: websiteUrl
       });
@@ -551,7 +551,7 @@ export default function ShadowFun() {
           formData.name,
           formData.symbol,
           totalSupplyBigInt,
-          maxWalletPercentageBigInt,
+          maxWalletPercentage,
           twitterName,
           websiteUrl
         );
@@ -566,21 +566,35 @@ export default function ShadowFun() {
 
       setDeploymentStatus('Deploying token...');
 
+      console.log('Paramètres pour deployToken:', {
+        name: formData.name,
+        symbol: formData.symbol,
+        totalSupply: totalSupplyBigInt.toString(),
+        liquidity: ethers.parseEther(formData.liquidity).toString(),
+        fee: fee.toString(),
+        salt: salt,
+        deployer: userAddress,
+        maxWalletPercentage: maxWalletPercentage,
+        firstBuyAmount: ethers.parseEther(formData.firstBuyAmount).toString(),
+        twitterName: twitterName,
+        websiteUrl: websiteUrl
+      });
+
       const tx = await shadowCreator.deployToken(
         formData.name,
         formData.symbol,
         totalSupplyBigInt,
-        ethers.parseUnits(formData.liquidity),
+        ethers.parseEther(formData.liquidity),
         fee,
         salt,
         userAddress,
-        maxWalletPercentageBigInt,
+        maxWalletPercentage,
         ethers.parseEther(formData.firstBuyAmount),
         twitterName,
         websiteUrl,
         {
           value: ethers.parseEther(formData.firstBuyAmount),
-          gasLimit: 18000000
+          gasLimit: 8000000
         }
       );
 
