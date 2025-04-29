@@ -523,7 +523,7 @@ export default function ShadowFun() {
       setDeploymentStatus('Generating salt...');
 
       const totalSupplyBigInt = ethers.parseEther(formData.totalSupply);
-      const maxWalletPercentage = formData.maxWalletPercentage * 10;
+      const maxWalletPercentage = (formData.maxWalletPercentage * 10).toString();
       const fee = 10000;
       
       // S'assurer que le handle Twitter a le @
