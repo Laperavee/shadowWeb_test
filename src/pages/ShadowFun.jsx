@@ -10,7 +10,6 @@ import { priceService } from '../services/priceService';
 import { Link, useNavigate } from 'react-router-dom';
 import ShadowCreatorAvaxArtifact from '../artifact/ShadowCreatorAvax.json';
 import ShadowBaseArtifact from '../artifact/ShadowBase.json';
-import { supabase } from '../lib/supabase';
 
 const SHADOW_CREATOR_ABI = {
   AVAX: ShadowCreatorAvaxArtifact.abi,
