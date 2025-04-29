@@ -31,7 +31,7 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 302,
       headers: {
-        Location: `${event.headers.origin}/?auth=success`
+        Location: `${event.headers.origin}/?auth=success&provider=twitter`
       }
     }
   } catch (error) {

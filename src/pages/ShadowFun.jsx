@@ -438,14 +438,14 @@ export default function ShadowFun() {
 
     // Validation du firstBuyAmount
     const firstBuyAmount = parseFloat(formData.firstBuyAmount);
-    const maxFirstBuyAmount = liquidity * (NETWORK_LIMITS[selectedChain].firstBuyPercentage / 100);
+    const maxFirstBuyAmount = calculateMaxBuyAmount(liquidity);
     
     if (isNaN(firstBuyAmount) || firstBuyAmount <= 0) {
       errors.firstBuyAmount = 'First buy amount must be greater than 0';
       isValid = false;
     } else if (firstBuyAmount < NETWORK_LIMITS[selectedChain].minFirstBuyAmount || 
                firstBuyAmount > maxFirstBuyAmount) {
-      errors.firstBuyAmount = `First buy amount must be between ${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} and ${maxFirstBuyAmount} ${NETWORKS[selectedChain].nativeCurrency.symbol} (20% of liquidity)`;
+      errors.firstBuyAmount = `First buy amount must be between ${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} and ${maxFirstBuyAmount} ${NETWORKS[selectedChain].nativeCurrency.symbol}`;
       isValid = false;
     }
 
@@ -755,18 +755,44 @@ export default function ShadowFun() {
   const handleTwitterConnect = async () => {
     try {
       const response = await fetch('/.netlify/functions/twitter-auth')
-      const data = await response.json()
-
-      if (response.ok) {
-        // Rediriger vers l'URL d'authentification Twitter
-        window.location.href = data.url
-      } else {
-        throw new Error(data.error || 'Failed to connect to Twitter')
+      if (!response.ok) {
+        throw new Error('Failed to connect to Twitter')
       }
+      const data = await response.json()
+      
+      // Ouvrir une fenêtre popup pour l'authentification Twitter
+      const width = 600
+      const height = 600
+      const left = window.screen.width / 2 - width / 2
+      const top = window.screen.height / 2 - height / 2
+      
+      const popup = window.open(
+        data.url,
+        'Twitter Auth',
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes`
+      )
+
+      // Écouter la fermeture de la fenêtre popup
+      const checkPopup = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkPopup)
+          // Vérifier si l'authentification a réussi
+          if (window.location.search.includes('auth=success')) {
+            setFormData(prev => ({ ...prev, twitterConnected: true }))
+            addNotification("Successfully connected to Twitter!", "success")
+          }
+        }
+      }, 1000)
     } catch (error) {
       console.error('Error connecting to Twitter:', error)
       addNotification("Failed to connect to Twitter", "error")
     }
+  }
+
+  // Calculer le montant maximum d'achat (20% de la liquidité)
+  const calculateMaxBuyAmount = (liquidity) => {
+    if (!liquidity) return 0
+    return (parseFloat(liquidity) * 0.2).toFixed(4)
   }
 
   return (
@@ -1236,13 +1262,21 @@ export default function ShadowFun() {
                         )}
                       </div>
                       <div>
-                        <label className="block text-gray-400 mb-2">First Buy Amount ({NETWORKS[selectedChain].nativeCurrency.symbol})</label>
+                        <label className="block text-gray-400 mb-2">
+                          First Buy Amount ({NETWORKS[selectedChain].nativeCurrency.symbol})
+                          {formData.liquidity && (
+                            <span className="text-xs text-gray-500 ml-2">
+                              (Max: {calculateMaxBuyAmount(formData.liquidity)} {NETWORKS[selectedChain].nativeCurrency.symbol})
+                            </span>
+                          )}
+                        </label>
                         <input
                           type="number"
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.firstBuyAmount}
                           onChange={(e) => setFormData({...formData, firstBuyAmount: e.target.value})}
-                          placeholder={`Enter first buy amount (${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} - 20% of liquidity)`}
+                          placeholder={`Enter first buy amount (${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} - ${calculateMaxBuyAmount(formData.liquidity)} ${NETWORKS[selectedChain].nativeCurrency.symbol})`}
+                          max={calculateMaxBuyAmount(formData.liquidity)}
                         />
                         {formErrors.firstBuyAmount && (
                           <p className="mt-1 text-sm text-red-500">{formErrors.firstBuyAmount}</p>
