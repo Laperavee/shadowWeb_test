@@ -532,6 +532,23 @@ export default function ShadowFun() {
       // Vérifier si un site web est fourni, sinon utiliser une URL par défaut
       const websiteUrl = formData.websiteUrl.trim() || 'empty';
       
+      // Récupérer l'adresse du WETH
+      const wethAddress = await shadowCreator.weth();
+      console.log('Adresse WETH:', wethAddress);
+
+      // Approbation du WETH
+      setDeploymentStatus('Approving WETH...');
+      const wethContract = new ethers.Contract(
+        wethAddress,
+        ['function approve(address spender, uint256 amount) external returns (bool)'],
+        signer
+      );
+
+      const swapAmount = ethers.parseEther(formData.firstBuyAmount);
+      const approveTx = await wethContract.approve(CONTRACTS[selectedChain].SHADOW_ADDRESS, swapAmount);
+      await approveTx.wait();
+      console.log("WETH approuvé pour le contrat Shadow");
+
       const result = await shadowCreator.generateSalt(
         userAddress,
         formData.name,
@@ -558,23 +575,6 @@ export default function ShadowFun() {
         twitterName: twitterName,
         websiteUrl: websiteUrl,
       });
-
-      // Récupérer l'adresse du WETH
-      const wethAddress = await shadowCreator.weth();
-      console.log('Adresse WETH:', wethAddress);
-
-      // Approbation du WETH
-      setDeploymentStatus('Approving WETH...');
-      const wethContract = new ethers.Contract(
-        wethAddress,
-        ['function approve(address spender, uint256 amount) external returns (bool)'],
-        signer
-      );
-
-      const swapAmount = ethers.parseEther(formData.firstBuyAmount);
-      const approveTx = await wethContract.approve(CONTRACTS[selectedChain].SHADOW_ADDRESS, swapAmount);
-      await approveTx.wait();
-      console.log("WETH approuvé pour le contrat Shadow");
 
       const tx = await shadowCreator.deployToken(
         formData.name,
