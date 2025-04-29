@@ -542,6 +542,9 @@ export default function ShadowFun() {
         websiteUrl: websiteUrl
       });
       
+      let salt;
+      let predictedAddress;
+      
       try {
         const result = await shadowCreator.generateSalt(
           userAddress,
@@ -553,7 +556,7 @@ export default function ShadowFun() {
           websiteUrl
         );
         console.log('Résultat de generateSalt:', result);
-        const [salt, predictedAddress] = result;
+        [salt, predictedAddress] = result;
         console.log('Salt généré:', salt);
         console.log('Adresse prédite:', predictedAddress);
       } catch (error) {
