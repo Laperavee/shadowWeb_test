@@ -10,6 +10,7 @@ import { priceService } from '../services/priceService';
 import { Link, useNavigate } from 'react-router-dom';
 import ShadowCreatorAvaxArtifact from '../artifact/ShadowCreatorAvax.json';
 import ShadowBaseArtifact from '../artifact/ShadowBase.json';
+import { supabase } from '../lib/supabase';
 
 const SHADOW_CREATOR_ABI = {
   AVAX: ShadowCreatorAvaxArtifact.abi,
@@ -210,14 +211,18 @@ export default function ShadowFun() {
     const checkTwitterAuth = async () => {
       try {
         console.log('🔄 Checking Twitter authentication status...');
-        const response = await fetch('/.netlify/functions/get-twitter-user');
-        const data = await response.json();
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        console.log('📊 Twitter auth response:', data);
-        
-        if (data.twitterHandle) {
-          console.log('✅ Twitter connected as:', data.twitterHandle);
-          setTwitterHandle(data.twitterHandle);
+        if (error) {
+          console.error('❌ Error checking session:', error);
+          return;
+        }
+
+        if (session) {
+          const { data: { user } } = await supabase.auth.getUser();
+          const twitterHandle = user?.user_metadata?.user_name;
+          console.log('✅ Twitter connected as:', twitterHandle);
+          setTwitterHandle(twitterHandle);
         } else {
           console.log('❌ No Twitter connection found');
         }
@@ -791,13 +796,21 @@ export default function ShadowFun() {
       const currentUrl = window.location.href;
       console.log('🌐 Current URL:', currentUrl);
       
-      const response = await fetch(`/.netlify/functions/twitter-auth?redirectTo=${encodeURIComponent(currentUrl)}`);
-      const data = await response.json();
-      
-      console.log('📊 Twitter auth response:', data);
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to connect to Twitter');
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'twitter',
+        options: {
+          redirectTo: currentUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+            scope: 'tweet.read users.read'
+          }
+        }
+      });
+
+      if (error) {
+        console.error('❌ Twitter auth error:', error);
+        throw error;
       }
 
       if (!data.url) {
