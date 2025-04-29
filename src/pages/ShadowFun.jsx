@@ -209,14 +209,20 @@ export default function ShadowFun() {
   useEffect(() => {
     const checkTwitterAuth = async () => {
       try {
+        console.log('🔄 Checking Twitter authentication status...');
         const response = await fetch('/.netlify/functions/get-twitter-user');
         const data = await response.json();
         
+        console.log('📊 Twitter auth response:', data);
+        
         if (data.twitterHandle) {
+          console.log('✅ Twitter connected as:', data.twitterHandle);
           setTwitterHandle(data.twitterHandle);
+        } else {
+          console.log('❌ No Twitter connection found');
         }
       } catch (error) {
-        console.error('Error checking Twitter auth:', error);
+        console.error('❌ Error checking Twitter auth:', error);
       }
     };
 
@@ -781,11 +787,14 @@ export default function ShadowFun() {
   const handleTwitterConnect = async (e) => {
     e.preventDefault();
     try {
-      // Récupérer l'URL actuelle pour la redirection
+      console.log('🔄 Initiating Twitter connection...');
       const currentUrl = window.location.href;
+      console.log('🌐 Current URL:', currentUrl);
       
       const response = await fetch(`/.netlify/functions/twitter-auth?redirectTo=${encodeURIComponent(currentUrl)}`);
       const data = await response.json();
+      
+      console.log('📊 Twitter auth response:', data);
       
       if (!response.ok) {
         throw new Error(data.error || 'Failed to connect to Twitter');
@@ -795,10 +804,10 @@ export default function ShadowFun() {
         throw new Error('No authentication URL received');
       }
 
-      // Rediriger directement vers l'URL d'authentification
+      console.log('🔗 Redirecting to Twitter auth URL:', data.url);
       window.location.href = data.url;
     } catch (error) {
-      console.error('Error connecting to Twitter:', error);
+      console.error('❌ Error connecting to Twitter:', error);
       addNotification(error.message || "Failed to connect to Twitter", "error");
     }
   };
