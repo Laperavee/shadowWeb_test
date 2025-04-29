@@ -2,10 +2,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSound } from '../context/SoundContext';
+import { supabase } from '../lib/supabase';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [twitterHandle, setTwitterHandle] = useState(null);
   const { playSound } = useSound();
   const location = useLocation();
   const navigate = useNavigate();
@@ -17,6 +19,30 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const checkTwitterAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.user_metadata?.user_name) {
+          setTwitterHandle(session.user.user_metadata.user_name);
+        }
+      } catch (error) {
+        console.error('Error checking Twitter auth:', error);
+      }
+    };
+    checkTwitterAuth();
+  }, []);
+
+  const handleTwitterDisconnect = async () => {
+    try {
+      await supabase.auth.signOut();
+      setTwitterHandle(null);
+      playSound('click');
+    } catch (error) {
+      console.error('Error disconnecting Twitter:', error);
+    }
+  };
 
   const handleNavigation = useCallback((path) => {
     navigate(path);
@@ -81,18 +107,33 @@ export default function Navbar() {
                 </motion.span>
               </Link>
             ))}
-            <motion.button
-              onClick={() => handleNavigation('/shadow-fun')}
-              className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all interactive relative group"
-              onMouseEnter={() => playSound('hover')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                Launch App
-              </span>
-            </motion.button>
+            {twitterHandle ? (
+              <motion.button
+                onClick={handleTwitterDisconnect}
+                className="bg-gradient-to-r from-red-600/20 to-red-400/20 border border-red-400/20 px-6 py-2 rounded-xl hover:border-red-400/50 transition-all interactive relative group"
+                onMouseEnter={() => playSound('hover')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-red-400/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">
+                  Disconnect @{twitterHandle}
+                </span>
+              </motion.button>
+            ) : (
+              <motion.button
+                onClick={() => handleNavigation('/shadow-fun')}
+                className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all interactive relative group"
+                onMouseEnter={() => playSound('hover')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                  Launch App
+                </span>
+              </motion.button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -166,43 +207,35 @@ export default function Navbar() {
                     </Link>
                   </motion.div>
                 ))}
-                <motion.div
-                  variants={{
-                    open: { x: 0, opacity: 1 },
-                    closed: { x: -20, opacity: 0 }
-                  }}
-                >
-                  <button
-                    onClick={() => handleNavigation('/shadow-fun')}
-                    className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/20 px-6 py-2 rounded-xl hover:border-purple-500/50 transition-all mx-4 text-center interactive block w-full"
+                {twitterHandle ? (
+                  <motion.div
+                    variants={{
+                      open: { x: 0, opacity: 1 },
+                      closed: { x: -20, opacity: 0 }
+                    }}
                   >
-                    Launch App
-                  </button>
-                </motion.div>
-                <motion.a
-                  href="#features"
-                  className="text-gray-300 hover:text-white transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Features
-                </motion.a>
-                <motion.a
-                  href="#how-it-works"
-                  className="text-gray-300 hover:text-white transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  How it Works
-                </motion.a>
-                <motion.a
-                  href="/posts"
-                  className="text-gray-300 hover:text-white transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  News
-                </motion.a>
+                    <button
+                      onClick={handleTwitterDisconnect}
+                      className="bg-gradient-to-r from-red-600/20 to-red-400/20 border border-red-400/20 px-6 py-2 rounded-xl hover:border-red-400/50 transition-all mx-4 text-center interactive block w-full"
+                    >
+                      Disconnect @{twitterHandle}
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    variants={{
+                      open: { x: 0, opacity: 1 },
+                      closed: { x: -20, opacity: 0 }
+                    }}
+                  >
+                    <button
+                      onClick={() => handleNavigation('/shadow-fun')}
+                      className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/20 px-6 py-2 rounded-xl hover:border-purple-500/50 transition-all mx-4 text-center interactive block w-full"
+                    >
+                      Launch App
+                    </button>
+                  </motion.div>
+                )}
               </motion.div>
             </motion.div>
           )}
