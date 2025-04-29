@@ -167,7 +167,6 @@ export default function ShadowFun() {
   const [userAddress, setUserAddress] = useState('');
   const [twitterHandle, setTwitterHandle] = useState('');
   const [selectedChain, setSelectedChain] = useState(() => {
-    // Récupérer le réseau sauvegardé ou utiliser AVAX par défaut
     const savedChain = localStorage.getItem('selectedChain');
     return savedChain || 'AVAX';
   });
@@ -203,7 +202,6 @@ export default function ShadowFun() {
 
   const [isConnectMenuOpen, setIsConnectMenuOpen] = useState(false);
 
-  // Sauvegarder le réseau sélectionné quand il change
   useEffect(() => {
     localStorage.setItem('selectedChain', selectedChain);
   }, [selectedChain]);
@@ -234,6 +232,54 @@ export default function ShadowFun() {
 
     checkTwitterAuth();
   }, []);
+
+  useEffect(() => {
+    const handleAccountsChanged = (accounts) => {
+      if (accounts.length === 0) {
+        setIsWalletConnected(false);
+        setUserAddress('');
+      } else {
+        setUserAddress(accounts[0]);
+      }
+    };
+
+    const handleChainChanged = (chainId) => {
+      if (chainId !== NETWORKS[selectedChain].chainId) {
+        setIsWalletConnected(false);
+        setUserAddress('');
+      }
+    };
+
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+
+      return () => {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, [selectedChain]);
+
+  useEffect(() => {
+    const checkWalletConnection = async () => {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+          
+          if (accounts.length > 0 && chainId === NETWORKS[selectedChain].chainId) {
+            setIsWalletConnected(true);
+            setUserAddress(accounts[0]);
+          }
+        } catch (error) {
+          console.error('Error checking wallet connection:', error);
+        }
+      }
+    };
+
+    checkWalletConnection();
+  }, [selectedChain]);
 
   const insertTestToken = async () => {
     try {
@@ -308,10 +354,10 @@ export default function ShadowFun() {
   const connectWallet = async () => {
     if (typeof window.ethereum !== 'undefined') {
       try {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        setUserAddress(accounts[0]);
   
         const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        
         const targetNetwork = NETWORKS[selectedChain];
         
         if (chainId !== targetNetwork.chainId) {  
@@ -332,8 +378,10 @@ export default function ShadowFun() {
           }
         }
         setIsWalletConnected(true);
+        addNotification("Wallet connected successfully!", "success");
       } catch (error) {
-        addNotification(`Please make sure you're connected to ${NETWORKS[selectedChain].chainName}`, "error");
+        console.error('Error connecting wallet:', error);
+        addNotification(`Failed to connect wallet: ${error.message}`, "error");
       }
     } else {
       addNotification("MetaMask is not installed!", "error");
@@ -427,7 +475,6 @@ export default function ShadowFun() {
   }, [selectedChain]);
 
   const validateForm = () => {
-    console.log('Validating form with data:', formData);
     const errors = {};
     let isValid = true;
 
@@ -435,23 +482,28 @@ export default function ShadowFun() {
     if (!formData.name.trim()) {
       errors.name = 'Token name is required';
       isValid = false;
+    } else if (!validateText(formData.name, 'name')) {
+      errors.name = 'Token name must be between 1 and 50 characters and contain only letters, numbers and spaces';
+      isValid = false;
     }
 
     // Validation du symbole
     if (!formData.symbol.trim()) {
       errors.symbol = 'Token symbol is required';
       isValid = false;
-    }
-
-    // Validation de l'URL du site web
-    if (formData.websiteUrl && !formData.websiteUrl.match(/^https?:\/\/.+\..+/)) {
-      errors.websiteUrl = 'Please enter a valid website URL';
+    } else if (!validateText(formData.symbol, 'symbol')) {
+      errors.symbol = 'Token symbol must be between 1 and 10 characters and contain only letters and numbers';
+      isValid = false;
     }
 
     // Validation de la supply totale
     const totalSupply = parseFloat(formData.totalSupply);
     if (isNaN(totalSupply) || totalSupply <= 0) {
       errors.totalSupply = 'Total supply must be greater than 0';
+      isValid = false;
+    } else if (totalSupply < NETWORK_LIMITS[selectedChain].minSupply || 
+               totalSupply > NETWORK_LIMITS[selectedChain].maxSupply) {
+      errors.totalSupply = getErrorMessage('totalSupply', selectedChain);
       isValid = false;
     }
 
@@ -468,40 +520,35 @@ export default function ShadowFun() {
 
     // Validation du pourcentage max wallet
     const maxWalletPercentage = parseFloat(formData.maxWalletPercentage);
-    if (isNaN(maxWalletPercentage) || maxWalletPercentage <= 0 || maxWalletPercentage > 100) {
-      errors.maxWalletPercentage = 'Max wallet percentage must be between 0 and 100';
+    if (isNaN(maxWalletPercentage) || maxWalletPercentage <= 0) {
+      errors.maxWalletPercentage = 'Max wallet percentage must be greater than 0';
+      isValid = false;
+    } else if (maxWalletPercentage < NETWORK_LIMITS[selectedChain].minWalletPercentage || 
+               maxWalletPercentage > NETWORK_LIMITS[selectedChain].maxWalletPercentage) {
+      errors.maxWalletPercentage = getErrorMessage('maxWalletPercentage', selectedChain);
       isValid = false;
     }
 
     // Validation du firstBuyAmount
     const firstBuyAmount = parseFloat(formData.firstBuyAmount);
-    const maxFirstBuyAmount = calculateMaxBuyAmount(liquidity);
-    
     if (isNaN(firstBuyAmount) || firstBuyAmount <= 0) {
       errors.firstBuyAmount = 'First buy amount must be greater than 0';
       isValid = false;
-    } else if (firstBuyAmount < NETWORK_LIMITS[selectedChain].minFirstBuyAmount || 
-               firstBuyAmount > maxFirstBuyAmount) {
-      errors.firstBuyAmount = `First buy amount must be between ${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} and ${maxFirstBuyAmount} ${NETWORKS[selectedChain].nativeCurrency.symbol}`;
+    } else if (firstBuyAmount > liquidity * 0.2) {
+      errors.firstBuyAmount = 'First buy amount cannot exceed 20% of the initial liquidity';
       isValid = false;
     }
 
-    console.log('Validation errors:', errors);
     setFormErrors(errors);
     return isValid;
   };
 
   const handleCreateToken = async (e) => {
     e.preventDefault();
-    console.log('Create token button clicked');
-    console.log('Form data:', formData);
     
     if (!validateForm()) {
-      console.log('Form validation failed');
       return;
     }
-
-    console.log('Form validation passed, proceeding with token creation...');
 
     if (!window.ethereum) {
       addNotification("Please install MetaMask!", "error");
@@ -509,169 +556,124 @@ export default function ShadowFun() {
     }
 
     try {
-      // Vérifier si le wallet est connecté
-      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-      if (accounts.length === 0) {
-        console.log('No wallet connected, requesting connection...');
+      if (!isWalletConnected) {
         await connectWallet();
         return;
       }
 
       setIsDeploying(true);
       setDeploymentStatus("Checking network...");
-      console.log('Starting token creation process...');
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const userAddress = await signer.getAddress();
-      console.log('Connected wallet address:', userAddress);
 
-      // Vérifier que le réseau actuel correspond au réseau sélectionné
       const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-      console.log('Current chain ID:', currentChainId);
-      console.log('Expected chain ID:', NETWORKS[selectedChain].chainId);
-      
       if (currentChainId !== NETWORKS[selectedChain].chainId) {
         throw new Error(`Please switch to ${NETWORKS[selectedChain].chainName} network to create a token`);
       }
 
-      const network = await provider.getNetwork();
-      console.log('Current network:', network);
-      console.log('Selected chain:', selectedChain);
-      console.log('Contract address:', CONTRACTS[selectedChain].SHADOW_ADDRESS);
-      console.log('Contract ABI:', SHADOW_CREATOR_ABI[selectedChain]);
-
-      // Connexion au contrat ShadowCreator avec le bon ABI et la bonne adresse
       const shadowCreator = new ethers.Contract(
         CONTRACTS[selectedChain].SHADOW_ADDRESS,
         SHADOW_CREATOR_ABI[selectedChain],
         signer
       );
 
-      console.log('Token creation is enabled, generating salt...');
       setDeploymentStatus('Generating salt...');
 
-      // Convertir les valeurs en BigInt
       const totalSupplyBigInt = BigInt(ethers.parseEther(formData.totalSupply));
       const maxWalletPercentageBigInt = BigInt(formData.maxWalletPercentage * 10);
       const fee = 10000;
-      
-      console.log('Total supply (BigInt):', totalSupplyBigInt);
-      console.log('Max wallet percentage (BigInt):', maxWalletPercentageBigInt);
-      console.log('Fee:', fee);
-      
       const firstBuyAmount = ethers.parseEther(formData.firstBuyAmount);
       
-      try {
-        const result = await shadowCreator.generateSalt(
-          userAddress,
-          formData.name,
-          formData.symbol,
-          totalSupplyBigInt,
-          maxWalletPercentageBigInt,
-          twitterHandle,
-          formData.websiteUrl
-        );
+      const result = await shadowCreator.generateSalt(
+        userAddress,
+        formData.name,
+        formData.symbol,
+        totalSupplyBigInt,
+        maxWalletPercentageBigInt,
+        twitterHandle,
+        formData.websiteUrl
+      );
 
-        const [salt, predictedAddress] = result;
-        console.log('Salt generated:', salt);
-        console.log('Predicted token address:', predictedAddress);
+      const [salt, predictedAddress] = result;
+      setDeploymentStatus('Deploying token...');
 
-        setDeploymentStatus('Deploying token...');
-        console.log('Starting token deployment...');
-
-        const tx = await shadowCreator.deployToken(
-          formData.name,
-          formData.symbol,
-          totalSupplyBigInt,
-          ethers.parseUnits(formData.liquidity),
-          fee,
-          salt,
-          userAddress,
-          maxWalletPercentageBigInt,
-          firstBuyAmount,
-          twitterHandle,
-          formData.websiteUrl,
-          {
-            value: ethers.parseEther(formData.deploymentFee),
-            gasLimit: 8000000
-          }
-        );
-
-        console.log('Transaction sent, waiting for confirmation...');
-        setDeploymentStatus('Waiting for confirmation...');
-
-        const receipt = await tx.wait();
-        
-        // Attendre quelques blocs pour s'assurer que la transaction est bien confirmée
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        
-        // Récupérer les événements de la transaction
-        const transactionReceipt = await provider.getTransactionReceipt(receipt.hash);
-        
-        if (!transactionReceipt) {
-          throw new Error("Transaction not found");
+      const tx = await shadowCreator.deployToken(
+        formData.name,
+        formData.symbol,
+        totalSupplyBigInt,
+        ethers.parseUnits(formData.liquidity),
+        fee,
+        salt,
+        userAddress,
+        maxWalletPercentageBigInt,
+        firstBuyAmount,
+        twitterHandle,
+        formData.websiteUrl,
+        {
+          value: ethers.parseEther(formData.deploymentFee),
+          gasLimit: 8000000
         }
+      );
 
-        console.log('Transaction receipt:', transactionReceipt);
-
-        const events = transactionReceipt.logs || [];
-        
-        // Chercher l'événement TokenCreated
-        const tokenCreatedEvent = events.find(log => {
-          try {
-            return log.topics[0] === ethers.id("TokenCreated(address,address,string,string,uint256)");
-          } catch {
-            return false;
-          }
-        });
-
-        if (!tokenCreatedEvent) {
-          throw new Error("Token creation event not found in transaction");
-        }
-
-        // Récupérer l'adresse du token
-        let tokenAddress;
-        if (tokenCreatedEvent.args) {
-          tokenAddress = tokenCreatedEvent.args[0];
-        } else if (tokenCreatedEvent.topics && tokenCreatedEvent.topics[1]) {
-          tokenAddress = `0x${tokenCreatedEvent.topics[1].slice(26)}`;
-        } else {
-          throw new Error('Could not extract token address from event');
-        }
-        
-        setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
-        addNotification("Token deployed successfully!", "success");
-        
-        await saveTokenToDatabase(tokenAddress, userAddress, receipt.hash);
-        
-        // Réinitialiser le formulaire
-        setFormData({
-          name: '',
-          symbol: '',
-          totalSupply: '',
-          liquidity: '',
-          maxWalletPercentage: '',
-          firstBuyAmount: '',
-          deploymentFee: '0.00001',
-          deployerAddress: '',
-          tokenImage: null,
-          twitterConnected: false,
-          websiteUrl: ''
-        });
-
-        // Fermer le modal de création
-        setActiveTab('tokens');
-
-      } catch (error) {
-        console.error('Error in token creation:', error);
-        addNotification(error.message || "Error creating token", "error");
-      } finally {
-        setIsDeploying(false);
+      setDeploymentStatus('Waiting for confirmation...');
+      const receipt = await tx.wait();
+      
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      const transactionReceipt = await provider.getTransactionReceipt(receipt.hash);
+      
+      if (!transactionReceipt) {
+        throw new Error("Transaction not found");
       }
+
+      const events = transactionReceipt.logs || [];
+      const tokenCreatedEvent = events.find(log => {
+        try {
+          return log.topics[0] === ethers.id("TokenCreated(address,address,string,string,uint256)");
+        } catch {
+          return false;
+        }
+      });
+
+      if (!tokenCreatedEvent) {
+        throw new Error("Token creation event not found in transaction");
+      }
+
+      let tokenAddress;
+      if (tokenCreatedEvent.args) {
+        tokenAddress = tokenCreatedEvent.args[0];
+      } else if (tokenCreatedEvent.topics && tokenCreatedEvent.topics[1]) {
+        tokenAddress = `0x${tokenCreatedEvent.topics[1].slice(26)}`;
+      } else {
+        throw new Error('Could not extract token address from event');
+      }
+      
+      setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
+      addNotification("Token deployed successfully!", "success");
+      
+      await saveTokenToDatabase(tokenAddress, userAddress, receipt.hash);
+      
+      setFormData({
+        name: '',
+        symbol: '',
+        totalSupply: '',
+        liquidity: '',
+        maxWalletPercentage: '',
+        firstBuyAmount: '',
+        deploymentFee: '0.00001',
+        tokenImage: null,
+        websiteUrl: ''
+      });
+
+      setActiveTab('tokens');
+
     } catch (error) {
       console.error('Error in token creation:', error);
       addNotification(error.message || "Error creating token", "error");
+    } finally {
+      setIsDeploying(false);
     }
   };
 
