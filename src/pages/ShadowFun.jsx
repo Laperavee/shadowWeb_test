@@ -518,6 +518,8 @@ export default function ShadowFun() {
         signer
       );
 
+      console.log('shadowCreator:', shadowCreator);
+
       setDeploymentStatus('Generating salt...');
 
       const totalSupplyBigInt = BigInt(ethers.parseEther(formData.totalSupply));
@@ -525,8 +527,11 @@ export default function ShadowFun() {
       const fee = 10000;
       const firstBuyAmount = ethers.parseEther(formData.firstBuyAmount);
       
-      // S'assurer que le site web n'est jamais vide
-      const websiteUrl = formData.websiteUrl.trim() || 'no-website';
+      // S'assurer que le handle Twitter a le @
+      const twitterName = twitterHandle.startsWith('@') ? twitterHandle : `@${twitterHandle}`;
+      
+      // Vérifier si un site web est fourni, sinon utiliser une URL par défaut
+      const websiteUrl = formData.websiteUrl.trim() || 'empty';
       
       const result = await shadowCreator.generateSalt(
         userAddress,
@@ -534,7 +539,7 @@ export default function ShadowFun() {
         formData.symbol,
         totalSupplyBigInt,
         maxWalletPercentageBigInt,
-        twitterHandle,
+        twitterName,
         websiteUrl
       );
 
@@ -551,7 +556,7 @@ export default function ShadowFun() {
         userAddress,
         maxWalletPercentageBigInt,
         firstBuyAmount,
-        twitterHandle,
+        twitterName,
         websiteUrl,
         {
           value: ethers.parseEther(formData.deploymentFee),
