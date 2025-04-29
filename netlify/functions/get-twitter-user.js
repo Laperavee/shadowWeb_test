@@ -13,20 +13,30 @@ exports.handler = async function(event, context) {
 
     // Récupérer le token d'accès depuis l'URL si présent
     const url = new URL(event.rawUrl);
-    const accessToken = url.hash.split('access_token=')[1]?.split('&')[0];
+    const hash = url.hash || '';
+    console.log('🔍 URL hash:', hash);
+
+    // Extraire le token d'accès du hash
+    const accessTokenMatch = hash.match(/access_token=([^&]+)/);
+    const refreshTokenMatch = hash.match(/refresh_token=([^&]+)/);
     
-    if (accessToken) {
-      console.log('🔑 Access token found in URL');
+    if (accessTokenMatch && refreshTokenMatch) {
+      const accessToken = accessTokenMatch[1];
+      const refreshToken = refreshTokenMatch[1];
+      console.log('🔑 Tokens found in URL');
+
       // Définir la session avec le token
       const { data: { session }, error: setSessionError } = await supabase.auth.setSession({
         access_token: accessToken,
-        refresh_token: url.hash.split('refresh_token=')[1]?.split('&')[0]
+        refresh_token: refreshToken
       });
       
       if (setSessionError) {
         console.error('❌ Error setting session:', setSessionError);
         throw setSessionError;
       }
+
+      console.log('✅ Session set with tokens');
     }
 
     // Vérifier la session
