@@ -527,6 +527,9 @@ export default function ShadowFun() {
       const fee = 10000;
       const firstBuyAmount = ethers.parseEther(formData.firstBuyAmount);
       
+      // S'assurer que le site web n'est jamais vide
+      const websiteUrl = formData.websiteUrl.trim() || 'no-website';
+      
       const result = await shadowCreator.generateSalt(
         userAddress,
         formData.name,
@@ -534,7 +537,7 @@ export default function ShadowFun() {
         totalSupplyBigInt,
         maxWalletPercentageBigInt,
         twitterHandle,
-        formData.websiteUrl
+        websiteUrl
       );
 
       const [salt, predictedAddress] = result;
@@ -551,7 +554,7 @@ export default function ShadowFun() {
         maxWalletPercentageBigInt,
         firstBuyAmount,
         twitterHandle,
-        formData.websiteUrl,
+        websiteUrl,
         {
           value: ethers.parseEther(formData.deploymentFee),
           gasLimit: 8000000
@@ -1071,12 +1074,6 @@ export default function ShadowFun() {
                           <span className="text-gray-400">Liquidity</span>
                           <span className="font-medium text-white">
                             {token.liquidity} {NETWORKS[token.network].nativeCurrency.symbol}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
-                          <span className="text-gray-400">Website</span>
-                          <span className="font-medium text-white">
-                            {token.website_url || 'no-website'}
                           </span>
                         </div>
                       </div>
