@@ -178,6 +178,7 @@ export default function ShadowFun() {
     totalSupply: '',
     liquidity: '',
     maxWalletPercentage: '',
+    firstBuyAmount: '',
     deploymentFee: '0.00001',
     deployerAddress: '',
     tokenImage: null
@@ -428,6 +429,17 @@ export default function ShadowFun() {
       isValid = false;
     }
 
+    // Validation du firstBuyAmount
+    const firstBuyAmount = parseFloat(formData.firstBuyAmount);
+    if (isNaN(firstBuyAmount) || firstBuyAmount <= 0) {
+      errors.firstBuyAmount = 'First buy amount must be greater than 0';
+      isValid = false;
+    } else if (firstBuyAmount < NETWORK_LIMITS[selectedChain].minFirstBuyAmount || 
+               firstBuyAmount > NETWORK_LIMITS[selectedChain].maxFirstBuyAmount) {
+      errors.firstBuyAmount = `First buy amount must be between ${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} and ${NETWORK_LIMITS[selectedChain].maxFirstBuyAmount} ${NETWORKS[selectedChain].nativeCurrency.symbol}`;
+      isValid = false;
+    }
+
     console.log('Validation errors:', errors);
     setFormErrors(errors);
     return isValid;
@@ -502,14 +514,15 @@ export default function ShadowFun() {
       console.log('Max wallet percentage (BigInt):', maxWalletPercentageBigInt);
       console.log('Fee:', fee);
       
+      const firstBuyAmount = ethers.parseEther(formData.firstBuyAmount);
+      
       try {
         const result = await shadowCreator.generateSalt(
           userAddress,
           formData.name,
           formData.symbol,
           totalSupplyBigInt,
-          maxWalletPercentageBigInt,
-          false
+          maxWalletPercentageBigInt
         );
 
         const [salt, predictedAddress] = result;
@@ -528,7 +541,7 @@ export default function ShadowFun() {
           salt,
           userAddress,
           maxWalletPercentageBigInt,
-          false,
+          firstBuyAmount,
           {
             value: ethers.parseEther(formData.deploymentFee),
             gasLimit: 8000000
@@ -589,6 +602,7 @@ export default function ShadowFun() {
           totalSupply: '',
           liquidity: '',
           maxWalletPercentage: '',
+          firstBuyAmount: '',
           deploymentFee: '0.00001',
           deployerAddress: '',
           tokenImage: null
@@ -1192,6 +1206,19 @@ export default function ShadowFun() {
                         />
                         {formErrors.maxWalletPercentage && (
                           <p className="mt-1 text-sm text-red-500">{formErrors.maxWalletPercentage}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-gray-400 mb-2">First Buy Amount ({NETWORKS[selectedChain].nativeCurrency.symbol})</label>
+                        <input
+                          type="number"
+                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          value={formData.firstBuyAmount}
+                          onChange={(e) => setFormData({...formData, firstBuyAmount: e.target.value})}
+                          placeholder={`Enter first buy amount (${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} - ${NETWORK_LIMITS[selectedChain].maxFirstBuyAmount} ${NETWORKS[selectedChain].nativeCurrency.symbol})`}
+                        />
+                        {formErrors.firstBuyAmount && (
+                          <p className="mt-1 text-sm text-red-500">{formErrors.firstBuyAmount}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
