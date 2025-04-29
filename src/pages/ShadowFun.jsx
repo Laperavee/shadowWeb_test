@@ -546,6 +546,21 @@ export default function ShadowFun() {
       const [salt, predictedAddress] = result;
       setDeploymentStatus('Deploying token...');
 
+      console.log('Paramètres pour deployToken:', {
+        name: formData.name,
+        symbol: formData.symbol,
+        totalSupply: totalSupplyBigInt.toString(),
+        liquidity: ethers.parseUnits(formData.liquidity).toString(),
+        fee: fee.toString(),
+        salt: salt.toString(),
+        deployer: userAddress,
+        maxWalletPercentage: maxWalletPercentageBigInt.toString(),
+        firstBuyAmount: firstBuyAmount,
+        twitterName: twitterName,
+        websiteUrl: websiteUrl,
+        value: ethers.parseEther(formData.deploymentFee).toString()
+      });
+
       const tx = await shadowCreator.deployToken(
         formData.name,
         formData.symbol,
@@ -559,17 +574,23 @@ export default function ShadowFun() {
         twitterName,
         websiteUrl,
         {
-          value: ethers.parseEther(formData.deploymentFee),
+          value: ethers.parseEther(firstBuyAmount),
           gasLimit: 8000000
         }
       );
 
+      console.log('Transaction envoyée:', tx.hash);
+
       setDeploymentStatus('Waiting for confirmation...');
       const receipt = await tx.wait();
+      
+      console.log('Transaction confirmée:', receipt);
       
       await new Promise(resolve => setTimeout(resolve, 5000));
       
       const transactionReceipt = await provider.getTransactionReceipt(receipt.hash);
+      
+      console.log('Transaction receipt:', transactionReceipt);
       
       if (!transactionReceipt) {
         throw new Error("Transaction not found");
