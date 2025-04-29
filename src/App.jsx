@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import ShadowFun from './pages/ShadowFun';
-import TokenPage from './pages/TokenPage';
-import StakingPage from './pages/StakingPage';
-import PostsPage from './pages/PostsPage';
+import TokenDetail from './pages/TokenDetail';
+import Staking from './pages/Staking';
+import PostsIndex from './pages/PostsIndex';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import './App.css';
@@ -50,9 +50,9 @@ function App() {
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<ShadowFun />} />
-            <Route path="/token/:address" element={<TokenPage />} />
-            <Route path="/staking" element={<StakingPage />} />
-            <Route path="/posts" element={<PostsPage />} />
+            <Route path="/token/:address" element={<TokenDetail />} />
+            <Route path="/staking" element={<Staking />} />
+            <Route path="/posts" element={<PostsIndex />} />
           </Routes>
         </AnimatePresence>
         <Footer />
