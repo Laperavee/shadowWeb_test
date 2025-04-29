@@ -34,6 +34,11 @@
   status = 200
 
 [[redirects]]
+  from = "/twitter-auth"
+  to = "/.netlify/functions/twitter-auth"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200 

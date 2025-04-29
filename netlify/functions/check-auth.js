@@ -6,22 +6,15 @@ exports.handler = async function(event, context) {
     const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'twitter',
-      options: {
-        redirectTo: `${event.headers.host}/twitter-auth`
-      }
-    });
-
+    const { data, error } = await supabase.auth.getSession();
+    
     if (error) {
       throw error;
     }
 
     return {
-      statusCode: 302,
-      headers: {
-        Location: data.url
-      }
+      statusCode: 200,
+      body: JSON.stringify({ authenticated: !!data.session })
     };
   } catch (error) {
     return {

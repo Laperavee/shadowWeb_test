@@ -10,6 +10,7 @@ import { priceService } from '../services/priceService';
 import { Link, useNavigate } from 'react-router-dom';
 import ShadowCreatorAvaxArtifact from '../artifact/ShadowCreatorAvax.json';
 import ShadowBaseArtifact from '../artifact/ShadowBase.json';
+import { supabase } from '../lib/supabase';
 
 const SHADOW_CREATOR_ABI = {
   AVAX: ShadowCreatorAvaxArtifact.abi,
@@ -754,49 +755,30 @@ export default function ShadowFun() {
     }
   };
 
-  const handleTwitterConnect = async (e) => {
-    e.preventDefault() // Empêcher le comportement par défaut du bouton
-    try {
-      const response = await fetch('/.netlify/functions/twitter-auth')
-      if (!response.ok) {
-        throw new Error('Failed to connect to Twitter')
-      }
-      const data = await response.json()
-      
-      // Ouvrir une fenêtre popup pour l'authentification Twitter
-      const width = 600
-      const height = 600
-      const left = window.screen.width / 2 - width / 2
-      const top = window.screen.height / 2 - height / 2
-      
-      const popup = window.open(
-        data.url,
-        'Twitter Auth',
-        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes`
-      )
-
-      // Écouter la fermeture de la fenêtre popup
-      const checkPopup = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(checkPopup)
-          // Vérifier si l'authentification a réussi
-          if (window.location.search.includes('auth=success')) {
-            setFormData(prev => ({ ...prev, twitterConnected: true }))
-            addNotification("Successfully connected to Twitter!", "success")
-          }
-        }
-      }, 1000)
-    } catch (error) {
-      console.error('Error connecting to Twitter:', error)
-      addNotification("Failed to connect to Twitter", "error")
-    }
-  }
-
   // Calculer le montant maximum d'achat (20% de la liquidité)
   const calculateMaxBuyAmount = (liquidity) => {
     if (!liquidity) return 0
     return (parseFloat(liquidity) * 0.2).toFixed(4)
   }
+
+  const handleTwitterConnect = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/.netlify/functions/twitter-auth');
+      
+      if (!response.ok) {
+        throw new Error('Failed to connect to Twitter');
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error('Error connecting to Twitter:', error);
+      addNotification("Failed to connect to Twitter", "error");
+    }
+  };
 
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
@@ -895,18 +877,6 @@ export default function ShadowFun() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                       <span className="text-white">Connect Wallet</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleTwitterConnect();
-                        setIsConnectMenuOpen(false);
-                      }}
-                      className="w-full px-4 py-2 text-left flex items-center space-x-2 hover:bg-white/5 rounded-b-lg"
-                    >
-                      <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                      </svg>
-                      <span className="text-white">Connect Twitter</span>
                     </button>
                   </div>
                 )}
@@ -1319,41 +1289,41 @@ export default function ShadowFun() {
                           <p className="mt-1 text-sm text-red-500">{formErrors.firstBuyAmount}</p>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <motion.button
-                          type="button"
-                          onClick={handleTwitterConnect}
-                          className="relative px-4 py-2 rounded-xl group/button"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
-                          <div className="relative flex items-center justify-center gap-2">
-                            <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                            </svg>
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-500">
-                              {formData.twitterConnected ? 'Connected to Twitter' : 'Connect Twitter'}
-                            </span>
-                          </div>
-                        </motion.button>
-                      </div>
                     </div>
-                    <div className="flex justify-end gap-4">
-                      <button
+                    <div className="flex items-center gap-2">
+                      <motion.button
                         type="button"
-                        onClick={() => setActiveTab('tokens')}
-                        className="px-6 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+                        onClick={handleTwitterConnect}
+                        className="relative px-4 py-2 rounded-xl group/button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
-                        Cancel
-                      </button>
-                      <button
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
+                        <div className="relative flex items-center justify-center gap-2">
+                          <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                          </svg>
+                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-500">
+                            {formData.twitterConnected ? 'Connected to Twitter' : 'Connect Twitter'}
+                          </span>
+                        </div>
+                      </motion.button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <motion.button
                         type="submit"
                         disabled={isDeploying}
-                        className="px-6 py-2 rounded-lg bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                        className="relative px-4 py-2 rounded-xl group/button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
-                        {isDeploying ? 'Deploying...' : 'Create Token'}
-                      </button>
+                        <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
+                        <div className="relative flex items-center justify-center gap-2">
+                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                            {isDeploying ? 'Deploying...' : 'Create Token'}
+                          </span>
+                        </div>
+                      </motion.button>
                     </div>
                   </div>
                 </form>

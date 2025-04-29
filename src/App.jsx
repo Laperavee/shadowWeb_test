@@ -11,6 +11,7 @@ import TokenDetail from './pages/TokenDetail';
 import Staking from './pages/Staking';
 import PostsIndex from './pages/PostsIndex';
 import PostDetail from './pages/PostDetail';
+import TwitterAuth from './pages/TwitterAuth';
 
 // Components for managing effects
 import SoundProvider from './context/SoundContext';
@@ -53,6 +54,7 @@ function AppContent() {
               <Route path="/staking" element={<Staking />} />
               <Route path="/posts" element={<PostsIndex />} />
               <Route path="/post/:id" element={<PostDetail />} />
+              <Route path="/twitter-auth" element={<TwitterAuth />} />
             </Routes>
           </AnimatePresence>
         </main>
