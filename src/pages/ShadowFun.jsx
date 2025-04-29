@@ -573,7 +573,7 @@ export default function ShadowFun() {
         websiteUrl,
         {
           value: ethers.parseEther(formData.firstBuyAmount),
-          gasLimit: 8000000
+          gasLimit: 18000000
         }
       );
 
