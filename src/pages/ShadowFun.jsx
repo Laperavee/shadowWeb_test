@@ -941,32 +941,32 @@ export default function ShadowFun() {
                         <span className="text-white">Connect Wallet</span>
                       </button>
                       {twitterHandle ? (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-white">Connected as @{twitterHandle}</span>
-                          <motion.button
-                            onClick={handleTwitterDisconnect}
-                            className="bg-gradient-to-r from-red-600/20 to-red-400/20 border border-red-400/20 px-4 py-1 rounded-lg hover:border-red-400/50 transition-all interactive relative group"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-red-400/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">
-                              Disconnect
-                            </span>
-                          </motion.button>
-                        </div>
-                      ) : (
-                        <motion.button
-                          onClick={handleTwitterConnect}
-                          className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all interactive relative group"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                        <button
+                          onClick={handleTwitterDisconnect}
+                          className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-fuchsia-500/10 rounded-lg transition-colors"
                         >
-                          <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                          <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                          </svg>
+                          <span className="text-white">
+                            Disconnect @{twitterHandle}
+                          </span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            handleTwitterConnect(e);
+                            setIsConnectMenuOpen(false);
+                          }}
+                          className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-fuchsia-500/10 rounded-lg transition-colors"
+                        >
+                          <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                          </svg>
+                          <span className="text-white">
                             Connect Twitter
                           </span>
-                        </motion.button>
+                        </button>
                       )}
                     </div>
                   </motion.div>
