@@ -11,6 +11,24 @@ exports.handler = async function(event, context) {
     const cookies = event.headers.cookie || '';
     console.log('🍪 Cookies received:', cookies);
 
+    // Récupérer le token d'accès depuis l'URL si présent
+    const url = new URL(event.rawUrl);
+    const accessToken = url.hash.split('access_token=')[1]?.split('&')[0];
+    
+    if (accessToken) {
+      console.log('🔑 Access token found in URL');
+      // Définir la session avec le token
+      const { data: { session }, error: setSessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: url.hash.split('refresh_token=')[1]?.split('&')[0]
+      });
+      
+      if (setSessionError) {
+        console.error('❌ Error setting session:', setSessionError);
+        throw setSessionError;
+      }
+    }
+
     // Vérifier la session
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     console.log('🔍 Session check result:', { session: !!session, error: sessionError });
@@ -26,7 +44,8 @@ exports.handler = async function(event, context) {
         statusCode: 401,
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': 'true'
         },
         body: JSON.stringify({ error: 'No active session' })
       };

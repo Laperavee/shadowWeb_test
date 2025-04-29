@@ -9,7 +9,7 @@ exports.handler = async function(event, context) {
 
     // Récupérer l'URL de redirection depuis les paramètres de la requête
     const { redirectTo } = event.queryStringParameters || {};
-    const finalRedirectTo = redirectTo || 'https://gaopzywnpatpifgakags.supabase.co/auth/v1/callback';
+    const finalRedirectTo = redirectTo || 'https://test12546158432897.netlify.app/shadow-fun#';
     console.log('🌐 Redirect URL:', finalRedirectTo);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
