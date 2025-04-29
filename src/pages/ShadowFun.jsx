@@ -555,7 +555,7 @@ export default function ShadowFun() {
         salt: salt.toString(),
         deployer: userAddress,
         maxWalletPercentage: maxWalletPercentageBigInt.toString(),
-        firstBuyAmount: firstBuyAmount,
+        firstBuyAmount: firstBuyAmount.toString(),
         twitterName: twitterName,
         websiteUrl: websiteUrl,
         value: ethers.parseEther(formData.deploymentFee).toString()
@@ -574,7 +574,7 @@ export default function ShadowFun() {
         twitterName,
         websiteUrl,
         {
-          value: ethers.parseEther(firstBuyAmount),
+          value: ethers.parseEther(firstBuyAmount.toString()),
           gasLimit: 8000000
         }
       );
