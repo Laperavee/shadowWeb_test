@@ -13,13 +13,14 @@ exports.handler = async function(event, context) {
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
-          scope: 'users.read tweet.read'
+          scope: 'tweet.read users.read'
         },
         skipBrowserRedirect: true
       }
     });
 
     if (error) {
+      console.error('Twitter auth error:', error);
       throw error;
     }
 

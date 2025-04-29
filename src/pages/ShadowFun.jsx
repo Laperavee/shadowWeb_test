@@ -209,7 +209,7 @@ export default function ShadowFun() {
   useEffect(() => {
     const checkTwitterAuth = async () => {
       try {
-        const response = await fetch('/.netlify/functions/get-twitter-info');
+        const response = await fetch('/.netlify/functions/get-twitter-user');
         const data = await response.json();
         
         if (data.twitterHandle) {
