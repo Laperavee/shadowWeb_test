@@ -757,23 +757,20 @@ export default function ShadowFun() {
 
   const handleTwitterConnect = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'twitter',
-        options: {
-          redirectTo: window.location.origin
-        }
-      });
+      const response = await fetch('/.netlify/functions/twitter-auth')
+      const data = await response.json()
 
-      if (error) throw error;
-      
-      // Mettre à jour l'état de connexion Twitter
-      setFormData(prev => ({ ...prev, twitterConnected: true }));
-      addNotification("Successfully connected to Twitter!", "success");
+      if (response.ok) {
+        // Rediriger vers l'URL d'authentification Twitter
+        window.location.href = data.url
+      } else {
+        throw new Error(data.error || 'Failed to connect to Twitter')
+      }
     } catch (error) {
-      console.error('Error connecting to Twitter:', error);
-      addNotification("Failed to connect to Twitter", "error");
+      console.error('Error connecting to Twitter:', error)
+      addNotification("Failed to connect to Twitter", "error")
     }
-  };
+  }
 
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
