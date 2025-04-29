@@ -882,34 +882,41 @@ export default function ShadowFun() {
                 </motion.button>
 
                 {isConnectMenuOpen && (
-                  <div className="absolute right-0 mt-2 min-w-[200px] rounded-lg bg-black/20 backdrop-blur-sm border border-white/10">
-                    <button
-                      onClick={() => {
-                        connectWallet();
-                        setIsConnectMenuOpen(false);
-                      }}
-                      className="w-full px-4 py-2 text-left flex items-center space-x-2 hover:bg-white/5 rounded-t-lg"
-                    >
-                      <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      <span className="text-white">Connect Wallet</span>
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        handleTwitterConnect(e);
-                        setIsConnectMenuOpen(false);
-                      }}
-                      className="w-full px-4 py-2 text-left flex items-center space-x-2 hover:bg-white/5 rounded-b-lg"
-                    >
-                      <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                      </svg>
-                      <span className="text-white">
-                        {twitterHandle ? `@${twitterHandle}` : 'Connect Twitter'}
-                      </span>
-                    </button>
-                  </div>
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 mt-2 min-w-[200px] rounded-xl bg-black/80 backdrop-blur-xl border border-fuchsia-500/20 shadow-[0_0_25px_rgba(255,0,255,0.1)]"
+                  >
+                    <div className="p-1.5">
+                      <button
+                        onClick={() => {
+                          connectWallet();
+                          setIsConnectMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-fuchsia-500/10 rounded-lg transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span className="text-white">Connect Wallet</span>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          handleTwitterConnect(e);
+                          setIsConnectMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-fuchsia-500/10 rounded-lg transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                        <span className="text-white">
+                          {twitterHandle ? `@${twitterHandle}` : 'Connect Twitter'}
+                        </span>
+                      </button>
+                    </div>
+                  </motion.div>
                 )}
               </div>
             </div>

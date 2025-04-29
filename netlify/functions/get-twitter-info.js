@@ -19,17 +19,17 @@ exports.handler = async function(event, context) {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ error: 'Not authenticated' })
+        body: JSON.stringify({ error: 'No active session' })
       };
     }
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError) {
       throw userError;
     }
 
-    const twitterHandle = userData.user.user_metadata.user_name;
+    const twitterHandle = user?.user_metadata?.user_name || null;
 
     return {
       statusCode: 200,
@@ -40,6 +40,7 @@ exports.handler = async function(event, context) {
       body: JSON.stringify({ twitterHandle })
     };
   } catch (error) {
+    console.error('Error getting Twitter info:', error);
     return {
       statusCode: 500,
       headers: {

@@ -12,13 +12,19 @@ exports.handler = async function(event, context) {
         redirectTo: 'https://gaopzywnpatpifgakags.supabase.co/auth/v1/callback',
         queryParams: {
           access_type: 'offline',
-          prompt: 'consent'
-        }
+          prompt: 'consent',
+          scope: 'users.read tweet.read'
+        },
+        skipBrowserRedirect: true
       }
     });
 
     if (error) {
       throw error;
+    }
+
+    if (!data.url) {
+      throw new Error('No authentication URL returned from Supabase');
     }
 
     return {
@@ -30,6 +36,7 @@ exports.handler = async function(event, context) {
       body: JSON.stringify({ url: data.url })
     };
   } catch (error) {
+    console.error('Twitter auth error:', error);
     return {
       statusCode: 500,
       headers: {
