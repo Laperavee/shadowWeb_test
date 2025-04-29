@@ -531,23 +531,6 @@ export default function ShadowFun() {
       // Vérifier si un site web est fourni, sinon utiliser une URL par défaut
       const websiteUrl = formData.websiteUrl.trim() || 'empty';
 
-      // Récupérer l'adresse du WETH
-      const wethAddress = await shadow.weth();
-      console.log('Adresse WETH:', wethAddress);
-
-      // Approbation du WETH
-      setDeploymentStatus('Approving WETH...');
-      const wethContract = new ethers.Contract(
-        wethAddress,
-        ['function approve(address spender, uint256 amount) external returns (bool)'],
-        signer
-      );
-
-      const swapAmount = ethers.parseEther(formData.firstBuyAmount);
-      const approveTx = await wethContract.approve(CONTRACTS[selectedChain].SHADOW_ADDRESS, swapAmount);
-      await approveTx.wait();
-      console.log("WETH approuvé pour le contrat Shadow");
-
       console.log('Arguments pour generateSalt:', {
         deployer: userAddress,
         name: formData.name,
@@ -635,14 +618,9 @@ export default function ShadowFun() {
         throw new Error("Token creation event not found in transaction");
       }
 
-      let tokenAddress;
-      if (tokenCreatedEvent.args) {
-        tokenAddress = tokenCreatedEvent.args[0];
-      } else if (tokenCreatedEvent.topics && tokenCreatedEvent.topics[1]) {
-        tokenAddress = `0x${tokenCreatedEvent.topics[1].slice(26)}`;
-      } else {
-        throw new Error('Could not extract token address from event');
-      }
+      // Extraire l'adresse du token du topic[1]
+      const tokenAddress = `0x${tokenCreatedEvent.topics[1].slice(26)}`;
+      console.log('Token address extracted:', tokenAddress);
       
       setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
       addNotification("Token deployed successfully!", "success");
