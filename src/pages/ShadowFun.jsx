@@ -525,7 +525,6 @@ export default function ShadowFun() {
       const totalSupplyBigInt = BigInt(ethers.parseEther(formData.totalSupply));
       const maxWalletPercentageBigInt = BigInt(formData.maxWalletPercentage * 10);
       const fee = 10000;
-      const firstBuyAmount = ethers.parseEther(formData.firstBuyAmount);
       
       // S'assurer que le handle Twitter a le @
       const twitterName = twitterHandle.startsWith('@') ? twitterHandle : `@${twitterHandle}`;
@@ -555,7 +554,7 @@ export default function ShadowFun() {
         salt: salt.toString(),
         deployer: userAddress,
         maxWalletPercentage: maxWalletPercentageBigInt.toString(),
-        firstBuyAmount: firstBuyAmount.toString(),
+        firstBuyAmount: formData.firstBuyAmount.toString(),
         twitterName: twitterName,
         websiteUrl: websiteUrl,
         value: ethers.parseEther(formData.deploymentFee).toString()
@@ -570,11 +569,11 @@ export default function ShadowFun() {
         salt,
         userAddress,
         maxWalletPercentageBigInt,
-        firstBuyAmount,
+        formData.firstBuyAmount,
         twitterName,
         websiteUrl,
         {
-          value: ethers.parseEther(firstBuyAmount.toString()),
+          value: ethers.parseEther(formData.firstBuyAmount),
           gasLimit: 8000000
         }
       );
