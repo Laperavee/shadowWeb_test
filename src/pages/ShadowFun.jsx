@@ -188,7 +188,23 @@ export default function ShadowFun() {
   useEffect(() => {
     localStorage.setItem('selectedChain', selectedChain);
     // Recharger les tokens lorsque le réseau change
-    loadTokens();
+    const fetchTokens = async () => {
+      try {
+        setIsLoading(true);
+        const tokens = await tokenService.getTokens(selectedChain);
+        if (Array.isArray(tokens)) {
+          console.log('Tokens loaded:', tokens.length);
+          setTokens(tokens);
+          // Calculer le nombre total de pages (10 tokens par page)
+          setTotalPages(Math.ceil(tokens.length / 10));
+        }
+      } catch (error) {
+        console.error('Error loading tokens:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTokens();
   }, [selectedChain]);
 
   useEffect(() => {

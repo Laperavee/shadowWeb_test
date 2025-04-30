@@ -156,7 +156,7 @@ export default function Staking() {
   };
 
   return (
-    <main className="min-h-screen bg-black overflow-x-hidden">
+    <main className="min-h-screen bg-black overflow-x-hidden" style={{ overflow: 'hidden', height: '100vh' }}>
       {/* Animated background effects */}
       <div className="fixed inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)] animate-pulse-slow" />
