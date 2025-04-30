@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { AnimatePresence } from 'framer-motion';
 import { motion } from 'framer-motion';
 import Navbar from './components/Navbar';
+import HomeNavbar from './components/HomeNavbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Features from './pages/Features';
@@ -20,6 +21,7 @@ import { WalletProvider } from './context/WalletContext';
 // Créer un composant wrapper pour gérer l'affichage conditionnel de la Navbar
 function AppContent() {
   const location = useLocation();
+  const isHomePage = location.pathname === '/';
 
   return (
     <div className="app relative min-h-screen bg-black text-white overflow-hidden flex flex-col">
@@ -42,7 +44,7 @@ function AppContent() {
 
       {/* Contenu principal */}
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+        {isHomePage ? <HomeNavbar /> : <Navbar />}
         <main className="flex-grow">
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
