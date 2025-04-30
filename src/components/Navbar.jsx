@@ -162,47 +162,35 @@ export default function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 100 }}
-        className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-4 px-6 gap-4"
+        className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-4 px-6 gap-4 w-[95%]"
       >
-        <motion.div
-          className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400"
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 400 }}
-        >
-          <Link to="/" className="cursor-pointer">
-            Shadow Protocol
-          </Link>
-        </motion.div>
+        <div className="flex items-center gap-8">
+          <motion.div
+            className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400 }}
+          >
+            <Link to="/" className="cursor-pointer">
+              Shadow Protocol
+            </Link>
+          </motion.div>
+          <div className="hidden sm:flex items-center gap-6">
+            <Link
+              to="/docs"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              Docs
+            </Link>
+            <Link
+              to="/news"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              News
+            </Link>
+          </div>
+        </div>
         <div className="flex items-center gap-4 flex-wrap justify-center">
           <NetworkSelector selectedChain={selectedChain} onChange={handleChainChange} />
-          <Link
-            to="/docs"
-            className="relative px-6 py-2.5 rounded-xl group"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
-            <div className="relative flex items-center gap-2">
-              <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span className="text-white font-semibold">
-                Docs
-              </span>
-            </div>
-          </Link>
-          <Link
-            to="/news"
-            className="relative px-6 py-2.5 rounded-xl group"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
-            <div className="relative flex items-center gap-2">
-              <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15" />
-              </svg>
-              <span className="text-white font-semibold">
-                News
-              </span>
-            </div>
-          </Link>
           <Link
             to="/staking"
             className="relative px-6 py-2.5 rounded-xl group"
