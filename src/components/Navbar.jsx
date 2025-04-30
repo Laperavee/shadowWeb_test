@@ -155,10 +155,6 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   }, [navigate, playSound]);
 
-  if (location.pathname === '/shadow-fun') {
-    return null;
-  }
-
   return (
     <header className="sticky top-0 z-50 bg-black/20 backdrop-blur-xl border-b border-fuchsia-500/20 shadow-lg">
       <motion.div 
