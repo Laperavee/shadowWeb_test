@@ -194,7 +194,8 @@ export const tokenService = {
     deployer_address,
     token_image,
     twitter_handle,
-    website_url
+    website_url,
+    is_fresh
   }) {
     try {
       const imgUrl = token_image ? await uploadTokenImage(token_image) : null;
@@ -216,7 +217,8 @@ export const tokenService = {
           image_url: imgUrl,
           is_featured: false,
           twitter_handle,
-          website_url
+          website_url,
+          is_fresh
         })
       });
 

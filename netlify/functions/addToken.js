@@ -84,7 +84,10 @@ exports.handler = async (event, context) => {
       token_symbol: tokenData.token_symbol || null,
       image_url: tokenData.image_url || null,
       is_featured: tokenData.is_featured || false,
-      pool_address: tokenData.pool_address || null
+      pool_address: tokenData.pool_address || null,
+      twitter_handle: tokenData.twitter_handle || null,
+      website_url: tokenData.website_url || null,
+      is_fresh: tokenData.is_fresh || false
     };
 
     // Check if token already exists
