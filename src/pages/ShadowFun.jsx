@@ -480,6 +480,16 @@ export default function ShadowFun() {
         throw new Error(`Please switch to ${NETWORKS[selectedChain].chainName} network to create a token`);
       }
 
+      // Upload token image if provided
+      let imageUrl = null;
+      if (formData.tokenImage) {
+        setDeploymentStatus("Uploading token image...");
+        imageUrl = await tokenService.uploadTokenImage(formData.tokenImage);
+        if (!imageUrl) {
+          throw new Error("Failed to upload token image");
+        }
+      }
+
       const shadow = new ethers.Contract(
         CONTRACTS[selectedChain].SHADOW_ADDRESS,
         SHADOW_CREATOR_ABI[selectedChain],
@@ -578,7 +588,7 @@ export default function ShadowFun() {
       setDeploymentStatus(`Token deployed successfully at ${predictedTokenAddress}!`);
       addNotification("Token deployed successfully!", "success");
       
-      await saveTokenToDatabase(predictedTokenAddress, userAddress, receipt.hash);
+      await saveTokenToDatabase(predictedTokenAddress, userAddress, receipt.hash, imageUrl);
       
       setFormData({
         name: '',
@@ -602,7 +612,7 @@ export default function ShadowFun() {
     }
   };
 
-  const saveTokenToDatabase = async (tokenAddress, deployerAddress, txHash) => {
+  const saveTokenToDatabase = async (tokenAddress, deployerAddress, txHash, imageUrl) => {
     if (txHash === "") {
       return;
     }
@@ -622,7 +632,7 @@ export default function ShadowFun() {
         max_wallet_percentage: parseFloat(formData.maxWalletPercentage),
         network: selectedChain,
         deployer_address: deployerAddress,
-        token_image: formData.tokenImage,
+        token_image: imageUrl,
         twitter_handle: twitterHandle,
         website_url: formData.websiteUrl,
         is_fresh: isFresh
@@ -637,7 +647,7 @@ export default function ShadowFun() {
         max_wallet_percentage: parseFloat(formData.maxWalletPercentage),
         network: selectedChain,
         deployer_address: deployerAddress,
-        token_image: formData.tokenImage,
+        token_image: imageUrl,
         twitter_handle: twitterHandle,
         website_url: formData.websiteUrl,
         is_fresh: isFresh
