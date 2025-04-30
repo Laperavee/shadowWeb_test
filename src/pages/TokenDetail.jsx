@@ -403,7 +403,7 @@ const TokenDetail = () => {
                 </button>
                 
                 <a 
-                  href={`https://snowtrace.io/address/${token.token_address}`} 
+                  href={`https://${token.network === 'AVAX' ? 'snowtrace.io' : 'basescan.org'}/address/${token.token_address}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl border border-gray-700 hover:border-fuchsia-500/30 transition-all duration-300 text-sm font-medium group flex items-center gap-2"
@@ -515,7 +515,7 @@ const TokenDetail = () => {
                 <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
                   <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Creator</span>
                   <a 
-                    href={`https://snowtrace.io/address/${token.deployer_address}`}
+                    href={`https://${token.network === 'AVAX' ? 'snowtrace.io' : 'basescan.org'}/address/${token.deployer_address}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-bold text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
@@ -527,7 +527,7 @@ const TokenDetail = () => {
                 <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
                   <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Contract</span>
                   <a 
-                    href={`https://snowtrace.io/address/${token.token_address}`}
+                    href={`https://${token.network === 'AVAX' ? 'snowtrace.io' : 'basescan.org'}/address/${token.token_address}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-bold text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
@@ -686,7 +686,7 @@ const TokenDetail = () => {
                         <td className="py-4">
                           <div className="flex items-center">
                             <a 
-                              href={`https://snowtrace.io/address/${purchase.user_id}`}
+                              href={`https://${token.network === 'AVAX' ? 'snowtrace.io' : 'basescan.org'}/address/${purchase.user_id}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-medium text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
@@ -715,7 +715,7 @@ const TokenDetail = () => {
                         </td>
                         <td className="py-4">
                           <a 
-                            href={`https://snowtrace.io/tx/${purchase.tx_hash}`}
+                            href={`https://${token.network === 'AVAX' ? 'snowtrace.io' : 'basescan.org'}/tx/${purchase.tx_hash}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors flex items-center gap-2 group"
