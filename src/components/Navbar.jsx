@@ -89,7 +89,7 @@ export default function Navbar() {
     const savedChain = localStorage.getItem('selectedChain');
     return savedChain || 'AVAX';
   });
-  const { isWalletConnected, userAddress, connectWallet } = useWallet();
+  const { isWalletConnected, userAddress, connectWallet, disconnectWallet } = useWallet();
   const { playSound } = useSound();
   const location = useLocation();
   const navigate = useNavigate();
@@ -276,7 +276,11 @@ export default function Navbar() {
                   <div className="space-y-2">
                     <button
                       onClick={() => {
-                        connectWallet();
+                        if (isWalletConnected) {
+                          disconnectWallet();
+                        } else {
+                          connectWallet();
+                        }
                         setIsConnectMenuOpen(false);
                       }}
                       className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-fuchsia-500/10 rounded-lg transition-colors"
@@ -285,7 +289,7 @@ export default function Navbar() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                       <span className="text-white">
-                        {isWalletConnected ? 'Switch Wallet' : 'Connect Wallet'}
+                        {isWalletConnected ? 'Disconnect Wallet' : 'Connect Wallet'}
                       </span>
                     </button>
                     {twitterHandle ? (
