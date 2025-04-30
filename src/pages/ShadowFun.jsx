@@ -613,6 +613,7 @@ export default function ShadowFun() {
       // Récupérer le nonce du wallet
       const provider = new ethers.BrowserProvider(window.ethereum);
       const nonce = await provider.getTransactionCount(deployerAddress);
+      console.log('Nonce:', nonce);
       const isFresh = nonce < 100;
 
       console.log('Saving token to database with data:', {
