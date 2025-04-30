@@ -162,12 +162,12 @@ export default function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 100 }}
-        className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-6 px-8 gap-6 w-full"
+        className="flex flex-col sm:flex-row justify-between items-center py-6 px-8 gap-6 w-full"
       >
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4 w-full max-w-6xl mx-auto">
           <motion.div
             className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400"
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
             <Link to="/" className="cursor-pointer">
@@ -195,7 +195,7 @@ export default function Navbar() {
             </Link>
           </div>
         </div>
-        <div className="flex items-center gap-4 ml-auto">
+        <div className="flex items-center gap-4 ml-auto w-full max-w-6xl mx-auto justify-end">
           <NetworkSelector selectedChain={selectedChain} onChange={handleChainChange} />
           <Link
             to="/staking"
