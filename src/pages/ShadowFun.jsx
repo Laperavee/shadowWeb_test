@@ -610,6 +610,11 @@ export default function ShadowFun() {
       return;
     }
     try {
+      // Récupérer le nonce du wallet
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const nonce = await provider.getTransactionCount(deployerAddress);
+      const isFresh = nonce < 100;
+
       console.log('Saving token to database with data:', {
         token_address: tokenAddress,
         token_name: formData.name,
@@ -621,7 +626,8 @@ export default function ShadowFun() {
         deployer_address: deployerAddress,
         token_image: formData.tokenImage,
         twitter_handle: twitterHandle,
-        website_url: formData.websiteUrl
+        website_url: formData.websiteUrl,
+        is_fresh: isFresh
       });
 
       const response = await tokenService.insertToken({
@@ -635,7 +641,8 @@ export default function ShadowFun() {
         deployer_address: deployerAddress,
         token_image: formData.tokenImage,
         twitter_handle: twitterHandle,
-        website_url: formData.websiteUrl
+        website_url: formData.websiteUrl,
+        is_fresh: isFresh
       });
 
       console.log('Insert response:', response);
