@@ -82,11 +82,14 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isConnectMenuOpen, setIsConnectMenuOpen] = useState(false);
   const [twitterHandle, setTwitterHandle] = useState(null);
   const [selectedChain, setSelectedChain] = useState(() => {
     const savedChain = localStorage.getItem('selectedChain');
     return savedChain || 'AVAX';
   });
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [userAddress, setUserAddress] = useState('');
   const { playSound } = useSound();
   const location = useLocation();
   const navigate = useNavigate();
@@ -134,192 +137,173 @@ export default function Navbar() {
   }
 
   return (
-    <motion.nav 
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-black/30 backdrop-blur-sm' : 'bg-transparent'
-      } py-4`}
-    >
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center">
-          <Link 
-            to="/" 
-            className="text-2xl font-bold interactive"
-            onMouseEnter={() => playSound('hover')}
-          >
-            <motion.span 
-              className="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400 inline-block"
-              whileHover={{ 
-                scale: 1.05,
-                backgroundImage: "linear-gradient(to right, #8B5CF6, #3B82F6, #8B5CF6)",
-                backgroundSize: "200% 100%",
-                backgroundPosition: "right center",
-              }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              Shadow Protocol
-            </motion.span>
+    <header className="sticky top-0 z-50 bg-black/20 backdrop-blur-xl border-b border-fuchsia-500/20 shadow-lg">
+      <motion.div 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 100 }}
+        className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-4 px-6 gap-4"
+      >
+        <motion.div
+          className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400"
+          whileHover={{ scale: 1.05 }}
+          transition={{ type: "spring", stiffness: 400 }}
+        >
+          <Link to="/" className="cursor-pointer">
+            Shadow Protocol
           </Link>
+        </motion.div>
+        <div className="flex items-center gap-4 flex-wrap justify-center">
+          <NetworkSelector selectedChain={selectedChain} onChange={setSelectedChain} />
+          <Link
+            to="/posts"
+            className="relative px-6 py-2.5 rounded-xl group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
+            <div className="relative flex items-center gap-2">
+              <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15" />
+              </svg>
+              <span className="text-white font-semibold">
+                News
+              </span>
+            </div>
+          </Link>
+          <Link
+            to="/staking"
+            className="relative px-6 py-2.5 rounded-xl group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
+            <div className="relative flex items-center gap-2">
+              <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-white font-semibold">
+                Staking
+              </span>
+            </div>
+          </Link>
+          <div className="relative">
+            <motion.button
+              onClick={() => setIsConnectMenuOpen(!isConnectMenuOpen)}
+              className="relative px-6 py-2.5 rounded-xl group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
+              <div className="relative flex items-center gap-2">
+                <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span className="text-white font-semibold">
+                  Connect
+                </span>
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </motion.button>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
-            <NetworkSelector selectedChain={selectedChain} onChange={setSelectedChain} />
-            <Link
-              to="/posts"
-              className="relative px-6 py-2.5 rounded-xl group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
-              <div className="relative flex items-center gap-2">
-                <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15" />
-                </svg>
-                <span className="text-white font-semibold">
-                  News
-                </span>
-              </div>
-            </Link>
-            <Link
-              to="/staking"
-              className="relative px-6 py-2.5 rounded-xl group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
-              <div className="relative flex items-center gap-2">
-                <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-white font-semibold">
-                  Staking
-                </span>
-              </div>
-            </Link>
-            {twitterHandle ? (
-              <motion.button
-                onClick={handleTwitterDisconnect}
-                className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all interactive relative group"
-                onMouseEnter={() => playSound('hover')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+            {isConnectMenuOpen && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute right-0 mt-2 min-w-[300px] rounded-xl bg-black/80 backdrop-blur-xl border border-fuchsia-500/20 shadow-[0_0_25px_rgba(255,0,255,0.1)]"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                  Disconnect @{twitterHandle}
-                </span>
-              </motion.button>
-            ) : (
-              <motion.button
-                onClick={() => handleNavigation('/shadow-fun')}
-                className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all interactive relative group"
-                onMouseEnter={() => playSound('hover')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                  Launch App
-                </span>
-              </motion.button>
+                <div className="p-4">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    {/* Wallet Connection Status */}
+                    <div className={`relative p-4 rounded-xl border ${
+                      isWalletConnected 
+                        ? 'border-green-500/50 bg-green-500/10' 
+                        : 'border-gray-700 bg-gray-800/50'
+                    }`}>
+                      <div className="flex flex-col items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${
+                          isWalletConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-500'
+                        }`} />
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-white">Wallet</p>
+                          {isWalletConnected && (
+                            <p className="text-xs text-gray-400 truncate max-w-[120px]">
+                              {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Twitter Connection Status */}
+                    <div className={`relative p-4 rounded-xl border ${
+                      twitterHandle 
+                        ? 'border-blue-500/50 bg-blue-500/10' 
+                        : 'border-gray-700 bg-gray-800/50'
+                    }`}>
+                      <div className="flex flex-col items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${
+                          twitterHandle ? 'bg-blue-500 animate-pulse' : 'bg-gray-500'
+                        }`} />
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-white">Twitter</p>
+                          {twitterHandle && (
+                            <p className="text-xs text-gray-400">@{twitterHandle}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        connectWallet();
+                        setIsConnectMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-fuchsia-500/10 rounded-lg transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span className="text-white">
+                        {isWalletConnected ? 'Switch Wallet' : 'Connect Wallet'}
+                      </span>
+                    </button>
+                    {twitterHandle ? (
+                      <button
+                        onClick={handleTwitterDisconnect}
+                        className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-fuchsia-500/10 rounded-lg transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                        <span className="text-white">
+                          Disconnect Twitter
+                        </span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          handleTwitterConnect(e);
+                          setIsConnectMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2.5 text-left flex items-center space-x-2 hover:bg-fuchsia-500/10 rounded-lg transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                        <span className="text-white">
+                          Connect Twitter
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
             )}
           </div>
-
-          {/* Mobile Menu Button */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            className="md:hidden text-white interactive relative"
-            onClick={() => {
-              setIsMobileMenuOpen(!isMobileMenuOpen);
-              playSound('click');
-            }}
-          >
-            <div className="w-6 h-6 flex flex-col justify-center gap-1.5">
-              <motion.span
-                animate={isMobileMenuOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
-                className="w-full h-0.5 bg-gradient-to-r from-fuchsia-500 to-cyan-500 block transition-transform"
-              />
-              <motion.span
-                animate={isMobileMenuOpen ? { opacity: 0 } : { opacity: 1 }}
-                className="w-full h-0.5 bg-gradient-to-r from-fuchsia-500 to-cyan-500 block"
-              />
-              <motion.span
-                animate={isMobileMenuOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
-                className="w-full h-0.5 bg-gradient-to-r from-fuchsia-500 to-cyan-500 block transition-transform"
-              />
-            </div>
-          </motion.button>
         </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden mt-4"
-            >
-              <motion.div 
-                className="flex flex-col gap-4 py-4"
-                variants={{
-                  open: {
-                    transition: { staggerChildren: 0.1 }
-                  }
-                }}
-                initial="closed"
-                animate="open"
-              >
-                <NetworkSelector selectedChain={selectedChain} onChange={setSelectedChain} />
-                <Link
-                  to="/posts"
-                  className="relative px-6 py-2.5 rounded-xl group"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
-                  <div className="relative flex items-center gap-2">
-                    <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15" />
-                    </svg>
-                    <span className="text-white font-semibold">
-                      News
-                    </span>
-                  </div>
-                </Link>
-                <Link
-                  to="/staking"
-                  className="relative px-6 py-2.5 rounded-xl group"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
-                  <div className="relative flex items-center gap-2">
-                    <svg className="w-5 h-5 text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="text-white font-semibold">
-                      Staking
-                    </span>
-                  </div>
-                </Link>
-                {twitterHandle ? (
-                  <motion.button
-                    onClick={handleTwitterDisconnect}
-                    className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all mx-4 text-center interactive block w-full"
-                  >
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                      Disconnect @{twitterHandle}
-                    </span>
-                  </motion.button>
-                ) : (
-                  <motion.button
-                    onClick={() => handleNavigation('/shadow-fun')}
-                    className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all mx-4 text-center interactive block w-full"
-                  >
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                      Launch App
-                    </span>
-                  </motion.button>
-                )}
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.nav>
+      </motion.div>
+    </header>
   );
 } 
