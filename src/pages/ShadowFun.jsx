@@ -861,72 +861,72 @@ export default function ShadowFun() {
               >
                 {getCurrentPageTokens().map((token) => {
                   return (
-                    <motion.div
-                      key={token.id}
-                      variants={{
-                        hidden: { opacity: 0, y: 20 },
-                        visible: { opacity: 1, y: 0 }
-                      }}
-                      className="group relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:border-fuchsia-500/30 transition-all duration-300 cursor-pointer"
-                      onClick={() => navigate(`/token/${token.token_address}`)}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="relative">
-                        <div className="flex items-start gap-4 mb-6">
-                          {token.image_url ? (
-                            <motion.img
-                              src={token.image_url}
-                              alt={token.token_name}
-                              className="w-16 h-16 rounded-2xl object-cover border-2 border-fuchsia-500/20"
-                              whileHover={{ scale: 1.05 }}
-                            />
-                          ) : (
-                            <motion.div
-                              className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20 border-2 border-fuchsia-500/20 flex items-center justify-center "
-                              whileHover={{ scale: 1.05 }}
-                            >
-                              <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-fuchsia-400 to-cyan-400">
-                                {token.token_symbol.charAt(0)}
-                              </span>
-                            </motion.div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-xl font-bold text-white mb-2 truncate group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-fuchsia-400 group-hover:to-cyan-400 transition-all">
-                              {token.token_name}
-                            </h3>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="px-3 py-1 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400 text-sm font-medium">
-                                ${token.token_symbol}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-3 mb-6">
-                          <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
-                            <span className="text-gray-400">Supply</span>
-                            <span className="font-medium text-white">{parseInt(token.supply).toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
-                            <span className="text-gray-400">Liquidity</span>
-                            <span className="font-medium text-white">
-                              {token.liquidity} {NETWORKS[token.network].nativeCurrency.symbol}
+                  <motion.div
+                    key={token.id}
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="group relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:border-fuchsia-500/30 transition-all duration-300 cursor-pointer"
+                    onClick={() => navigate(`/token/${token.token_address}`)}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative">
+                      <div className="flex items-start gap-4 mb-6">
+                        {token.image_url ? (
+                          <motion.img
+                            src={token.image_url}
+                            alt={token.token_name}
+                            className="w-16 h-16 rounded-2xl object-cover border-2 border-fuchsia-500/20"
+                            whileHover={{ scale: 1.05 }}
+                          />
+                        ) : (
+                          <motion.div
+                            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20 border-2 border-fuchsia-500/20 flex items-center justify-center "
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-fuchsia-400 to-cyan-400">
+                              {token.token_symbol.charAt(0)}
+                            </span>
+                          </motion.div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-bold text-white mb-2 truncate group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-fuchsia-400 group-hover:to-cyan-400 transition-all">
+                            {token.token_name}
+                          </h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="px-3 py-1 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400 text-sm font-medium">
+                              ${token.token_symbol}
                             </span>
                           </div>
                         </div>
+                      </div>
 
-                        <div className="flex gap-2">
-                          <motion.a
+                      <div className="space-y-3 mb-6">
+                        <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
+                          <span className="text-gray-400">Supply</span>
+                          <span className="font-medium text-white">{parseInt(token.supply).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
+                          <span className="text-gray-400">Liquidity</span>
+                          <span className="font-medium text-white">
+                            {token.liquidity} {NETWORKS[token.network].nativeCurrency.symbol}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <motion.a
                             href={definedLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          target="_blank"
+                          rel="noopener noreferrer"
                             className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
                           >
                             View on Defined
-                          </motion.a>
-                        </div>
+                        </motion.a>
                       </div>
-                    </motion.div>
+                    </div>
+                  </motion.div>
                   );
                 })}
               </motion.div>
