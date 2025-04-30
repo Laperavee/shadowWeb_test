@@ -164,7 +164,7 @@ export default function Navbar() {
         transition={{ type: "spring", stiffness: 100 }}
         className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-6 px-8 gap-6 w-full"
       >
-        <div className="flex items-center gap-12">
+        <div className="flex items-center gap-4">
           <motion.div
             className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400"
             whileHover={{ scale: 1.05 }}
@@ -174,12 +174,12 @@ export default function Navbar() {
               Shadow Protocol
             </Link>
           </motion.div>
-          <div className="hidden sm:flex items-center gap-8">
+          <div className="hidden sm:flex items-center gap-4">
             <Link
               to="https://shadow-19.gitbook.io/shadow-docs/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors group px-4 py-2"
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors group px-3 py-2"
               onClick={() => playSound('click')}
             >
               <span className="relative text-lg">
@@ -189,13 +189,13 @@ export default function Navbar() {
             </Link>
             <Link
               to="/news"
-              className="text-gray-400 hover:text-white transition-colors text-lg px-4 py-2"
+              className="text-gray-400 hover:text-white transition-colors text-lg px-3 py-2"
             >
               News
             </Link>
           </div>
         </div>
-        <div className="flex items-center gap-4 flex-wrap justify-center">
+        <div className="flex items-center gap-4 ml-auto">
           <NetworkSelector selectedChain={selectedChain} onChange={handleChainChange} />
           <Link
             to="/staking"
