@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSound } from '../context/SoundContext';
 import { useWallet } from '../context/WalletContext';
+import { useNetwork } from '../context/NetworkContext';
 import { supabase } from '../lib/supabase';
 import avaxLogo from '../../dist/assets/avax_logo.png';
 import baseLogo from '../../dist/assets/base_logo.png';
@@ -87,10 +88,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isConnectMenuOpen, setIsConnectMenuOpen] = useState(false);
   const [twitterHandle, setTwitterHandle] = useState(null);
-  const [selectedChain, setSelectedChain] = useState(() => {
-    const savedChain = localStorage.getItem('selectedChain');
-    return savedChain || 'AVAX';
-  });
+  const { selectedChain, setSelectedChain } = useNetwork();
   const { isWalletConnected, userAddress, connectWallet, disconnectWallet } = useWallet();
   const { playSound } = useSound();
   const location = useLocation();

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import avaxLogo from '../../dist/assets/avax_logo.png';
@@ -12,6 +12,9 @@ import ShadowBaseArtifact from '../artifact/ShadowBase.json';
 import { supabase } from '../lib/supabase';
 import { useWallet } from '../context/WalletContext';
 import Navbar from '../components/Navbar';
+import { useSound } from '../context/SoundContext';
+import { useNotification } from '../context/NotificationContext';
+import { useNetwork } from '../context/NetworkContext';
 
 const SHADOW_CREATOR_ABI = {
   BASE: ShadowBaseArtifact.abi
@@ -141,13 +144,12 @@ const getErrorMessage = (field, chain) => {
 
 export default function ShadowFun() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('tokens');
+  const { selectedChain } = useNetwork();
   const { isWalletConnected, userAddress, connectWallet } = useWallet();
+  const { playSound } = useSound();
+  const { showNotification } = useNotification();
+  const [activeTab, setActiveTab] = useState('tokens');
   const [twitterHandle, setTwitterHandle] = useState('');
-  const [selectedChain, setSelectedChain] = useState(() => {
-    const savedChain = localStorage.getItem('selectedChain');
-    return savedChain || 'AVAX';
-  });
   const [timeframe, setTimeframe] = useState('24h');
   const [shadowContract, setShadowContract] = useState(null);
   const [shadowToken, setShadowToken] = useState(null);
@@ -172,7 +174,7 @@ export default function ShadowFun() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [notifications, setNotifications] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   const [tokenPrices, setTokenPrices] = useState({
     AVAX: 0,
@@ -187,26 +189,22 @@ export default function ShadowFun() {
 
   const fetchTokens = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const tokens = await tokenService.getTokens(selectedChain);
-      if (Array.isArray(tokens)) {
-        console.log('Tokens loaded:', tokens.length);
-        setTokens(tokens);
-        setTotalPages(Math.ceil(tokens.length / 10));
-        setCurrentPage(1); // Reset to first page when network changes
-      }
+      setLoading(true);
+      const data = await tokenService.getTokens(selectedChain);
+      setTokens(data);
+      setTotalPages(Math.ceil(data.length / 10));
+      setCurrentPage(1);
     } catch (error) {
       console.error('Error loading tokens:', error);
-      addNotification('Failed to load tokens', 'error');
+      showNotification('Failed to load tokens', 'error');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [selectedChain]);
+  }, [selectedChain, showNotification]);
 
   useEffect(() => {
-    localStorage.setItem('selectedChain', selectedChain);
     fetchTokens();
-  }, [selectedChain, fetchTokens]);
+  }, [fetchTokens]);
 
   useEffect(() => {
     const checkTwitterAuth = async () => {
@@ -791,7 +789,7 @@ export default function ShadowFun() {
           </motion.div>
 
           {/* Enhanced loading state */}
-          {isLoading ? (
+          {loading ? (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
