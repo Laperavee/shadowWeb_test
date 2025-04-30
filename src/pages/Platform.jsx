@@ -37,6 +37,7 @@ export default function Platform() {
   const [error, setError] = useState(null);
   const [validTweets, setValidTweets] = useState(new Set());
   const [filteredItems, setFilteredItems] = useState([]);
+  const [definedLink, setDefinedLink] = useState('');
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -100,6 +101,9 @@ export default function Platform() {
       setValidTweets(new Set(items.map(item => item.tweet_response_id)));
     }
   }, [items]);
+
+  const definedNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
+  setDefinedLink(`https://www.defined.fi/${definedNetwork}/${tokenAddress}`);
 
   return (
     <main ref={containerRef} className="bg-black min-h-screen">
@@ -295,6 +299,17 @@ export default function Platform() {
                           </motion.a>
                         </div>
                       )}
+
+                      <div className="flex justify-end mt-2">
+                        <a
+                          href={definedLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
+                        >
+                          View on Defined
+                        </a>
+                      </div>
                     </div>
                   </motion.div>
                 );

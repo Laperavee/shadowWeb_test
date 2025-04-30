@@ -11,9 +11,9 @@ const TokenDetail = () => {
   const [error, setError] = useState(null);
   const [timeframe, setTimeframe] = useState('24h');
   const [copySuccess, setCopySuccess] = useState('');
-  const [dexData, setDexData] = useState(null);
-  const [dexLoading, setDexLoading] = useState(false);
-  const [dexScreenerUrl, setDexScreenerUrl] = useState('');
+  const [definedData, setDefinedData] = useState(null);
+  const [definedLoading, setDefinedLoading] = useState(false);
+  const [definedLink, setDefinedLink] = useState('');
   const [holdersCount, setHoldersCount] = useState(null);
   const [holdersLoading, setHoldersLoading] = useState(false);
   const [tokenPrice, setTokenPrice] = useState(0);
@@ -30,14 +30,14 @@ const TokenDetail = () => {
     notificationSound.current = new Audio('/notification.mp3');
   }, []);
 
-  const fetchDexScreenerData = useCallback(async (tokenAddress, network) => {
+  const fetchDefinedData = useCallback(async (tokenAddress, network) => {
     try {
-      setDexLoading(true);
+      setDefinedLoading(true);
       
-      const dexNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
-      setDexScreenerUrl(`https://dexscreener.com/${dexNetwork}/${tokenAddress}?embed=1&theme=dark&trades=0&info=0`);
+      const definedNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
+      setDefinedLink(`https://www.defined.fi/${definedNetwork}/${tokenAddress}`);
       
-      const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
+      const response = await fetch(`https://api.defined.fi/v1/tokens/${tokenAddress}`);
       const data = await response.json();
       
       if (data && data.pairs && data.pairs.length > 0) {
@@ -46,7 +46,7 @@ const TokenDetail = () => {
         );
         
         const mainPair = sortedPairs[0];
-        setDexData(mainPair);
+        setDefinedData(mainPair);
         
         if (mainPair) {
           const marketData = {
@@ -66,7 +66,7 @@ const TokenDetail = () => {
     } catch (err) {
       // Silently handle error
     } finally {
-      setDexLoading(false);
+      setDefinedLoading(false);
     }
   }, []);
 
@@ -105,7 +105,7 @@ const TokenDetail = () => {
       
       await Promise.all([
         fetchTopHolderPurchases(token.token_address),
-        fetchDexScreenerData(token.token_address, token.network)
+        fetchDefinedData(token.token_address, token.network)
       ]);
       
     } catch (error) {
@@ -113,7 +113,7 @@ const TokenDetail = () => {
     } finally {
       setRefreshing(false);
     }
-  }, [token, refreshing, fetchTopHolderPurchases, fetchDexScreenerData]);
+  }, [token, refreshing, fetchTopHolderPurchases, fetchDefinedData]);
 
   // Initial data load
   useEffect(() => {
@@ -143,7 +143,7 @@ const TokenDetail = () => {
             const price = await priceService.getPrice(nativeSymbol);
             setTokenPrice(price);
           })(),
-          fetchDexScreenerData(tokenData.token_address, tokenData.network),
+          fetchDefinedData(tokenData.token_address, tokenData.network),
           fetchTopHolderPurchases(tokenData.token_address)
         ]);
         
@@ -165,7 +165,7 @@ const TokenDetail = () => {
     });
     
     return () => unsubscribe();
-  }, [address, fetchDexScreenerData, fetchTopHolderPurchases]);
+  }, [address, fetchDefinedData, fetchTopHolderPurchases]);
 
   // Subscribe to real-time purchases
   useEffect(() => {
@@ -216,13 +216,13 @@ const TokenDetail = () => {
     return () => unsubscribe();
   }, [token]);
 
-  // Update DexScreener URL when timeframe changes
+  // Update Defined URL when timeframe changes
   useEffect(() => {
     if (!token?.token_address) return;
     
     const timeframeParam = timeframe === '24h' ? '1m' : timeframe === '7d' ? '1W' : '1M';
-    const dexNetwork = token.network?.toUpperCase() === 'AVAX' ? 'avalanche' : token.network?.toLowerCase();
-    setDexScreenerUrl(`https://dexscreener.com/${dexNetwork}/${token.token_address}?embed=1&theme=dark&trades=0&info=0&interval=${timeframeParam}`);
+    const definedNetwork = token.network?.toUpperCase() === 'AVAX' ? 'avalanche' : token.network?.toLowerCase();
+    setDefinedLink(`https://www.defined.fi/${definedNetwork}/${token.token_address}?embedded=1&hideTxTable=0&hideSidebar=0&hideChart=0&hideChartEmptyBars=1&chartSmoothing=0&embedColorMode=DEFAULT&interval=${timeframeParam}`);
   }, [timeframe, token]);
 
   // Auto-refresh setup
@@ -278,10 +278,10 @@ const TokenDetail = () => {
     return `${isPositive ? '+' : ''}${formattedValue}%`;
   };
 
-  // Function to open DexScreener
-  const openDexScreener = () => {
+  // Function to open Defined
+  const openDefined = () => {
     if (token && token.token_address) {
-      window.open(`https://dexscreener.com/${token.network}/${token.token_address}`, '_blank');
+      window.open(`https://www.defined.fi/${token.network}/${token.token_address}`, '_blank');
     }
   };
 
@@ -406,17 +406,19 @@ const TokenDetail = () => {
               </div>
               
               <div className="flex flex-wrap gap-3">
-                <button 
-                  onClick={openDexScreener}
+                <a
+                  href={definedLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="px-4 py-2 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all duration-300 text-sm font-medium group flex items-center gap-2 hover:shadow-[0_0_15px_rgba(255,0,255,0.3)]"
                 >
                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                    View on DexScreener
+                    View on Defined
                   </span>
                   <svg className="w-4 h-4 text-fuchsia-400 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
-                </button>
+                </a>
                 
                 <a 
                   href={`https://${token.network === 'AVAX' ? 'snowtrace.io' : 'basescan.org'}/address/${token.token_address}`} 
@@ -567,12 +569,12 @@ const TokenDetail = () => {
               {/* Action buttons with improved styling */}
               <div className="mt-8 space-y-3">
                 <button
-                  onClick={openDexScreener}
+                  onClick={openDefined}
                   className="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all duration-300 group relative"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 transform group-hover:translate-x-full transition-transform duration-500"></div>
                   <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400 font-medium">
-                    Trade on DEX
+                    Trade on Defined
                   </span>
                 </button>
                 
@@ -613,7 +615,7 @@ const TokenDetail = () => {
                 {token?.token_address ? (
                   <iframe
                     className="w-full h-full border-0"
-                    src={`https://www.defined.fi/${token.network.toLowerCase()}/${token.token_address}?embedded=1&hideTxTable=0&hideSidebar=0&hideChart=0&hideChartEmptyBars=1&chartSmoothing=0&embedColorMode=DEFAULT`}
+                    src={definedLink}
                     title="Token Chart"
                   />
                 ) : (
@@ -621,7 +623,7 @@ const TokenDetail = () => {
                     <div className="text-center">
                       <p className="text-gray-400 mb-4">No chart data available for this token</p>
                       <button
-                        onClick={() => window.open(`https://www.defined.fi/${token.network.toLowerCase()}/${token.token_address}`, '_blank')}
+                        onClick={() => window.open(definedLink, '_blank')}
                         className="px-4 py-2 rounded-lg bg-fuchsia-500/20 border border-fuchsia-500/30 text-fuchsia-400 text-sm hover:bg-fuchsia-500/30 transition-all duration-300"
                       >
                         Check on Defined
