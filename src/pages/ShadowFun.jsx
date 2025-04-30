@@ -12,7 +12,6 @@ import ShadowBaseArtifact from '../artifact/ShadowBase.json';
 import ShadowAvaxArtifact from '../artifact/ShadowAvax.json';
 import { supabase } from '../lib/supabase';
 import { useWallet } from '../context/WalletContext';
-import Navbar from '../components/Navbar';
 import { useSound } from '../context/SoundContext';
 import { useNotification } from '../context/NotificationContext';
 import { useNetwork } from '../context/NetworkContext';

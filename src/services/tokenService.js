@@ -205,7 +205,7 @@ export const tokenService = {
         token_symbol: token_symbol.toString(),
         supply: supply.toString(),
         liquidity: liquidity.toString(),
-        max_wallet_percentage: max_wallet_percentage.toString(),
+        max_wallet_percentage: (max_wallet_percentage * 10).toString(),
         network: network.toString(),
         deployer_address: deployer_address.toString(),
         twitter_handle: twitter_handle?.toString() || null,
