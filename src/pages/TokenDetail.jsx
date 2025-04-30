@@ -304,10 +304,10 @@ const TokenDetail = () => {
     if (token) {
       let newScore = 0;
       if (token.twitter_handle && token.twitter_handle !== 'empty' && token.twitter_handle !== '@empty') {
-        newScore += 40;
+        newScore += 60;
       }
       if (!token.is_fresh) {
-        newScore += 60;
+        newScore += 40;
       }
       setScore(newScore);
     }
@@ -396,15 +396,6 @@ const TokenDetail = () => {
       <BackgroundEffects />
       
       <div className="relative z-10 max-w-6xl mx-auto">
-        {/* Score display */}
-        <div className="mb-6">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/30">
-            <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-              Score: {score}
-            </span>
-          </div>
-        </div>
-
         {/* Rest of the content */}
         <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
           {/* Token header with glass effect */}
@@ -675,6 +666,21 @@ const TokenDetail = () => {
                   </span>
                 </div>
               </div>
+              
+              {/* Twitter Profile Embed */}
+              {token.twitter_handle && token.twitter_handle !== 'empty' && token.twitter_handle !== '@empty' && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold mb-4 text-white">Creator's Profile</h3>
+                  <div className="w-full h-[400px] bg-gray-900/30 rounded-xl border border-gray-800/50 overflow-hidden">
+                    <iframe
+                      className="w-full h-full"
+                      src={`https://platform.twitter.com/embed/Tweet.html?dnt=true&frame=false&hideCard=false&hideThread=false&id=${token.twitter_handle.replace('@', '')}&lang=en&theme=dark`}
+                      title="Twitter Profile"
+                      style={{ border: 'none' }}
+                    />
+                  </div>
+                </div>
+              )}
               
               {/* Action buttons with improved styling */}
               <div className="mt-8 space-y-3">
