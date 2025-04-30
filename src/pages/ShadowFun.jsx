@@ -148,6 +148,7 @@ export default function ShadowFun() {
     const savedChain = localStorage.getItem('selectedChain');
     return savedChain || 'AVAX';
   });
+  const [timeframe, setTimeframe] = useState('24h');
   const [shadowContract, setShadowContract] = useState(null);
   const [shadowToken, setShadowToken] = useState(null);
   const [isDeploying, setIsDeploying] = useState(false);
