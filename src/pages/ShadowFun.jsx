@@ -714,7 +714,7 @@ export default function ShadowFun() {
   };
 
   const definedNetwork = selectedChain?.toUpperCase() === 'AVAX' ? 'avalanche' : selectedChain?.toLowerCase();
-  setDefinedLink(`https://www.defined.fi/${definedNetwork}/${tokenAddress}`);
+  setDefinedLink(`https://www.defined.fi/${definedNetwork}/${token.token_address}`);
 
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
