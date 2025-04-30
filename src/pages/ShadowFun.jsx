@@ -11,6 +11,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import ShadowBaseArtifact from '../artifact/ShadowBase.json';
 import { supabase } from '../lib/supabase';
 import { useWallet } from '../context/WalletContext';
+import Navbar from '../components/Navbar';
 
 const SHADOW_CREATOR_ABI = {
   BASE: ShadowBaseArtifact.abi
@@ -712,6 +713,8 @@ export default function ShadowFun() {
 
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
+      <Navbar />
+      
       {/* Animated background effects */}
       <div className="fixed inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)] animate-pulse-slow" />
