@@ -10,7 +10,7 @@ export function useWallet() {
   return context;
 }
 
-export default function WalletProvider({ children }) {
+export function WalletProvider({ children }) {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [userAddress, setUserAddress] = useState('');
 
@@ -56,16 +56,15 @@ export default function WalletProvider({ children }) {
     if (window.ethereum) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        setIsWalletConnected(true);
-        setUserAddress(accounts[0]);
-        return true;
+        if (accounts.length > 0) {
+          setIsWalletConnected(true);
+          setUserAddress(accounts[0]);
+        }
       } catch (error) {
         console.error('Error connecting wallet:', error);
-        return false;
       }
     } else {
       console.error('MetaMask is not installed');
-      return false;
     }
   };
 
