@@ -571,7 +571,7 @@ const TokenDetail = () => {
                 </div>
               </div>
               
-              <div className="h-[500px] w-full rounded-xl overflow-hidden border border-gray-800/50">
+              <div className="h-[500px] w-full rounded-xl border border-gray-800/50">
                 {token?.token_address ? (
                   <iframe
                     className="w-full h-full border-0"
