@@ -9,7 +9,7 @@ import ShadowFun from './pages/ShadowFun';
 import Staking from './pages/Staking';
 import HowItWorks from './pages/HowItWorks';
 import Features from './pages/Features';
-import News from './pages/News';
+import PostsIndex from './pages/PostsIndex';
 import Docs from './pages/Docs';
 import './App.css';
 
@@ -28,7 +28,7 @@ function App() {
                   <Route path="/staking" element={<Staking />} />
                   <Route path="/how-it-works" element={<HowItWorks />} />
                   <Route path="/features" element={<Features />} />
-                  <Route path="/news" element={<News />} />
+                  <Route path="/news" element={<PostsIndex />} />
                   <Route path="/docs" element={<Docs />} />
                 </Routes>
               </div>
