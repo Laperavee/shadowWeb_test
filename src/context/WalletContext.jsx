@@ -2,7 +2,15 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const WalletContext = createContext();
 
-export function WalletProvider({ children }) {
+export function useWallet() {
+  const context = useContext(WalletContext);
+  if (!context) {
+    throw new Error('useWallet must be used within a WalletProvider');
+  }
+  return context;
+}
+
+export default function WalletProvider({ children }) {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [userAddress, setUserAddress] = useState('');
 
@@ -71,12 +79,4 @@ export function WalletProvider({ children }) {
       {children}
     </WalletContext.Provider>
   );
-}
-
-export function useWallet() {
-  const context = useContext(WalletContext);
-  if (!context) {
-    throw new Error('useWallet must be used within a WalletProvider');
-  }
-  return context;
 } 
