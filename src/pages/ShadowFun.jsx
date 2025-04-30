@@ -54,7 +54,7 @@ const NETWORK_LIMITS = {
   AVAX: {
     minLiquidity: 1000,
     maxLiquidity: 100000,
-    minSupply: 100000,
+    minSupply: 1000000,
     maxSupply: 1000000000,
     minWalletPercentage: 0.1,
     maxWalletPercentage: 10,
