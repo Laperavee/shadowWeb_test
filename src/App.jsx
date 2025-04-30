@@ -21,7 +21,7 @@ function App() {
               <div className="min-h-screen bg-black text-white">
                 <Navbar />
                 <Routes>
-                  <Route path="/" element={<Home />} />
+                  <Route path="/" element={<Navigate to="/shadow-fun" replace />} />
                   <Route path="/shadow-fun" element={<ShadowFun />} />
                   <Route path="/staking" element={<Staking />} />
                   <Route path="/how-it-works" element={<HowItWorks />} />
