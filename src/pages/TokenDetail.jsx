@@ -572,26 +572,21 @@ const TokenDetail = () => {
               </div>
               
               <div className="h-[500px] w-full rounded-xl overflow-hidden border border-gray-800/50">
-                {dexScreenerUrl ? (
-                  <iframe 
-                    src={dexScreenerUrl}
-                    title="DexScreener Chart"
+                {token?.token_address ? (
+                  <iframe
                     className="w-full h-full border-0"
-                    allowFullScreen
-                  ></iframe>
-                ) : dexLoading ? (
-                  <div className="flex items-center justify-center h-full bg-gray-900/30">
-                    <div className="animate-spin rounded-full h-12 w-12 border-2 border-fuchsia-500 border-t-transparent"></div>
-                  </div>
+                    src={`https://www.defined.fi/${token.network.toLowerCase()}/${token.token_address}?embedded=1&hideTxTable=0&hideSidebar=0&hideChart=0&hideChartEmptyBars=1&chartSmoothing=0&embedColorMode=DEFAULT`}
+                    title="Token Chart"
+                  />
                 ) : (
                   <div className="flex items-center justify-center h-full bg-gray-900/30">
                     <div className="text-center">
                       <p className="text-gray-400 mb-4">No chart data available for this token</p>
                       <button
-                        onClick={openDexScreener}
+                        onClick={() => window.open(`https://www.defined.fi/${token.network.toLowerCase()}/${token.token_address}`, '_blank')}
                         className="px-4 py-2 rounded-lg bg-fuchsia-500/20 border border-fuchsia-500/30 text-fuchsia-400 text-sm hover:bg-fuchsia-500/30 transition-all duration-300"
                       >
-                        Check on DexScreener
+                        Check on Defined
                       </button>
                     </div>
                   </div>
