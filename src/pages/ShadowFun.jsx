@@ -185,27 +185,28 @@ export default function ShadowFun() {
   const [definedLoading, setDefinedLoading] = useState(false);
   const [definedLink, setDefinedLink] = useState('');
 
+  const fetchTokens = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const tokens = await tokenService.getTokens(selectedChain);
+      if (Array.isArray(tokens)) {
+        console.log('Tokens loaded:', tokens.length);
+        setTokens(tokens);
+        setTotalPages(Math.ceil(tokens.length / 10));
+        setCurrentPage(1); // Reset to first page when network changes
+      }
+    } catch (error) {
+      console.error('Error loading tokens:', error);
+      addNotification('Failed to load tokens', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedChain]);
+
   useEffect(() => {
     localStorage.setItem('selectedChain', selectedChain);
-    // Recharger les tokens lorsque le réseau change
-    const fetchTokens = async () => {
-      try {
-        setIsLoading(true);
-        const tokens = await tokenService.getTokens(selectedChain);
-        if (Array.isArray(tokens)) {
-          console.log('Tokens loaded:', tokens.length);
-          setTokens(tokens);
-          // Calculer le nombre total de pages (10 tokens par page)
-          setTotalPages(Math.ceil(tokens.length / 10));
-        }
-      } catch (error) {
-        console.error('Error loading tokens:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchTokens();
-  }, [selectedChain]);
+  }, [selectedChain, fetchTokens]);
 
   useEffect(() => {
     const checkTwitterAuth = async () => {
@@ -281,23 +282,6 @@ export default function ShadowFun() {
     checkWalletConnection();
   }, [selectedChain]);
 
-  const loadTokens = async () => {
-    try {
-      setIsLoading(true);
-      const tokens = await tokenService.getTokens(selectedChain);
-      if (Array.isArray(tokens)) {
-        console.log('Tokens loaded:', tokens.length);
-        setTokens(tokens);
-        // Calculer le nombre total de pages (10 tokens par page)
-        setTotalPages(Math.ceil(tokens.length / 10));
-      }
-    } catch (error) {
-      console.error('Error loading tokens:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // Calculer les tokens à afficher pour la page courante
   const getCurrentPageTokens = () => {
     const startIndex = (currentPage - 1) * 10;
@@ -361,7 +345,7 @@ export default function ShadowFun() {
   }, []);
 
   useEffect(() => {
-    loadTokens();
+    fetchTokens();
     
     // S'abonner aux mises à jour en temps réel des tokens
     const unsubscribe = realtimeService.subscribeToTokens(selectedChain, (payload) => {
