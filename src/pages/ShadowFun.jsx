@@ -185,9 +185,6 @@ export default function ShadowFun() {
   const [definedLoading, setDefinedLoading] = useState(false);
   const [definedLink, setDefinedLink] = useState('');
 
-  const [dexscreenerData, setDexscreenerData] = useState(null);
-  const [dexscreenerLoading, setDexscreenerLoading] = useState(false);
-
   useEffect(() => {
     localStorage.setItem('selectedChain', selectedChain);
   }, [selectedChain]);
@@ -853,8 +850,6 @@ export default function ShadowFun() {
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
               >
                 {getCurrentPageTokens().map((token) => {
-                  const dexscreenerLink = getDexscreenerLink(token.token_address, token.network);
-                  
                   return (
                     <motion.div
                       key={token.id}
@@ -912,12 +907,12 @@ export default function ShadowFun() {
 
                         <div className="flex gap-2">
                           <motion.a
-                            href={dexscreenerLink}
+                            href={definedLink}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
                           >
-                            View on DexScreener
+                            View on Defined
                           </motion.a>
                         </div>
                       </div>
