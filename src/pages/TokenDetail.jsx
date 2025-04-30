@@ -672,12 +672,13 @@ const TokenDetail = () => {
                 </div>
               </div>
               
-              <div className="h-[500px] w-full rounded-xl border border-gray-800/50">
+              <div className="h-[500px] w-full rounded-xl border border-gray-800/50 ">
                 {token?.token_address ? (
                   <iframe
                     className="w-full h-full border-0"
                     src={definedLink}
                     title="Token Chart"
+                    style={{ transform: 'scale(1.02)' }}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full bg-gray-900/30">
