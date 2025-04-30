@@ -728,13 +728,6 @@ export default function ShadowFun() {
     setDefinedLink(`https://www.defined.fi/${definedNetwork}/${tokens[0].token_address}?embedded=1&hideTxTable=1&hideSidebar=1&hideChart=0&hideChartEmptyBars=1&chartSmoothing=0&embedColorMode=DEFAULT&interval=${timeframeParam}`);
   }, [timeframe, selectedChain, tokens]);
 
-  // Fonction pour ouvrir Defined
-  const openDefined = () => {
-    if (tokens.length > 0 && tokens[0].token_address) {
-      window.open(`https://www.defined.fi/${selectedChain}/${tokens[0].token_address}`, '_blank');
-    }
-  };
-
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
       {/* Animated background effects */}
