@@ -27,6 +27,7 @@ const TokenDetail = () => {
   const [dexscreenerData, setDexscreenerData] = useState(null);
   const [dexscreenerLoading, setDexscreenerLoading] = useState(false);
   const [dexscreenerLink, setDexscreenerLink] = useState('');
+  const [score, setScore] = useState(0);
 
   // Initialiser le son de notification
   useEffect(() => {
@@ -296,6 +297,20 @@ const TokenDetail = () => {
     setDexscreenerLink(`https://dexscreener.com/${dexscreenerNetwork}/${token.token_address}?embed=1&theme=dark&trades=0&info=0&chart=${timeframeParam}`);
   }, [timeframe, token]);
 
+  // Calcul du score
+  useEffect(() => {
+    if (token) {
+      let newScore = 0;
+      if (token.twitter_handle && token.twitter_handle !== 'empty' && token.twitter_handle !== '@empty') {
+        newScore += 40;
+      }
+      if (!token.is_fresh) {
+        newScore += 60;
+      }
+      setScore(newScore);
+    }
+  }, [token]);
+
   // Fonction pour formater les adresses (afficher seulement le début et la fin)
   const formatAddress = (address) => {
     if (!address) return '';
@@ -424,6 +439,10 @@ const TokenDetail = () => {
                     <span className="px-3 py-1 rounded-full bg-gray-800/50 text-gray-400 text-sm">
                       on {token.network}
                     </span>
+                    {/* Score Display */}
+                    <div className="px-3 py-1 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 text-white text-sm font-medium">
+                      Score: {score}
+                    </div>
                     {/* Twitter Status Indicator */}
                     <a 
                       href={token.twitter_handle && token.twitter_handle !== 'empty' && token.twitter_handle !== '@empty' 

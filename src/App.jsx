@@ -10,6 +10,7 @@ import Staking from './pages/Staking';
 import HowItWorks from './pages/HowItWorks';
 import Features from './pages/Features';
 import PostsIndex from './pages/PostsIndex';
+import TokenDetail from './pages/TokenDetail';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Navigate to="/shadow-fun" replace />} />
                   <Route path="/shadow-fun" element={<ShadowFun />} />
+                  <Route path="/token/:address" element={<TokenDetail />} />
                   <Route path="/staking" element={<Staking />} />
                   <Route path="/how-it-works" element={<HowItWorks />} />
                   <Route path="/features" element={<Features />} />
