@@ -501,7 +501,7 @@ const TokenDetail = () => {
                 <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
                   <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Initial Liquidity</span>
                   <span className="font-bold group-hover:text-white transition-colors">
-                    {parseFloat(token.liquidity).toLocaleString()} AVAX
+                    {parseFloat(token.liquidity).toLocaleString()} {token.network === 'AVAX' ? 'AVAX' : 'ETH'}
                   </span>
                 </div>
                 
