@@ -1,18 +1,23 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { WalletProvider } from './context/WalletContext';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Home from './pages/Home';
+import Features from './pages/Features';
+import HowItWorks from './pages/HowItWorks';
+import ShadowFun from './pages/ShadowFun';
+import TokenDetail from './pages/TokenDetail';
+import Staking from './pages/Staking';
+import PostsIndex from './pages/PostsIndex';
+import PostDetail from './pages/PostDetail';
 import { SoundProvider } from './context/SoundContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { NetworkProvider } from './context/NetworkContext';
-import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import ShadowFun from './pages/ShadowFun';
-import Staking from './pages/Staking';
-import HowItWorks from './pages/HowItWorks';
-import Features from './pages/Features';
-import PostsIndex from './pages/PostsIndex';
-import TokenDetail from './pages/TokenDetail';
 
 function App() {
+  const location = useLocation();
+
   return (
     <Router>
       <SoundProvider>
@@ -41,17 +46,19 @@ function App() {
                 <Navbar />
                 <main className="flex-grow">
                   <AnimatePresence mode="wait">
-                    <Routes>
-                      <Route path="/" element={<Navigate to="/shadow-fun" replace />} />
+                    <Routes location={location} key={location.pathname}>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/how-it-works" element={<HowItWorks />} />
+                      <Route path="/features" element={<Features />} />
                       <Route path="/shadow-fun" element={<ShadowFun />} />
                       <Route path="/token/:address" element={<TokenDetail />} />
                       <Route path="/staking" element={<Staking />} />
-                      <Route path="/how-it-works" element={<HowItWorks />} />
-                      <Route path="/features" element={<Features />} />
-                      <Route path="/news" element={<PostsIndex />} />
+                      <Route path="/posts" element={<PostsIndex />} />
+                      <Route path="/post/:id" element={<PostDetail />} />
                     </Routes>
                   </AnimatePresence>
                 </main>
+                <Footer className="mt-auto" />
               </div>
             </div>
           </NetworkProvider>
