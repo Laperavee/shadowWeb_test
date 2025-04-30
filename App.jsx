@@ -21,7 +21,7 @@ function AppContent() {
   const location = useLocation();
 
   return (
-    <div className="app relative min-h-screen bg-black text-white overflow-hidden flex flex-col">
+    <div className="app relative min-h-screen bg-black text-white flex flex-col">
       {/* Background amélioré */}
       <div className="fixed inset-0 pointer-events-none">
         
