@@ -185,6 +185,9 @@ export default function ShadowFun() {
   const [definedData, setDefinedData] = useState(null);
   const [definedLoading, setDefinedLoading] = useState(false);
 
+  const [dexscreenerData, setDexscreenerData] = useState(null);
+  const [dexscreenerLoading, setDexscreenerLoading] = useState(false);
+
   useEffect(() => {
     localStorage.setItem('selectedChain', selectedChain);
   }, [selectedChain]);
@@ -668,101 +671,11 @@ export default function ShadowFun() {
     return (parseFloat(liquidity) * 0.2).toFixed(4)
   }
 
-  const handleTwitterConnect = async (e) => {
-    e.preventDefault();
-    try {
-      console.log('🔄 Initiating Twitter connection...');
-      const currentUrl = window.location.href;
-      console.log('🌐 Current URL:', currentUrl);
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'twitter',
-        options: {
-          redirectTo: currentUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-            scope: 'tweet.read users.read'
-          }
-        }
-      });
-
-      if (error) {
-        console.error('❌ Twitter auth error:', error);
-        throw error;
-      }
-
-      if (!data.url) {
-        throw new Error('No authentication URL received');
-      }
-
-      console.log('🔗 Redirecting to Twitter auth URL:', data.url);
-      window.location.href = data.url;
-    } catch (error) {
-      console.error('❌ Error connecting to Twitter:', error);
-      addNotification(error.message || "Failed to connect to Twitter", "error");
-    }
+  // Mettre à jour les liens DexScreener
+  const getDexscreenerLink = (tokenAddress, network) => {
+    const dexscreenerNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
+    return `https://dexscreener.com/${dexscreenerNetwork}/${tokenAddress}`;
   };
-
-  const handleTwitterDisconnect = async () => {
-    try {
-      await supabase.auth.signOut();
-      setTwitterHandle('');
-      setFormData(prev => ({ ...prev, twitterConnected: false }));
-      console.log('✅ Twitter disconnected successfully');
-    } catch (error) {
-      console.error('❌ Error disconnecting Twitter:', error);
-    }
-  };
-
-  const fetchDefinedData = useCallback(async (tokenAddress, network) => {
-    try {
-      setDefinedLoading(true);
-      
-      const definedNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
-      const apiUrl = `https://api.defined.fi/v1/tokens/${tokenAddress}?network=${definedNetwork}`;
-      
-      const response = await fetch(apiUrl);
-      if (!response.ok) {
-        throw new Error(`Erreur API Defined: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (data && data.pairs && data.pairs.length > 0) {
-        const sortedPairs = data.pairs.sort((a, b) => 
-          parseFloat(b.volumeUsd24h || 0) - parseFloat(a.volumeUsd24h || 0)
-        );
-        
-        const mainPair = sortedPairs[0];
-        setDefinedData(mainPair);
-        
-        if (mainPair) {
-          const marketData = {
-            price: parseFloat(mainPair.priceUsd || 0),
-            marketCap: parseFloat(mainPair.fdv || 0),
-            priceChange24h: parseFloat(mainPair.priceChange?.h24 || 0),
-            volume24h: parseFloat(mainPair.volume?.h24 || 0),
-            liquidity: parseFloat(mainPair.liquidity?.usd || 0) / 1000
-          };
-
-          setTokens(prevTokens => {
-            if (!prevTokens || !prevTokens.length) return prevTokens;
-            return prevTokens.map(token => 
-              token.token_address === tokenAddress ? {
-                ...token,
-                market_data: marketData
-              } : token
-            );
-          });
-        }
-      }
-    } catch (err) {
-      console.error('Erreur lors de la récupération des données Defined:', err);
-    } finally {
-      setDefinedLoading(false);
-    }
-  }, []);
 
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
@@ -888,8 +801,7 @@ export default function ShadowFun() {
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
               >
                 {getCurrentPageTokens().map((token) => {
-                  const definedNetwork = token.network?.toUpperCase() === 'AVAX' ? 'avalanche' : token.network?.toLowerCase();
-                  const itemDefinedLink = `https://www.defined.fi/${definedNetwork}/${token.token_address}`;
+                  const dexscreenerLink = getDexscreenerLink(token.token_address, token.network);
                   
                   return (
                     <motion.div
@@ -948,12 +860,12 @@ export default function ShadowFun() {
 
                         <div className="flex gap-2">
                           <motion.a
-                            href={itemDefinedLink}
+                            href={dexscreenerLink}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
                           >
-                            View on Defined
+                            View on DexScreener
                           </motion.a>
                         </div>
                       </div>

@@ -24,6 +24,9 @@ const TokenDetail = () => {
   const notificationSound = useRef(null);
   const [refreshing, setRefreshing] = useState(false);
   const refreshTimerRef = useRef(null);
+  const [dexscreenerData, setDexscreenerData] = useState(null);
+  const [dexscreenerLoading, setDexscreenerLoading] = useState(false);
+  const [dexscreenerLink, setDexscreenerLink] = useState('');
 
   // Initialiser le son de notification
   useEffect(() => {
@@ -88,6 +91,46 @@ const TokenDetail = () => {
     }
   }, []);
 
+  const fetchDexscreenerData = useCallback(async (tokenAddress, network) => {
+    try {
+      setDexscreenerLoading(true);
+      
+      const dexscreenerNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
+      setDexscreenerLink(`https://dexscreener.com/${dexscreenerNetwork}/${tokenAddress}`);
+      
+      const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
+      const data = await response.json();
+      
+      if (data && data.pairs && data.pairs.length > 0) {
+        const sortedPairs = data.pairs.sort((a, b) => 
+          parseFloat(b.volume.h24 || 0) - parseFloat(a.volume.h24 || 0)
+        );
+        
+        const mainPair = sortedPairs[0];
+        setDexscreenerData(mainPair);
+        
+        if (mainPair) {
+          const marketData = {
+            price: parseFloat(mainPair.priceUsd || 0),
+            marketCap: parseFloat(mainPair.fdv || 0),
+            priceChange24h: parseFloat(mainPair.priceChange.h24 || 0),
+            volume24h: parseFloat(mainPair.volume.h24 || 0),
+            liquidity: parseFloat(mainPair.liquidity.usd || 0)
+          };
+
+          setToken(prevToken => ({
+            ...prevToken,
+            market_data: marketData
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Erreur lors de la récupération des données DexScreener:', err);
+    } finally {
+      setDexscreenerLoading(false);
+    }
+  }, []);
+
   // Fonction pour rafraîchir manuellement les données
   const refreshData = useCallback(async () => {
     if (refreshing || !token) return;
@@ -105,7 +148,8 @@ const TokenDetail = () => {
       
       await Promise.all([
         fetchTopHolderPurchases(token.token_address),
-        fetchDefinedData(token.token_address, token.network)
+        fetchDefinedData(token.token_address, token.network),
+        fetchDexscreenerData(token.token_address, token.network)
       ]);
       
     } catch (error) {
@@ -113,7 +157,7 @@ const TokenDetail = () => {
     } finally {
       setRefreshing(false);
     }
-  }, [token, refreshing, fetchTopHolderPurchases, fetchDefinedData]);
+  }, [token, refreshing, fetchTopHolderPurchases, fetchDefinedData, fetchDexscreenerData]);
 
   // Initial data load
   useEffect(() => {
@@ -144,6 +188,7 @@ const TokenDetail = () => {
             setTokenPrice(price);
           })(),
           fetchDefinedData(tokenData.token_address, tokenData.network),
+          fetchDexscreenerData(tokenData.token_address, tokenData.network),
           fetchTopHolderPurchases(tokenData.token_address)
         ]);
         
@@ -165,7 +210,7 @@ const TokenDetail = () => {
     });
     
     return () => unsubscribe();
-  }, [address, fetchDefinedData, fetchTopHolderPurchases]);
+  }, [address, fetchDefinedData, fetchDexscreenerData, fetchTopHolderPurchases]);
 
   // Subscribe to real-time purchases
   useEffect(() => {
@@ -242,6 +287,15 @@ const TokenDetail = () => {
     };
   }, [token, refreshData]);
 
+  // Mettre à jour le lien DexScreener quand le timeframe change
+  useEffect(() => {
+    if (!token?.token_address) return;
+    
+    const timeframeParam = timeframe === '24h' ? '1m' : timeframe === '7d' ? '1W' : '1M';
+    const dexscreenerNetwork = token.network?.toUpperCase() === 'AVAX' ? 'avalanche' : token.network?.toLowerCase();
+    setDexscreenerLink(`https://dexscreener.com/${dexscreenerNetwork}/${token.token_address}?embed=1&theme=dark&trades=0&info=0&chart=${timeframeParam}`);
+  }, [timeframe, token]);
+
   // Fonction pour formater les adresses (afficher seulement le début et la fin)
   const formatAddress = (address) => {
     if (!address) return '';
@@ -282,6 +336,13 @@ const TokenDetail = () => {
   const openDefined = () => {
     if (token && token.token_address) {
       window.open(`https://www.defined.fi/${token.network}/${token.token_address}`, '_blank');
+    }
+  };
+
+  // Fonction pour ouvrir DexScreener
+  const openDexscreener = () => {
+    if (token && token.token_address) {
+      window.open(`https://dexscreener.com/${token.network}/${token.token_address}`, '_blank');
     }
   };
 
