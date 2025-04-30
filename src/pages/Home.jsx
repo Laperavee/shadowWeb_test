@@ -2,7 +2,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useRef, useEffect, useState } from 'react';
 import NewsCarousel from '../components/NewsCarousel';
-import HomeNavbar from '../components/HomeNavbar';
+import Navbar from '../components/Navbar';
 
 export default function Home() {
   const containerRef = useRef(null);
@@ -27,7 +27,7 @@ export default function Home() {
 
   return (
     <main ref={containerRef} className="min-h-screen bg-black overflow-x-hidden">
-      <HomeNavbar />
+      <Navbar />
       {/* Animated background effects */}
       <div className="fixed inset-0">
         {/* Gradient background */}
