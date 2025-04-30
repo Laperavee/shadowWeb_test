@@ -210,7 +210,6 @@ export default function ShadowFun() {
   useEffect(() => {
     const checkTwitterAuth = async () => {
       try {
-        console.log('🔄 Checking Twitter authentication status...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -221,10 +220,8 @@ export default function ShadowFun() {
         if (session) {
           const { data: { user } } = await supabase.auth.getUser();
           const twitterHandle = user?.user_metadata?.user_name;
-          console.log('✅ Twitter connected as:', twitterHandle);
           setTwitterHandle(twitterHandle);
         } else {
-          console.log('❌ No Twitter connection found');
         }
       } catch (error) {
         console.error('❌ Error checking Twitter auth:', error);
@@ -268,12 +265,8 @@ export default function ShadowFun() {
         try {
           const accounts = await window.ethereum.request({ method: 'eth_accounts' });
           const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-          
-          if (accounts.length > 0 && chainId === NETWORKS[selectedChain].chainId) {
-            console.log('Wallet connecté:', accounts[0]);
-          }
         } catch (error) {
-          console.error('Erreur lors de la vérification de la connexion du wallet:', error);
+          console.error('Error while wallet connexion verification:', error);
         }
       }
     };
@@ -348,7 +341,6 @@ export default function ShadowFun() {
     
     // S'abonner aux mises à jour en temps réel des tokens
     const unsubscribe = realtimeService.subscribeToTokens(selectedChain, (payload) => {
-      console.log('Token update received:', payload);
       
       // Selon le type d'événement, on met à jour les tokens
       if (payload.eventType === 'INSERT') {
@@ -542,7 +534,7 @@ export default function ShadowFun() {
         signer
       );
 
-      console.log('shadow:', shadow);
+       ('shadow:', shadow);
 
       setDeploymentStatus('Generating salt...');
 
@@ -555,7 +547,7 @@ export default function ShadowFun() {
       // Vérifier si un site web est fourni, sinon utiliser une URL par défaut
       const websiteUrl = formData.websiteUrl.trim() || 'empty';
 
-      console.log('Arguments pour generateSalt:', {
+       ('Arguments pour generateSalt:', {
         deployer: userAddress,
         name: formData.name,
         symbol: formData.symbol,
@@ -576,27 +568,11 @@ export default function ShadowFun() {
           websiteUrl
         );
         
-        console.log('Résultat de generateSalt:', result);
+         ('Résultat de generateSalt:', result);
         const salt = result[0];
         const predictedTokenAddress = result[1];
-        console.log('Salt généré:', salt);
-        console.log('Token address prédit:', predictedTokenAddress);
 
         setDeploymentStatus('Deploying token...');
-
-        console.log('Paramètres pour deployToken:', {
-          name: formData.name,
-          symbol: formData.symbol,
-          supply: ethers.parseEther(formData.totalSupply),
-          liquidity: ethers.parseEther(formData.liquidity),
-          fee: fee.toString(),
-          salt: salt,
-          deployer: userAddress,
-          maxWalletPercentage: maxWalletPercentage,
-          firstBuyAmount: ethers.parseEther(formData.firstBuyAmount),
-          twitterName: twitterName,
-          websiteUrl: websiteUrl
-        });
 
         const tx = await shadow.deployToken(
           formData.name,
@@ -616,18 +592,15 @@ export default function ShadowFun() {
           }
         );
 
-        console.log('Transaction envoyée:', tx.hash);
 
         setDeploymentStatus('Waiting for confirmation...');
         const receipt = await tx.wait();
         
-        console.log('Transaction confirmée:', receipt);
         
         await new Promise(resolve => setTimeout(resolve, 5000));
         
         const transactionReceipt = await provider.getTransactionReceipt(receipt.hash);
         
-        console.log('Transaction receipt:', transactionReceipt);
         
         if (!transactionReceipt) {
           throw new Error("Transaction not found");
@@ -671,10 +644,9 @@ export default function ShadowFun() {
       // Récupérer le nonce du wallet
       const provider = new ethers.BrowserProvider(window.ethereum);
       const nonce = await provider.getTransactionCount(deployerAddress);
-      console.log('Nonce:', nonce);
       const isFresh = nonce < 100;
 
-      console.log('Saving token to database with data:', {
+       ('Saving token to database with data:', {
         token_address: tokenAddress,
         token_name: formData.name,
         token_symbol: formData.symbol,
@@ -704,7 +676,6 @@ export default function ShadowFun() {
         is_fresh: isFresh
       });
 
-      console.log('Insert response:', response);
 
       if (response && response.error) {
         throw new Error(response.error);
@@ -772,7 +743,7 @@ export default function ShadowFun() {
         }
       }
     } catch (err) {
-      console.error('Erreur lors de la récupération des données Defined:', err);
+      console.error('Erreur while Defined data:', err);
     } finally {
       setDefinedLoading(false);
     }

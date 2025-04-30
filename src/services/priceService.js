@@ -50,7 +50,7 @@ class PriceService {
    */
   async fetchPrices() {
     try {
-      console.log('PriceService - Fetching prices from CoinGecko');
+       ('PriceService - Fetching prices from CoinGecko');
       
       const response = await fetch(
         `https://api.coingecko.com/api/v3/simple/price?ids=${this.tokenIds.join(',')}&vs_currencies=usd`

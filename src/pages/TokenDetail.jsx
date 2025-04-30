@@ -128,7 +128,7 @@ const TokenDetail = () => {
         }
       }
     } catch (err) {
-      console.error('Erreur lors de la récupération des données DexScreener:', err);
+      console.error('Erreur during Dexscreener data fetching:', err);
     } finally {
       setDexscreenerLoading(false);
     }

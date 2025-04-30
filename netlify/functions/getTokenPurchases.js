@@ -42,7 +42,6 @@ exports.handler = async (event, context) => {
 
     
     if (!tokenAddress) {
-      console.error('❌ [getTokenPurchases] Aucune adresse de token fournie');
       return {
         statusCode: 400,
         headers,

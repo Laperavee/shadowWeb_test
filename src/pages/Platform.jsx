@@ -228,10 +228,7 @@ export default function Platform() {
                                 </p>
                                 <motion.button
                                   onClick={async () => {
-                                    const success = await copyToClipboard(item.contract_address);
-                                    if (success) {
-                                      console.log('Copied!');
-                                    }
+                                    await copyToClipboard(item.contract_address);
                                   }}
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}

@@ -13,7 +13,7 @@ const channel = supabase
   .on('postgres_changes', 
     { event: 'INSERT', schema: 'public', table: 'responses' },
     (payload) => {
-      console.log('Nouvelle réponse!', payload)
+       (payload)
     }
   )
   .subscribe()
