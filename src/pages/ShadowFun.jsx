@@ -187,6 +187,8 @@ export default function ShadowFun() {
 
   useEffect(() => {
     localStorage.setItem('selectedChain', selectedChain);
+    // Recharger les tokens lorsque le réseau change
+    loadTokens();
   }, [selectedChain]);
 
   useEffect(() => {

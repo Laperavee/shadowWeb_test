@@ -39,6 +39,11 @@ const NETWORKS = {
 const NetworkSelector = ({ selectedChain, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const handleNetworkChange = (chain) => {
+    onChange(chain);
+    setIsOpen(false);
+  };
+
   return (
     <div className="relative">
       <button
@@ -57,10 +62,7 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
           {Object.entries(NETWORKS).map(([key, network], index, array) => (
             <button
               key={key}
-              onClick={() => {
-                onChange(key);
-                setIsOpen(false);
-              }}
+              onClick={() => handleNetworkChange(key)}
               className={`w-full px-4 py-2 text-left flex items-center space-x-2 ${
                 key === selectedChain
                   ? "bg-white/10"
