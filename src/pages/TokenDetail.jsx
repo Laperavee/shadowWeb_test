@@ -395,16 +395,7 @@ const TokenDetail = () => {
     >
       <BackgroundEffects />
       
-      <div className="relative z-10 max-w-6xl mx-auto">
-        {/* Score display */}
-        <div className="mb-6">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/30">
-            <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-              Score: {score}
-            </span>
-          </div>
-        </div>
-
+      <div className="relative z-10 max-w-6xl mx-auto">        
         {/* Rest of the content */}
         <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
           {/* Token header with glass effect */}

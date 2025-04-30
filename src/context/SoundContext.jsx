@@ -6,8 +6,6 @@ export function SoundProvider({ children }) {
   const [isMuted, setIsMuted] = useState(false);
 
   const playSound = (soundName) => {
-    // Temporairement désactivé
-    console.log('Playing sound:', soundName);
   };
 
   return (
