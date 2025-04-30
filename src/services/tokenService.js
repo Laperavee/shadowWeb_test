@@ -198,39 +198,45 @@ export const tokenService = {
     is_fresh
   }) {
     try {
-      const imgUrl = token_image ? await uploadTokenImage(token_image) : null;
+      // Convertir les valeurs numériques en chaînes de caractères
+      const tokenData = {
+        token_address: token_address.toString(),
+        token_name: token_name.toString(),
+        token_symbol: token_symbol.toString(),
+        supply: supply.toString(),
+        liquidity: liquidity.toString(),
+        max_wallet_percentage: max_wallet_percentage.toString(),
+        network: network.toString(),
+        deployer_address: deployer_address.toString(),
+        twitter_handle: twitter_handle?.toString() || null,
+        website_url: website_url?.toString() || null,
+        is_fresh: Boolean(is_fresh)
+      };
+
+      // Gérer l'image du token si elle existe
+      if (token_image) {
+        const imageUrl = await this.uploadTokenImage(token_image);
+        if (imageUrl) {
+          tokenData.token_image = imageUrl;
+        }
+      }
 
       const response = await fetch(getApiUrl('/addToken'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          token_address,
-          token_name,
-          token_symbol,
-          supply: supply.toString(),
-          liquidity: liquidity.toString(),
-          max_wallet_percentage: Math.floor(parseFloat(max_wallet_percentage) * 10),
-          network,
-          deployer_address,
-          image_url: imgUrl,
-          is_featured: false,
-          twitter_handle,
-          website_url,
-          is_fresh
-        })
+        body: JSON.stringify(tokenData)
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to insert token');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
-      return { success: true, data: result.data };
+      const data = await response.json();
+      return data;
     } catch (error) {
-      console.error('Error in insertToken:', error);
+      console.error('Error inserting token:', error);
       throw error;
     }
   },

@@ -39,10 +39,12 @@ const NETWORKS = {
 
 const NetworkSelector = ({ selectedChain, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { playSound } = useSound();
 
   const handleNetworkChange = (chain) => {
     onChange(chain);
     setIsOpen(false);
+    playSound('click');
   };
 
   return (
