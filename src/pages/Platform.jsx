@@ -102,9 +102,6 @@ export default function Platform() {
     }
   }, [items]);
 
-  const definedNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
-  setDefinedLink(`https://www.defined.fi/${definedNetwork}/${tokenAddress}`);
-
   return (
     <main ref={containerRef} className="bg-black min-h-screen">
       {/* Background qui s'étend sur toute la page */}
@@ -192,6 +189,9 @@ export default function Platform() {
                 }
 
                 const dexscreenerLink = item.tweet_response_text.match(/https:\/\/dexscreener[^\s]*/)?.[0];
+
+                const definedNetwork = item.network?.toUpperCase() === 'AVAX' ? 'avalanche' : item.network?.toLowerCase();
+                const itemDefinedLink = `https://www.defined.fi/${definedNetwork}/${item.contract_address}`;
 
                 return (
                   <motion.div
@@ -302,7 +302,7 @@ export default function Platform() {
 
                       <div className="flex justify-end mt-2">
                         <a
-                          href={definedLink}
+                          href={itemDefinedLink}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
