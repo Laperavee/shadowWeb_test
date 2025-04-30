@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import avaxLogo from '../../dist/assets/avax_logo.png';
 import baseLogo from '../../dist/assets/base_logo.png';
@@ -182,6 +182,9 @@ export default function ShadowFun() {
 
   const [definedLink, setDefinedLink] = useState('');
 
+  const [definedData, setDefinedData] = useState(null);
+  const [definedLoading, setDefinedLoading] = useState(false);
+
   useEffect(() => {
     localStorage.setItem('selectedChain', selectedChain);
   }, [selectedChain]);
@@ -249,11 +252,10 @@ export default function ShadowFun() {
           const chainId = await window.ethereum.request({ method: 'eth_chainId' });
           
           if (accounts.length > 0 && chainId === NETWORKS[selectedChain].chainId) {
-            setIsWalletConnected(true);
-            setUserAddress(accounts[0]);
+            console.log('Wallet connecté:', accounts[0]);
           }
         } catch (error) {
-          console.error('Error checking wallet connection:', error);
+          console.error('Erreur lors de la vérification de la connexion du wallet:', error);
         }
       }
     };
@@ -712,6 +714,55 @@ export default function ShadowFun() {
       console.error('❌ Error disconnecting Twitter:', error);
     }
   };
+
+  const fetchDefinedData = useCallback(async (tokenAddress, network) => {
+    try {
+      setDefinedLoading(true);
+      
+      const definedNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
+      const apiUrl = `https://api.defined.fi/v1/tokens/${tokenAddress}?network=${definedNetwork}`;
+      
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        throw new Error(`Erreur API Defined: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data && data.pairs && data.pairs.length > 0) {
+        const sortedPairs = data.pairs.sort((a, b) => 
+          parseFloat(b.volumeUsd24h || 0) - parseFloat(a.volumeUsd24h || 0)
+        );
+        
+        const mainPair = sortedPairs[0];
+        setDefinedData(mainPair);
+        
+        if (mainPair) {
+          const marketData = {
+            price: parseFloat(mainPair.priceUsd || 0),
+            marketCap: parseFloat(mainPair.fdv || 0),
+            priceChange24h: parseFloat(mainPair.priceChange?.h24 || 0),
+            volume24h: parseFloat(mainPair.volume?.h24 || 0),
+            liquidity: parseFloat(mainPair.liquidity?.usd || 0) / 1000
+          };
+
+          setTokens(prevTokens => {
+            if (!prevTokens || !prevTokens.length) return prevTokens;
+            return prevTokens.map(token => 
+              token.token_address === tokenAddress ? {
+                ...token,
+                market_data: marketData
+              } : token
+            );
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Erreur lors de la récupération des données Defined:', err);
+    } finally {
+      setDefinedLoading(false);
+    }
+  }, []);
 
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
