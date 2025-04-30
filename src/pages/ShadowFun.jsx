@@ -9,6 +9,7 @@ import { realtimeService } from '../services/realtimeService';
 import { priceService } from '../services/priceService';
 import { Link, useNavigate } from 'react-router-dom';
 import ShadowBaseArtifact from '../artifact/ShadowBase.json';
+import ShadowAvaxArtifact from '../artifact/ShadowAvax.json';
 import { supabase } from '../lib/supabase';
 import { useWallet } from '../context/WalletContext';
 import Navbar from '../components/Navbar';
@@ -17,13 +18,14 @@ import { useNotification } from '../context/NotificationContext';
 import { useNetwork } from '../context/NetworkContext';
 
 const SHADOW_CREATOR_ABI = {
-  BASE: ShadowBaseArtifact.abi
+  BASE: ShadowBaseArtifact.abi,
+  AVAX: ShadowAvaxArtifact.abi
 };
 
 const NETWORKS = {
   AVAX: {
     chainId: "0xa86a",
-    chainName: "Avalanche",
+    chainName: "Avalanche C-Chain",
     logo: avaxLogo,
     disabled: false,
     nativeCurrency: {
@@ -469,20 +471,30 @@ export default function ShadowFun() {
           // This error code indicates that the chain has not been added to MetaMask.
           if (switchError.code === 4902) {
             try {
+              const networkParams = {
+                chainId: NETWORKS[chain].chainId,
+                chainName: NETWORKS[chain].chainName,
+                nativeCurrency: NETWORKS[chain].nativeCurrency,
+                rpcUrls: NETWORKS[chain].rpcUrls,
+                blockExplorerUrls: NETWORKS[chain].blockExplorerUrls
+              };
+              
               await window.ethereum.request({
                 method: 'wallet_addEthereumChain',
-                params: [NETWORKS[chain]],
+                params: [networkParams],
               });
             } catch (addError) {
-              throw new Error('Failed to add network to MetaMask');
+              console.error('Error adding network:', addError);
+              throw new Error(`Failed to add ${NETWORKS[chain].chainName} network to MetaMask`);
             }
           } else {
-            throw new Error('Failed to switch network');
+            console.error('Error switching network:', switchError);
+            throw new Error(`Failed to switch to ${NETWORKS[chain].chainName} network`);
           }
         }
       }
     } catch (error) {
-      console.error('Error switching network:', error);
+      console.error('Network switch error:', error);
       throw error;
     }
   };
@@ -553,92 +565,97 @@ export default function ShadowFun() {
         twitterName: twitterName,
         websiteUrl: websiteUrl
       });
-      
-      const result = await shadow.generateSalt(
-        userAddress,
-        formData.name,
-        formData.symbol,
-        ethers.parseEther(formData.totalSupply),
-        maxWalletPercentage,
-        twitterName,
-        websiteUrl
-      );
-      console.log('Résultat de generateSalt:', result);
-      const salt = result[0];
-      const predictedTokenAddress = result[1];
-      console.log('Salt généré:', salt);
-      console.log('Token address prédit:', predictedTokenAddress);
 
-      setDeploymentStatus('Deploying token...');
+      try {
+        const result = await shadow.generateSalt(
+          userAddress,
+          formData.name,
+          formData.symbol,
+          ethers.parseEther(formData.totalSupply),
+          maxWalletPercentage,
+          twitterName,
+          websiteUrl
+        );
+        
+        console.log('Résultat de generateSalt:', result);
+        const salt = result[0];
+        const predictedTokenAddress = result[1];
+        console.log('Salt généré:', salt);
+        console.log('Token address prédit:', predictedTokenAddress);
 
-      console.log('Paramètres pour deployToken:', {
-        name: formData.name,
-        symbol: formData.symbol,
-        supply: ethers.parseEther(formData.totalSupply),
-        liquidity: ethers.parseEther(formData.liquidity),
-        fee: fee.toString(),
-        salt: salt,
-        deployer: userAddress,
-        maxWalletPercentage: maxWalletPercentage,
-        firstBuyAmount: ethers.parseEther(formData.firstBuyAmount),
-        twitterName: twitterName,
-        websiteUrl: websiteUrl
-      });
+        setDeploymentStatus('Deploying token...');
 
-      const tx = await shadow.deployToken(
-        formData.name,
-        formData.symbol,
-        ethers.parseEther(formData.totalSupply),
-        ethers.parseEther(formData.liquidity),
-        fee,
-        salt,
-        userAddress,
-        maxWalletPercentage,
-        ethers.parseEther(formData.firstBuyAmount),
-        twitterName,
-        websiteUrl,
-        {
-          value: ethers.parseEther(formData.firstBuyAmount),
-          gasLimit: 8000000
+        console.log('Paramètres pour deployToken:', {
+          name: formData.name,
+          symbol: formData.symbol,
+          supply: ethers.parseEther(formData.totalSupply),
+          liquidity: ethers.parseEther(formData.liquidity),
+          fee: fee.toString(),
+          salt: salt,
+          deployer: userAddress,
+          maxWalletPercentage: maxWalletPercentage,
+          firstBuyAmount: ethers.parseEther(formData.firstBuyAmount),
+          twitterName: twitterName,
+          websiteUrl: websiteUrl
+        });
+
+        const tx = await shadow.deployToken(
+          formData.name,
+          formData.symbol,
+          ethers.parseEther(formData.totalSupply),
+          ethers.parseEther(formData.liquidity),
+          fee,
+          salt,
+          userAddress,
+          maxWalletPercentage,
+          ethers.parseEther(formData.firstBuyAmount),
+          twitterName,
+          websiteUrl,
+          {
+            value: ethers.parseEther(formData.firstBuyAmount),
+            gasLimit: 8000000
+          }
+        );
+
+        console.log('Transaction envoyée:', tx.hash);
+
+        setDeploymentStatus('Waiting for confirmation...');
+        const receipt = await tx.wait();
+        
+        console.log('Transaction confirmée:', receipt);
+        
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        const transactionReceipt = await provider.getTransactionReceipt(receipt.hash);
+        
+        console.log('Transaction receipt:', transactionReceipt);
+        
+        if (!transactionReceipt) {
+          throw new Error("Transaction not found");
         }
-      );
 
-      console.log('Transaction envoyée:', tx.hash);
+        setDeploymentStatus(`Token deployed successfully at ${predictedTokenAddress}!`);
+        addNotification("Token deployed successfully!", "success");
+        
+        await saveTokenToDatabase(predictedTokenAddress, userAddress, receipt.hash, imageUrl);
+        
+        setFormData({
+          name: '',
+          symbol: '',
+          totalSupply: '',
+          liquidity: '',
+          maxWalletPercentage: '',
+          firstBuyAmount: '',
+          deploymentFee: '0.00001',
+          tokenImage: null,
+          websiteUrl: ''
+        });
 
-      setDeploymentStatus('Waiting for confirmation...');
-      const receipt = await tx.wait();
-      
-      console.log('Transaction confirmée:', receipt);
-      
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      const transactionReceipt = await provider.getTransactionReceipt(receipt.hash);
-      
-      console.log('Transaction receipt:', transactionReceipt);
-      
-      if (!transactionReceipt) {
-        throw new Error("Transaction not found");
+        setActiveTab('tokens');
+      } catch (error) {
+        console.error('Error in token deployment:', error);
+        throw error;
       }
-
-      setDeploymentStatus(`Token deployed successfully at ${predictedTokenAddress}!`);
-      addNotification("Token deployed successfully!", "success");
-      
-      await saveTokenToDatabase(predictedTokenAddress, userAddress, receipt.hash, imageUrl);
-      
-      setFormData({
-        name: '',
-        symbol: '',
-        totalSupply: '',
-        liquidity: '',
-        maxWalletPercentage: '',
-        firstBuyAmount: '',
-        deploymentFee: '0.00001',
-        tokenImage: null,
-        websiteUrl: ''
-      });
-
-      setActiveTab('tokens');
-
     } catch (error) {
       console.error('Error in token creation:', error);
       addNotification(error.message || "Error creating token", "error");
