@@ -196,13 +196,13 @@ export default function Navbar() {
             {twitterHandle ? (
               <motion.button
                 onClick={handleTwitterDisconnect}
-                className="bg-gradient-to-r from-red-600/20 to-red-400/20 border border-red-400/20 px-6 py-2 rounded-xl hover:border-red-400/50 transition-all interactive relative group"
+                className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all interactive relative group"
                 onMouseEnter={() => playSound('hover')}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-red-400/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-300">
+                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
                   Disconnect @{twitterHandle}
                 </span>
               </motion.button>
@@ -299,16 +299,20 @@ export default function Navbar() {
                 {twitterHandle ? (
                   <motion.button
                     onClick={handleTwitterDisconnect}
-                    className="bg-gradient-to-r from-red-600/20 to-red-400/20 border border-red-400/20 px-6 py-2 rounded-xl hover:border-red-400/50 transition-all mx-4 text-center interactive block w-full"
+                    className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all mx-4 text-center interactive block w-full"
                   >
-                    Disconnect @{twitterHandle}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                      Disconnect @{twitterHandle}
+                    </span>
                   </motion.button>
                 ) : (
                   <motion.button
                     onClick={() => handleNavigation('/shadow-fun')}
                     className="bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border border-fuchsia-400/20 px-6 py-2 rounded-xl hover:border-fuchsia-400/50 transition-all mx-4 text-center interactive block w-full"
                   >
-                    Launch App
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                      Launch App
+                    </span>
                   </motion.button>
                 )}
               </motion.div>
