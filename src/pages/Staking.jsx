@@ -166,9 +166,9 @@ export default function Staking() {
 
       {/* Blur overlay with SOON text */}
       <div className="fixed inset-0 z-[50] pointer-events-none">
-        <div className="absolute inset-0 backdrop-blur-md bg-black/50" style={{ top: '64px' }} />
-        <div className="absolute inset-0 flex items-center justify-center" style={{ top: '64px' }}>
-          <div className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 transform -rotate-45 translate-y-1/2">
+        <div className="absolute inset-0 backdrop-blur-md bg-black/50" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 transform -rotate-45">
             SOON
           </div>
         </div>
