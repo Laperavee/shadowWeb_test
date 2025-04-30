@@ -552,7 +552,9 @@ export default function ShadowFun() {
       );
       console.log('Résultat de generateSalt:', result);
       const salt = result[0];
+      const predictedTokenAddress = result[1];
       console.log('Salt généré:', salt);
+      console.log('Token address prédit:', predictedTokenAddress);
 
       setDeploymentStatus('Deploying token...');
 
@@ -605,27 +607,10 @@ export default function ShadowFun() {
         throw new Error("Transaction not found");
       }
 
-      const events = transactionReceipt.logs || [];
-      const tokenCreatedEvent = events.find(log => {
-        try {
-          return log.topics[0] === ethers.id("TokenCreated(address,address,string,string,uint256)");
-        } catch {
-          return false;
-        }
-      });
-
-      if (!tokenCreatedEvent) {
-        throw new Error("Token creation event not found in transaction");
-      }
-
-      // Extraire l'adresse du token du topic[1]
-      const tokenAddress = `0x${tokenCreatedEvent.topics[1].slice(26)}`;
-      console.log('Token address extracted:', tokenAddress);
-      
-      setDeploymentStatus(`Token deployed successfully at ${tokenAddress}!`);
+      setDeploymentStatus(`Token deployed successfully at ${predictedTokenAddress}!`);
       addNotification("Token deployed successfully!", "success");
       
-      await saveTokenToDatabase(tokenAddress, userAddress, receipt.hash);
+      await saveTokenToDatabase(predictedTokenAddress, userAddress, receipt.hash);
       
       setFormData({
         name: '',
