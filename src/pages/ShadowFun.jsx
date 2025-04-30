@@ -635,6 +635,9 @@ export default function ShadowFun() {
   };
 
   const saveTokenToDatabase = async (tokenAddress, deployerAddress, txHash) => {
+    if (txHash === "") {
+      return;
+    }
     try {
       console.log('Saving token to database with data:', {
         token_address: tokenAddress,
@@ -646,7 +649,8 @@ export default function ShadowFun() {
         network: selectedChain,
         deployer_address: deployerAddress,
         token_image: formData.tokenImage,
-        tx_hash: txHash,
+        twitter_handle: twitterHandle,
+        website_url: formData.websiteUrl
       });
 
       const response = await tokenService.insertToken({
@@ -659,7 +663,7 @@ export default function ShadowFun() {
         network: selectedChain,
         deployer_address: deployerAddress,
         token_image: formData.tokenImage,
-        tx_hash: txHash,
+        twitter_handle: twitterHandle,
         website_url: formData.websiteUrl
       });
 
