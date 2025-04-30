@@ -29,7 +29,6 @@ function App() {
                   <Route path="/how-it-works" element={<HowItWorks />} />
                   <Route path="/features" element={<Features />} />
                   <Route path="/news" element={<PostsIndex />} />
-                  <Route path="/docs" element={<Navigate to="https://shadow-19.gitbook.io/shadow-docs/" replace />} />
                 </Routes>
               </div>
             </NetworkProvider>

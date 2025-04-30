@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { tokenService } from '../services/tokenService';
 import { priceService } from '../services/priceService';
 import { realtimeService } from '../services/realtimeService';
+import { motion } from 'framer-motion';
+import BackgroundEffects from '../components/BackgroundEffects';
 
 const TokenDetail = () => {
   const { address } = useParams();
@@ -386,31 +388,25 @@ const TokenDetail = () => {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      {/* Background effects */}
-      <div className="fixed inset-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-fuchsia-900/20 to-cyan-900/30 animate-gradient-slow" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.8),transparent_50%,rgba(0,0,0,0.8))]" />
-      </div>
-
-      <div className="relative z-10">
-        {/* Header with blur effect */}
-        <header className="sticky top-0 z-40 bg-black/30 backdrop-blur-xl border-b border-fuchsia-500/20 mb-8">
-          <div className="container mx-auto px-6 py-4">
-            <Link 
-              to="/shadow-fun" 
-              className="inline-flex items-center text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to tokens
-            </Link>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen p-4 pt-24 relative"
+    >
+      <BackgroundEffects />
+      
+      <div className="relative z-10 max-w-6xl mx-auto">
+        {/* Score display */}
+        <div className="mb-6">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/30">
+            <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+              Score: {score}
+            </span>
           </div>
-        </header>
+        </div>
 
-        <div className="container mx-auto px-4 py-8">
+        {/* Rest of the content */}
+        <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
           {/* Token header with glass effect */}
           <div className="bg-gradient-to-r from-gray-900/50 via-black/30 to-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-8 mb-8 shadow-[0_0_25px_rgba(255,0,255,0.1)]">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -439,10 +435,6 @@ const TokenDetail = () => {
                     <span className="px-3 py-1 rounded-full bg-gray-800/50 text-gray-400 text-sm">
                       on {token.network}
                     </span>
-                    {/* Score Display */}
-                    <div className="px-3 py-1 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 text-white text-sm font-medium">
-                      Score: {score}
-                    </div>
                     {/* Twitter Status Indicator */}
                     <a 
                       href={token.twitter_handle && token.twitter_handle !== 'empty' && token.twitter_handle !== '@empty' 
@@ -495,17 +487,17 @@ const TokenDetail = () => {
                     </a>
                     {/* Fresh Wallet Indicator */}
                     <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full ${
-                      token.is_fresh
+                      !token?.is_fresh
                         ? 'bg-green-500/20 border border-green-500/30'
                         : 'bg-gray-800/50'
                     }`}>
                       <div className={`w-2.5 h-2.5 rounded-full ${
-                        token.is_fresh
+                        !token?.is_fresh
                           ? 'bg-green-500 animate-pulse'
                           : 'bg-gray-500'
                       }`} />
                       <svg className={`w-4 h-4 ${
-                        token.is_fresh
+                        !token?.is_fresh
                           ? 'text-green-400'
                           : 'text-gray-400'
                       }`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -871,7 +863,7 @@ const TokenDetail = () => {
           </div>
         </div>
       </div>
-    </main>
+    </motion.div>
   );
 };
 
