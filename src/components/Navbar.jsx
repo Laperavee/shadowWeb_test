@@ -164,7 +164,7 @@ export default function Navbar() {
         transition={{ type: "spring", stiffness: 100 }}
         className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-6 px-8 gap-6 w-full"
       >
-        <div className="flex items-center gap-4">
+        <div className="flex gap-4">
           <motion.div
             className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400"
             whileHover={{ scale: 1.05 }}
