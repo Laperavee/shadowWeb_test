@@ -52,7 +52,7 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
           onClick={() => handleNetworkChange('AVAX')}
           className={`flex items-center space-x-2 px-4 py-2 transition-all duration-300 ${
             selectedChain === 'AVAX'
-              ? 'bg-fuchsia-500/20 text-white'
+              ? 'bg-fuchsia-500/20 text-white rounded-l-lg'
               : 'bg-black/20 text-white/50 hover:bg-black/30'
           }`}
         >
@@ -63,7 +63,7 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
           onClick={() => handleNetworkChange('BASE')}
           className={`flex items-center space-x-2 px-4 py-2 transition-all duration-300 ${
             selectedChain === 'BASE'
-              ? 'bg-fuchsia-500/20 text-white'
+              ? 'bg-fuchsia-500/20 text-white rounded-r-lg'
               : 'bg-black/20 text-white/50 hover:bg-black/30'
           }`}
         >
