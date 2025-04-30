@@ -320,7 +320,7 @@ const TokenDetail = () => {
 
       <div className="relative z-10">
         {/* Header with blur effect */}
-        <header className="sticky top-0 z-40 bg-black/30 backdrop-blur-xl border-b border-fuchsia-500/20 mb-8 mt-16">
+        <header className="sticky top-0 z-40 bg-black/30 backdrop-blur-xl border-b border-fuchsia-500/20 mb-8">
           <div className="container mx-auto px-6 py-4">
             <Link 
               to="/shadow-fun" 
