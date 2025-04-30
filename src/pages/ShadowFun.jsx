@@ -741,7 +741,7 @@ export default function ShadowFun() {
         </div>
       </div>
 
-      <div className="relative z-10 mt-20">
+      <div className="relative z-10 pt-24">
         <div className="container mx-auto px-4 sm:px-6 py-8">
           {/* Enhanced section header */}
           <motion.div 
