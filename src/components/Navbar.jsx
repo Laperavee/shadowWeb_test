@@ -157,7 +157,7 @@ export default function Navbar() {
   }, [navigate, playSound]);
 
   return (
-    <header className="sticky top-0 z-50 bg-black/20 backdrop-blur-xl border-b border-fuchsia-500/20 shadow-lg">
+    <header className="fixed top-0 left-0 right-0 z-[100] bg-black/20 backdrop-blur-xl border-b border-fuchsia-500/20 shadow-lg">
       <motion.div 
         initial={{ y: -100 }}
         animate={{ y: 0 }}
