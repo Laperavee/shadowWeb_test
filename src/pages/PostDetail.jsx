@@ -167,7 +167,7 @@ const PostDetail = () => {
           animate={{ y: 0, opacity: 1 }}
           className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl"
         >
-          <div className="relative h-[500px] rounded-t-2xl overflow-hidden">
+          <div className="relative h-[500px] rounded-t-2xl">
             <img
               src={post.image}
               alt={post.title}
