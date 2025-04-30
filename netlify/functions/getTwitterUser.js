@@ -25,11 +25,9 @@ exports.handler = async (event, context) => {
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    // Rechercher l'utilisateur dans la table auth.users
+    // Utiliser rpc pour chercher dans raw_user_meta_data
     const { data: users, error } = await supabase
-      .from('auth.users')
-      .select('raw_user_meta_data')
-      .eq('raw_user_meta_data->user_name', username)
+      .rpc('get_user_by_twitter_username', { username })
       .single();
 
     if (error) {
