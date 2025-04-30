@@ -723,7 +723,7 @@ export default function ShadowFun() {
     
     const timeframeParam = timeframe === '24h' ? '1m' : timeframe === '7d' ? '1W' : '1M';
     const definedNetwork = selectedChain?.toUpperCase() === 'AVAX' ? 'avalanche' : selectedChain?.toLowerCase();
-    setDefinedLink(`https://www.defined.fi/${definedNetwork}/${tokens[0].token_address}?embedded=1&hideTxTable=1&hideSidebar=1&hideChart=0&hideChartEmptyBars=1&chartSmoothing=0&embedColorMode=DEFAULT&interval=${timeframeParam}`);
+    setDefinedLink(`https://www.defined.fi/${definedNetwork}/${tokens[0].token_address}?embedded=1&hideTxTable=1&hideSidebar=1&hideChart=0&hideChartEmptyBars=1&chartSmoothing=0&embedColorMode=DEFAULT&interval=${timeframeParam}&hideVolume=1`);
   }, [timeframe, selectedChain, tokens]);
 
   return (
