@@ -267,7 +267,7 @@ const TokenDetail = () => {
     
     const timeframeParam = timeframe === '24h' ? '1m' : timeframe === '7d' ? '1W' : '1M';
     const definedNetwork = token.network?.toUpperCase() === 'AVAX' ? 'avalanche' : token.network?.toLowerCase();
-    setDefinedLink(`https://www.defined.fi/${definedNetwork}/${token.token_address}?embedded=1&hideTxTable=0&hideSidebar=0&hideChart=0&hideChartEmptyBars=1&chartSmoothing=0&embedColorMode=DEFAULT&interval=${timeframeParam}`);
+    setDefinedLink(`https://www.defined.fi/${definedNetwork}/${token.token_address}?embedded=1&hideTxTable=1&hideSidebar=1&hideChart=0&hideChartEmptyBars=1&chartSmoothing=0&embedColorMode=DEFAULT&interval=${timeframeParam}`);
   }, [timeframe, token]);
 
   // Auto-refresh setup
