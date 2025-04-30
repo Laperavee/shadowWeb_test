@@ -10,7 +10,6 @@ import Staking from './pages/Staking';
 import HowItWorks from './pages/HowItWorks';
 import Features from './pages/Features';
 import PostsIndex from './pages/PostsIndex';
-import './App.css';
 
 function App() {
   return (
