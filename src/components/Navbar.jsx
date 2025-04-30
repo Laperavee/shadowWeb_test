@@ -47,7 +47,7 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
 
   return (
     <div className="flex items-center">
-      <div className="flex rounded-lg overflow-hidden border border-white/10">
+      <div className="flex rounded-lg border border-white/10">
         <button
           onClick={() => handleNetworkChange('AVAX')}
           className={`flex items-center space-x-2 px-4 py-2 transition-all duration-300 ${
