@@ -450,6 +450,43 @@ export default function ShadowFun() {
     return isValid;
   };
 
+  const switchNetwork = async (chain) => {
+    try {
+      if (!window.ethereum) {
+        throw new Error('Please install MetaMask!');
+      }
+
+      const chainId = NETWORKS[chain].chainId;
+      const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+
+      if (currentChainId !== chainId) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId }],
+          });
+        } catch (switchError) {
+          // This error code indicates that the chain has not been added to MetaMask.
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [NETWORKS[chain]],
+              });
+            } catch (addError) {
+              throw new Error('Failed to add network to MetaMask');
+            }
+          } else {
+            throw new Error('Failed to switch network');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error switching network:', error);
+      throw error;
+    }
+  };
+
   const handleCreateToken = async (e) => {
     e.preventDefault();
     
@@ -471,14 +508,12 @@ export default function ShadowFun() {
       setIsDeploying(true);
       setDeploymentStatus("Checking network...");
 
+      // Switch to the correct network
+      await switchNetwork(selectedChain);
+
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const userAddress = await signer.getAddress();
-
-      const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-      if (currentChainId !== NETWORKS[selectedChain].chainId) {
-        throw new Error(`Please switch to ${NETWORKS[selectedChain].chainName} network to create a token`);
-      }
 
       // Upload token image if provided
       let imageUrl = null;
