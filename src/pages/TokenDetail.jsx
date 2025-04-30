@@ -30,6 +30,8 @@ const TokenDetail = () => {
   const [dexscreenerLoading, setDexscreenerLoading] = useState(false);
   const [dexscreenerLink, setDexscreenerLink] = useState('');
   const [score, setScore] = useState(0);
+  const [twitterInfo, setTwitterInfo] = useState(null);
+  const [loadingTwitter, setLoadingTwitter] = useState(false);
 
   // Initialiser le son de notification
   useEffect(() => {
@@ -312,6 +314,31 @@ const TokenDetail = () => {
       setScore(newScore);
     }
   }, [token]);
+
+  // Fonction pour récupérer les informations Twitter
+  const fetchTwitterInfo = useCallback(async (username) => {
+    if (!username || username === 'empty' || username === '@empty') return;
+    
+    try {
+      setLoadingTwitter(true);
+      const response = await fetch(`/.netlify/functions/getTwitterUser?username=${username.replace('@', '')}`);
+      if (!response.ok) throw new Error('Failed to fetch Twitter info');
+      
+      const data = await response.json();
+      setTwitterInfo(data);
+    } catch (error) {
+      console.error('Error fetching Twitter info:', error);
+    } finally {
+      setLoadingTwitter(false);
+    }
+  }, []);
+
+  // Appeler fetchTwitterInfo quand le token change
+  useEffect(() => {
+    if (token?.twitter_handle) {
+      fetchTwitterInfo(token.twitter_handle);
+    }
+  }, [token?.twitter_handle, fetchTwitterInfo]);
 
   // Fonction pour formater les adresses (afficher seulement le début et la fin)
   const formatAddress = (address) => {
