@@ -46,35 +46,30 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
   };
 
   return (
-    <div className="relative">
-      <button
-        className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-black/30 transition-all duration-300"
-      >
-        <img src={NETWORKS[selectedChain].logo} alt={NETWORKS[selectedChain].chainName} className="w-6 h-6" />
-        <span className="text-white">{NETWORKS[selectedChain].chainName}</span>
-        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      <div className="absolute right-0 mt-2 min-w-[160px] rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 z-50">
-        {Object.entries(NETWORKS).map(([key, network], index, array) => (
-          <button
-            key={key}
-            onClick={() => handleNetworkChange(key)}
-            className={`w-full px-4 py-2 text-left flex items-center space-x-2 ${
-              key === selectedChain
-                ? "bg-white/10"
-                : "hover:bg-white/5"
-            } ${
-              index === 0 ? "rounded-t-lg" : 
-              index === array.length - 1 ? "rounded-b-lg" : ""
-            }`}
-          >
-            <img src={network.logo} alt={network.chainName} className="w-6 h-6" />
-            <span className="text-white">{network.chainName}</span>
-          </button>
-        ))}
+    <div className="flex items-center">
+      <div className="flex rounded-lg overflow-hidden border border-white/10">
+        <button
+          onClick={() => handleNetworkChange('AVAX')}
+          className={`flex items-center space-x-2 px-4 py-2 transition-all duration-300 ${
+            selectedChain === 'AVAX'
+              ? 'bg-fuchsia-500/20 text-white'
+              : 'bg-black/20 text-white/50 hover:bg-black/30'
+          }`}
+        >
+          <img src={NETWORKS.AVAX.logo} alt="AVAX" className="w-6 h-6" />
+          <span>AVAX</span>
+        </button>
+        <button
+          onClick={() => handleNetworkChange('BASE')}
+          className={`flex items-center space-x-2 px-4 py-2 transition-all duration-300 ${
+            selectedChain === 'BASE'
+              ? 'bg-fuchsia-500/20 text-white'
+              : 'bg-black/20 text-white/50 hover:bg-black/30'
+          }`}
+        >
+          <img src={NETWORKS.BASE.logo} alt="BASE" className="w-6 h-6" />
+          <span>BASE</span>
+        </button>
       </div>
     </div>
   );
