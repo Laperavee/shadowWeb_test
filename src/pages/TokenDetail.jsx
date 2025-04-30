@@ -633,7 +633,6 @@ const TokenDetail = () => {
                   onClick={openDefined}
                   className="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all duration-300 group relative"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 transform group-hover:translate-x-full transition-transform duration-500"></div>
                   <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400 font-medium">
                     Trade on Defined
                   </span>
@@ -672,7 +671,7 @@ const TokenDetail = () => {
                 </div>
               </div>
               
-              <div className="h-[80%] w-full rounded-xl border border-gray-800/50 overflow-hidden">
+              <div className="h-[80%] w-full rounded-xl border border-gray-800/50">
                 {token?.token_address ? (
                   <iframe
                     className="w-full h-full border-0"

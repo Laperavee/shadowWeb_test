@@ -180,10 +180,9 @@ export default function ShadowFun() {
 
   const [isConnectMenuOpen, setIsConnectMenuOpen] = useState(false);
 
-  const [definedLink, setDefinedLink] = useState('');
-
   const [definedData, setDefinedData] = useState(null);
   const [definedLoading, setDefinedLoading] = useState(false);
+  const [definedLink, setDefinedLink] = useState('');
 
   const [dexscreenerData, setDexscreenerData] = useState(null);
   const [dexscreenerLoading, setDexscreenerLoading] = useState(false);
@@ -679,10 +678,61 @@ export default function ShadowFun() {
     return (parseFloat(liquidity) * 0.2).toFixed(4)
   }
 
-  // Mettre à jour les liens DexScreener
-  const getDexscreenerLink = (tokenAddress, network) => {
-    const dexscreenerNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
-    return `https://dexscreener.com/${dexscreenerNetwork}/${tokenAddress}`;
+  const fetchDefinedData = useCallback(async (tokenAddress, network) => {
+    try {
+      setDefinedLoading(true);
+      
+      const definedNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
+      setDefinedLink(`https://www.defined.fi/${definedNetwork}/${tokenAddress}`);
+      
+      const response = await fetch(`https://api.defined.fi/v1/tokens/${tokenAddress}`);
+      const data = await response.json();
+      
+      if (data && data.pairs && data.pairs.length > 0) {
+        const sortedPairs = data.pairs.sort((a, b) => 
+          parseFloat(b.volumeUsd24h || 0) - parseFloat(a.volumeUsd24h || 0)
+        );
+        
+        const mainPair = sortedPairs[0];
+        setDefinedData(mainPair);
+        
+        if (mainPair) {
+          const marketData = {
+            price: parseFloat(mainPair.priceUsd || 0),
+            marketCap: parseFloat(mainPair.fdv || 0),
+            priceChange24h: parseFloat(mainPair.priceChange?.h24 || 0),
+            volume24h: parseFloat(mainPair.volume?.h24 || 0),
+            liquidity: parseFloat(mainPair.liquidity?.usd || 0) / 1000
+          };
+
+          setTokens(prevTokens => 
+            prevTokens.map(token => 
+              token.token_address === tokenAddress ? { ...token, market_data: marketData } : token
+            )
+          );
+        }
+      }
+    } catch (err) {
+      console.error('Erreur lors de la récupération des données Defined:', err);
+    } finally {
+      setDefinedLoading(false);
+    }
+  }, []);
+
+  // Update Defined URL when timeframe changes
+  useEffect(() => {
+    if (!tokens.length) return;
+    
+    const timeframeParam = timeframe === '24h' ? '1m' : timeframe === '7d' ? '1W' : '1M';
+    const definedNetwork = selectedChain?.toUpperCase() === 'AVAX' ? 'avalanche' : selectedChain?.toLowerCase();
+    setDefinedLink(`https://www.defined.fi/${definedNetwork}/${tokens[0].token_address}?embedded=1&hideTxTable=1&hideSidebar=1&hideChart=0&hideChartEmptyBars=1&chartSmoothing=0&embedColorMode=DEFAULT&interval=${timeframeParam}`);
+  }, [timeframe, selectedChain, tokens]);
+
+  // Fonction pour ouvrir Defined
+  const openDefined = () => {
+    if (tokens.length > 0 && tokens[0].token_address) {
+      window.open(`https://www.defined.fi/${selectedChain}/${tokens[0].token_address}`, '_blank');
+    }
   };
 
   return (
