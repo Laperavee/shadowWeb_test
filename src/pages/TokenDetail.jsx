@@ -425,9 +425,16 @@ const TokenDetail = () => {
                   </div>
                 )}
                 <div>
-                  <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white via-fuchsia-200 to-white">
-                    {token.token_name}
-                  </h1>
+                  <div className="flex items-center gap-4">
+                    <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white via-fuchsia-200 to-white">
+                      {token.token_name}
+                    </h1>
+                    <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/30">
+                      <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+                        Score: {score}
+                      </span>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-3">
                     <span className="px-3 py-1 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400 text-sm font-medium">
                       ${token.token_symbol}

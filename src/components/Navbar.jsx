@@ -162,11 +162,11 @@ export default function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 100 }}
-        className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-4 px-6 gap-4 w-[95%]"
+        className="container mx-auto flex flex-col sm:flex-row justify-between items-center py-6 px-8 gap-6 w-full"
       >
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-12">
           <motion.div
-            className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400"
+            className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
@@ -174,25 +174,22 @@ export default function Navbar() {
               Shadow Protocol
             </Link>
           </motion.div>
-          <div className="hidden sm:flex items-center gap-6">
+          <div className="hidden sm:flex items-center gap-8">
             <Link
               to="https://shadow-19.gitbook.io/shadow-docs/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors group"
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors group px-4 py-2"
               onClick={() => playSound('click')}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span className="relative">
+              <span className="relative text-lg">
                 Docs
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-fuchsia-500 to-cyan-500 group-hover:w-full transition-all duration-300" />
               </span>
             </Link>
             <Link
               to="/news"
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white transition-colors text-lg px-4 py-2"
             >
               News
             </Link>
