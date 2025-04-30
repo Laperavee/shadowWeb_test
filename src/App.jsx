@@ -15,6 +15,7 @@ import PostDetail from './pages/PostDetail';
 // Components for managing effects
 import SoundProvider from './context/SoundContext';
 import LoadingScreen from './components/LoadingScreen';
+import WalletProvider from './context/WalletContext';
 
 // Créer un composant wrapper pour gérer l'affichage conditionnel de la Navbar
 function AppContent() {
@@ -68,9 +69,11 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <SoundProvider>
-        <AppContent />
-      </SoundProvider>
+      <WalletProvider>
+        <SoundProvider>
+          <AppContent />
+        </SoundProvider>
+      </WalletProvider>
     </Router>
   );
 }

@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSound } from '../context/SoundContext';
+import { useWallet } from '../context/WalletContext';
 import { supabase } from '../lib/supabase';
 import avaxLogo from '../../dist/assets/avax_logo.png';
 import baseLogo from '../../dist/assets/base_logo.png';
@@ -88,8 +89,7 @@ export default function Navbar() {
     const savedChain = localStorage.getItem('selectedChain');
     return savedChain || 'AVAX';
   });
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [userAddress, setUserAddress] = useState('');
+  const { isWalletConnected, userAddress, connectWallet } = useWallet();
   const { playSound } = useSound();
   const location = useLocation();
   const navigate = useNavigate();
@@ -115,6 +115,29 @@ export default function Navbar() {
     };
     checkTwitterAuth();
   }, []);
+
+  const handleTwitterConnect = async (e) => {
+    e.preventDefault();
+    try {
+      const currentUrl = window.location.href;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'twitter',
+        options: {
+          redirectTo: currentUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+            scope: 'tweet.read users.read'
+          }
+        }
+      });
+
+      if (error) throw error;
+      if (data.url) window.location.href = data.url;
+    } catch (error) {
+      console.error('Error connecting to Twitter:', error);
+    }
+  };
 
   const handleTwitterDisconnect = async () => {
     try {
@@ -196,7 +219,7 @@ export default function Navbar() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 <span className="text-white font-semibold">
-                  Connect
+                  {isWalletConnected ? 'Connected' : 'Connect'}
                 </span>
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

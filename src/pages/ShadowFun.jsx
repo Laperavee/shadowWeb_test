@@ -10,6 +10,7 @@ import { priceService } from '../services/priceService';
 import { Link, useNavigate } from 'react-router-dom';
 import ShadowBaseArtifact from '../artifact/ShadowBase.json';
 import { supabase } from '../lib/supabase';
+import { useWallet } from '../context/WalletContext';
 
 const SHADOW_CREATOR_ABI = {
   BASE: ShadowBaseArtifact.abi
@@ -140,8 +141,7 @@ const getErrorMessage = (field, chain) => {
 export default function ShadowFun() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('tokens');
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [userAddress, setUserAddress] = useState('');
+  const { isWalletConnected, userAddress, connectWallet } = useWallet();
   const [twitterHandle, setTwitterHandle] = useState('');
   const [selectedChain, setSelectedChain] = useState(() => {
     const savedChain = localStorage.getItem('selectedChain');
@@ -288,43 +288,6 @@ export default function ShadowFun() {
     setTimeout(() => {
       setNotifications(prev => prev.filter(notif => notif.id !== id));
     }, 5000);
-  };
-
-  const connectWallet = async () => {
-    if (typeof window.ethereum !== 'undefined') {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        setUserAddress(accounts[0]);
-  
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        const targetNetwork = NETWORKS[selectedChain];
-        
-        if (chainId !== targetNetwork.chainId) {  
-          try {
-            await window.ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: targetNetwork.chainId }]
-            });
-          } catch (switchError) {
-            if (switchError.code === 4902) {
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [targetNetwork]
-              });
-            } else {
-              throw switchError;
-            }
-          }
-        }
-        setIsWalletConnected(true);
-        addNotification("Wallet connected successfully!", "success");
-      } catch (error) {
-        console.error('Error connecting wallet:', error);
-        addNotification(`Failed to connect wallet: ${error.message}`, "error");
-      }
-    } else {
-      addNotification("MetaMask is not installed!", "error");
-    }
   };
 
   useEffect(() => {
