@@ -490,7 +490,7 @@ export default function ShadowFun() {
       const fee = 10000;
       
       // S'assurer que le handle Twitter a le @
-      const twitterName = twitterHandle.startsWith('@') ? twitterHandle : `@${twitterHandle}`;
+      const twitterName = twitterHandle.startsWith('@') ? twitterHandle : `@${twitterHandle}`|| 'empty';
       
       // Vérifier si un site web est fourni, sinon utiliser une URL par défaut
       const websiteUrl = formData.websiteUrl.trim() || 'empty';
