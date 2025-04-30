@@ -116,6 +116,10 @@ export default function Navbar() {
     checkTwitterAuth();
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem('selectedChain', selectedChain);
+  }, [selectedChain]);
+
   const handleTwitterConnect = async (e) => {
     e.preventDefault();
     try {
@@ -149,6 +153,12 @@ export default function Navbar() {
     }
   };
 
+  const handleChainChange = (chain) => {
+    setSelectedChain(chain);
+    setIsOpen(false);
+    playSound('click');
+  };
+
   const handleNavigation = useCallback((path) => {
     navigate(path);
     playSound('click');
@@ -173,7 +183,7 @@ export default function Navbar() {
           </Link>
         </motion.div>
         <div className="flex items-center gap-4 flex-wrap justify-center">
-          <NetworkSelector selectedChain={selectedChain} onChange={setSelectedChain} />
+          <NetworkSelector selectedChain={selectedChain} onChange={handleChainChange} />
           <Link
             to="/posts"
             className="relative px-6 py-2.5 rounded-xl group"
