@@ -18,7 +18,6 @@ import { useNetwork } from '../context/NetworkContext';
 import definedLogo from '../../defined_logo.png';
 import dexscreenerLogo from '../../dexscreener_logo.png';
 import { marketDataService } from '../services/marketDataService';
-import Navbar, { NetworkSelector } from '../components/Navbar';
 
 const SHADOW_CREATOR_ABI = {
   BASE: ShadowBaseArtifact.abi,
@@ -835,7 +834,6 @@ export default function ShadowFun() {
               </motion.p>
             </div>
             <div className="flex gap-4">
-              <NetworkSelector selectedChain={selectedChain} onChange={setSelectedChain} />
               <motion.button
                 onClick={() => setActiveTab('create')}
                 className="relative px-4 py-2.5 rounded-xl group/button"
