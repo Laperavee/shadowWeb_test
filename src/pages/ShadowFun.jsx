@@ -145,6 +145,9 @@ const getErrorMessage = (field, chain) => {
 
 const TOKENS_PER_PAGE = 8;
 
+const getNetworkData = (network) =>
+  NETWORKS[network?.toUpperCase()] || NETWORKS[network?.toLowerCase()];
+
 export default function ShadowFun() {
   const navigate = useNavigate();
   const { selectedChain } = useNetwork();
@@ -934,7 +937,7 @@ export default function ShadowFun() {
                         <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
                           <span className="text-gray-400">Liquidity</span>
                           <span className="font-medium text-white">
-                            {token.liquidity} {NETWORKS[token.network?.toUpperCase()]?.nativeCurrency?.symbol || ''}
+                            {token.liquidity} {getNetworkData(token.network)?.nativeCurrency?.symbol || ''}
                           </span>
                         </div>
                       </div>
@@ -1109,13 +1112,13 @@ export default function ShadowFun() {
                         )}
                       </div>
                       <div>
-                        <label className="block text-gray-400 mb-2">Initial Liquidity ({NETWORKS[selectedChain].nativeCurrency.symbol})</label>
+                        <label className="block text-gray-400 mb-2">Initial Liquidity ({getNetworkData(selectedChain).nativeCurrency.symbol})</label>
                         <input
                           type="number"
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.liquidity}
                           onChange={(e) => setFormData({...formData, liquidity: e.target.value})}
-                          placeholder={`Enter initial liquidity (${NETWORK_LIMITS[selectedChain].minLiquidity} - ${NETWORK_LIMITS[selectedChain].maxLiquidity} ${NETWORKS[selectedChain].nativeCurrency.symbol})`}
+                          placeholder={`Enter initial liquidity (${NETWORK_LIMITS[selectedChain].minLiquidity} - ${NETWORK_LIMITS[selectedChain].maxLiquidity} ${getNetworkData(selectedChain).nativeCurrency.symbol})`}
                         />
                         {formErrors.liquidity && (
                           <p className="mt-1 text-sm text-red-500">{formErrors.liquidity}</p>
@@ -1136,10 +1139,10 @@ export default function ShadowFun() {
                       </div>
                       <div>
                         <label className="block text-gray-400 mb-2">
-                          First Buy Amount ({NETWORKS[selectedChain].nativeCurrency.symbol})
+                          First Buy Amount ({getNetworkData(selectedChain).nativeCurrency.symbol})
                           {formData.liquidity && (
                             <span className="text-xs text-gray-500 ml-2">
-                              (Max: {calculateMaxBuyAmount(formData.liquidity)} {NETWORKS[selectedChain].nativeCurrency.symbol})
+                              (Max: {calculateMaxBuyAmount(formData.liquidity)} {getNetworkData(selectedChain).nativeCurrency.symbol})
                             </span>
                           )}
                         </label>
@@ -1148,7 +1151,7 @@ export default function ShadowFun() {
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.firstBuyAmount}
                           onChange={(e) => setFormData({...formData, firstBuyAmount: e.target.value})}
-                          placeholder={`Enter first buy amount (${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} - ${calculateMaxBuyAmount(formData.liquidity)} ${NETWORKS[selectedChain].nativeCurrency.symbol})`}
+                          placeholder={`Enter first buy amount (${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} - ${calculateMaxBuyAmount(formData.liquidity)} ${getNetworkData(selectedChain).nativeCurrency.symbol})`}
                           max={calculateMaxBuyAmount(formData.liquidity)}
                         />
                         {formErrors.firstBuyAmount && (

@@ -63,7 +63,7 @@ export const tokenService = {
 
   async getTokens(network) {
     try {
-      const url = getApiUrl(`/tokens?network=${network}`);      
+      const url = getApiUrl(`/tokens?network=${network.toLowerCase()}`);      
       const response = await fetch(url);
       if (!response.ok) {
         const errorText = await response.text();
