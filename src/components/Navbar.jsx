@@ -189,7 +189,7 @@ export default function Navbar() {
               to="https://shadow-19.gitbook.io/shadow-docs/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors group px-3 py-2"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group px-3 py-2"
               onClick={() => playSound('click')}
             >
               <span className="relative text-lg font-bold">
