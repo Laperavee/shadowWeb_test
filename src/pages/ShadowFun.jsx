@@ -1070,7 +1070,11 @@ export default function ShadowFun() {
                       hidden: { opacity: 0, y: 20 },
                       visible: { opacity: 1, y: 0 }
                     }}
-                    className="group relative bg-black/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 hover:border-fuchsia-500/30 transition-all duration-300 cursor-pointer"
+                    className={`group relative bg-black/50 backdrop-blur-xl border-2 rounded-2xl p-6 transition-all duration-300 cursor-pointer ${
+                      token.score > 0 
+                        ? `border-green-500/[${(100 - token.score) / 100}]` 
+                        : 'border-gray-800'
+                    } hover:border-fuchsia-500/30`}
                     onClick={() => navigate(`/token/${token.token_address}`)}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
