@@ -18,6 +18,7 @@ import { useNetwork } from '../context/NetworkContext';
 import definedLogo from '../../defined_logo.png';
 import dexscreenerLogo from '../../dexscreener_logo.png';
 import { marketDataService } from '../services/marketDataService';
+import Navbar from '../components/Navbar';
 
 const SHADOW_CREATOR_ABI = {
   BASE: ShadowBaseArtifact.abi,
