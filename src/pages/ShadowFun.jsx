@@ -80,67 +80,75 @@ const NETWORK_LIMITS = {
   }
 };
 
-const NetworkSelector = ({ selectedChain, onChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const NetworkButtons = ({ selectedChain, onChange }) => {
   const navigate = useNavigate();
   const { setSelectedChain } = useNetwork();
   const location = window.location.pathname;
 
   const handleNetworkChange = async (chain) => {
     try {
-      // Si nous ne sommes pas sur shadow-fun, rediriger d'abord
       if (location !== '/shadow-fun') {
         navigate('/shadow-fun');
-        // Attendre un court instant pour que la redirection soit effectuée
         setTimeout(() => {
           setSelectedChain(chain);
           onChange(chain);
         }, 100);
       } else {
-        // Si nous sommes déjà sur shadow-fun, juste changer le réseau
         await setSelectedChain(chain);
         onChange(chain);
       }
-      setIsOpen(false);
     } catch (error) {
       console.error('Error changing network:', error);
     }
   };
 
   return (
-    <div className="relative">
+    <div className="flex items-center gap-2">
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-black/30 transition-all duration-300"
+        onClick={() => handleNetworkChange('AVAX')}
+        className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+          selectedChain === 'AVAX'
+            ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/30 shadow-[0_0_15px_rgba(255,0,255,0.2)]'
+            : 'bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-black/30'
+        }`}
       >
-        <img src={NETWORKS[selectedChain].logo} alt={NETWORKS[selectedChain].chainName} className="w-6 h-6" />
-        <span className="text-white">{NETWORKS[selectedChain].chainName}</span>
-        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        {selectedChain === 'AVAX' && (
+          <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 rounded-lg animate-pulse-slow" />
+        )}
+        <div className="relative flex items-center space-x-2">
+          <img src={NETWORKS.AVAX.logo} alt={NETWORKS.AVAX.chainName} className="w-6 h-6" />
+          <span className={`text-sm font-medium ${
+            selectedChain === 'AVAX'
+              ? 'text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400'
+              : 'text-white'
+          }`}>
+            {NETWORKS.AVAX.chainName}
+          </span>
+        </div>
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 min-w-[160px] rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 z-50">
-          {Object.entries(NETWORKS).map(([key, network], index, array) => (
-            <button
-              key={key}
-              onClick={() => handleNetworkChange(key)}
-              className={`w-full px-4 py-2 text-left flex items-center space-x-2 ${
-                key === selectedChain
-                  ? "bg-white/10"
-                  : "hover:bg-white/5"
-              } ${
-                index === 0 ? "rounded-t-lg" : 
-                index === array.length - 1 ? "rounded-b-lg" : ""
-              }`}
-            >
-              <img src={network.logo} alt={network.chainName} className="w-6 h-6" />
-              <span className="text-white">{network.chainName}</span>
-            </button>
-          ))}
+      <button
+        onClick={() => handleNetworkChange('BASE')}
+        className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+          selectedChain === 'BASE'
+            ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/30 shadow-[0_0_15px_rgba(255,0,255,0.2)]'
+            : 'bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-black/30'
+        }`}
+      >
+        {selectedChain === 'BASE' && (
+          <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 rounded-lg animate-pulse-slow" />
+        )}
+        <div className="relative flex items-center space-x-2">
+          <img src={NETWORKS.BASE.logo} alt={NETWORKS.BASE.chainName} className="w-6 h-6" />
+          <span className={`text-sm font-medium ${
+            selectedChain === 'BASE'
+              ? 'text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400'
+              : 'text-white'
+          }`}>
+            {NETWORKS.BASE.chainName}
+          </span>
         </div>
-      )}
+      </button>
     </div>
   );
 };
@@ -899,6 +907,7 @@ export default function ShadowFun() {
               </motion.p>
             </div>
             <div className="flex gap-4">
+              <NetworkButtons selectedChain={selectedChain} onChange={onChange} />
               <motion.button
                 onClick={() => setActiveTab('create')}
                 className="relative px-4 py-2.5 rounded-xl group/button"
@@ -1330,70 +1339,4 @@ export default function ShadowFun() {
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.maxWalletPercentage}
                           onChange={(e) => setFormData({...formData, maxWalletPercentage: e.target.value})}
-                          placeholder={`Enter max wallet percentage (${NETWORK_LIMITS[selectedChain].minWalletPercentage}% - ${NETWORK_LIMITS[selectedChain].maxWalletPercentage}%)`}
-                        />
-                        {formErrors.maxWalletPercentage && (
-                          <p className="mt-1 text-sm text-red-500">{formErrors.maxWalletPercentage}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-gray-400 mb-2">
-                          First Buy Amount ({getNetworkData(selectedChain).nativeCurrency.symbol})
-                          {formData.liquidity && (
-                            <span className="text-xs text-gray-500 ml-2">
-                              (Max: {calculateMaxBuyAmount(formData.liquidity)} {getNetworkData(selectedChain).nativeCurrency.symbol})
-                            </span>
-                          )}
-                        </label>
-                        <input
-                          type="number"
-                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
-                          value={formData.firstBuyAmount}
-                          onChange={(e) => setFormData({...formData, firstBuyAmount: e.target.value})}
-                          placeholder={`Enter first buy amount (${NETWORK_LIMITS[selectedChain].minFirstBuyAmount} - ${calculateMaxBuyAmount(formData.liquidity)} ${getNetworkData(selectedChain).nativeCurrency.symbol})`}
-                          max={calculateMaxBuyAmount(formData.liquidity)}
-                        />
-                        {formErrors.firstBuyAmount && (
-                          <p className="mt-1 text-sm text-red-500">{formErrors.firstBuyAmount}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-gray-400 mb-2">Website URL (Optional)</label>
-                        <input
-                          type="url"
-                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
-                          value={formData.websiteUrl}
-                          onChange={(e) => setFormData({...formData, websiteUrl: e.target.value})}
-                          placeholder="https://example.com"
-                        />
-                        {formErrors.websiteUrl && (
-                          <p className="mt-1 text-sm text-red-500">{formErrors.websiteUrl}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <motion.button
-                        type="submit"
-                        disabled={isDeploying}
-                        className="relative px-4 py-2 rounded-xl group/button"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-20 group-hover/button:opacity-40 transition-opacity rounded-xl" />
-                        <div className="relative flex items-center justify-center gap-2">
-                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                            {isDeploying ? 'Deploying...' : 'Create Token'}
-                          </span>
-                        </div>
-                      </motion.button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </div>
-    </main>
-  );
-}
+                          placeholder={`
