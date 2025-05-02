@@ -196,6 +196,9 @@ export default function ShadowFun() {
   const [definedLoading, setDefinedLoading] = useState(false);
   const [definedLink, setDefinedLink] = useState('');
 
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortDirection, setSortDirection] = useState('desc');
+
   const fetchTokens = useCallback(async () => {
     try {
       setLoading(true);
@@ -284,11 +287,51 @@ export default function ShadowFun() {
     checkWalletConnection();
   }, [selectedChain]);
 
-  // Calculer les tokens à afficher pour la page courante
+  // Fonction de tri
+  const sortTokens = (tokens) => {
+    return [...tokens].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'name':
+          comparison = a.token_name.localeCompare(b.token_name);
+          break;
+        case 'marketCap':
+          const marketCapA = a.market_data?.marketCap || 0;
+          const marketCapB = b.market_data?.marketCap || 0;
+          comparison = marketCapA - marketCapB;
+          break;
+        case 'volume':
+          const volumeA = a.market_data?.volume24h || 0;
+          const volumeB = b.market_data?.volume24h || 0;
+          comparison = volumeA - volumeB;
+          break;
+        case 'created_at':
+        default:
+          comparison = new Date(a.created_at) - new Date(b.created_at);
+          break;
+      }
+      
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  };
+
+  // Modifier getCurrentPageTokens pour utiliser le tri
   const getCurrentPageTokens = () => {
+    const sortedTokens = sortTokens(tokens);
     const startIndex = (currentPage - 1) * TOKENS_PER_PAGE;
     const endIndex = startIndex + TOKENS_PER_PAGE;
-    return tokens.slice(startIndex, endIndex);
+    return sortedTokens.slice(startIndex, endIndex);
+  };
+
+  // Fonction pour changer le tri
+  const handleSortChange = (newSortBy) => {
+    if (newSortBy === sortBy) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(newSortBy);
+      setSortDirection('desc');
+    }
   };
 
   const addNotification = (message, type = 'info') => {
@@ -842,6 +885,65 @@ export default function ShadowFun() {
               </motion.button>
             </div>
           </motion.div>
+
+          {/* Ajouter le sélecteur de tri avant la grille de tokens */}
+          <div className="flex justify-end mb-6">
+            <div className="flex items-center gap-2 bg-black/50 backdrop-blur-xl border border-gray-800 rounded-xl p-1">
+              <button
+                onClick={() => handleSortChange('created_at')}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  sortBy === 'created_at'
+                    ? 'bg-fuchsia-500/20 text-fuchsia-400'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Latest
+              </button>
+              <button
+                onClick={() => handleSortChange('name')}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  sortBy === 'name'
+                    ? 'bg-fuchsia-500/20 text-fuchsia-400'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Name
+              </button>
+              <button
+                onClick={() => handleSortChange('marketCap')}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  sortBy === 'marketCap'
+                    ? 'bg-fuchsia-500/20 text-fuchsia-400'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Market Cap
+              </button>
+              <button
+                onClick={() => handleSortChange('volume')}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  sortBy === 'volume'
+                    ? 'bg-fuchsia-500/20 text-fuchsia-400'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Volume
+              </button>
+              <button
+                onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-white transition-colors"
+              >
+                <svg 
+                  className={`w-4 h-4 transform ${sortDirection === 'asc' ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+          </div>
 
           {/* Enhanced loading state */}
           {loading ? (
