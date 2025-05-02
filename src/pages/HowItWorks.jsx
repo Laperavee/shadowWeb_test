@@ -16,7 +16,7 @@ export default function HowItWorks() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,transparent,rgba(255,0,255,0.05),transparent)] animate-scanner-slow" />
       </div>
 
-      <div className="relative z-10 pt-48 container mx-auto px-4 sm:px-6 py-12 sm:py-20">
+      <div className="relative z-10 pt-64 container mx-auto px-4 sm:px-6 py-12 sm:py-20">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
