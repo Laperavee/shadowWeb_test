@@ -934,7 +934,7 @@ export default function ShadowFun() {
                         <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
                           <span className="text-gray-400">Liquidity</span>
                           <span className="font-medium text-white">
-                            {token.liquidity} {NETWORKS[token.network].nativeCurrency.symbol}
+                            {token.liquidity} {NETWORKS[token.network?.toUpperCase()]?.nativeCurrency?.symbol || ''}
                           </span>
                         </div>
                       </div>
