@@ -1233,7 +1233,7 @@ export default function ShadowFun() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                     {/* Left Column - ID Card Style */}
                     <div className="md:col-span-1 space-y-6">
-                      <div className="h-[calc(2*3rem+2*1.5rem+2*0.75rem)] w-full">
+                      <div className="h-48 w-full">
                         <label className="block text-gray-400 mb-3 text-lg">Token Image</label>
                         <label className="flex items-center justify-center w-full h-full border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50 bg-black/30">
                           {formData.tokenImage ? (
@@ -1272,28 +1272,27 @@ export default function ShadowFun() {
                           />
                         </label>
                       </div>
-                      <div className="h-[calc(2*3rem+2*1.5rem+2*0.75rem)] w-full">
-                        <div>
-                          <label className="block text-gray-400 mb-3 text-lg">Token Name</label>
-                          <input
-                            type="text"
-                            className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
-                            value={formData.name}
-                            onChange={(e) => setFormData({...formData, name: e.target.value})}
-                            placeholder="Enter token name"
-                          />
-                        </div>
 
-                        <div>
-                          <label className="block text-gray-400 mb-3 text-lg">Token Symbol</label>
-                          <input
-                            type="text"
-                            className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
-                            value={formData.symbol}
-                            onChange={(e) => setFormData({...formData, symbol: e.target.value})}
-                            placeholder="Enter token symbol"
-                          />
-                        </div>
+                      <div className="mt-8">
+                        <label className="block text-gray-400 mb-3 text-lg">Token Name</label>
+                        <input
+                          type="text"
+                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
+                          value={formData.name}
+                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          placeholder="Enter token name"
+                        />
+                      </div>
+
+                      <div className="mt-8">
+                        <label className="block text-gray-400 mb-3 text-lg">Token Symbol</label>
+                        <input
+                          type="text"
+                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
+                          value={formData.symbol}
+                          onChange={(e) => setFormData({...formData, symbol: e.target.value})}
+                          placeholder="Enter token symbol"
+                        />
                       </div>
                     </div>
 
