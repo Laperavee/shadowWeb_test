@@ -44,7 +44,7 @@ exports.handler = async (event, context) => {
       .order('created_at', { ascending: false });
 
     if (network) {
-      query = query.eq('network', network.toLowerCase());
+      query = query.ilike('network', network);
     }
 
     const { data, error } = await query;

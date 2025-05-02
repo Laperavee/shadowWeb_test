@@ -165,17 +165,17 @@ export default function Navbar() {
         transition={{ type: "spring", stiffness: 100 }}
         className="flex flex-col sm:flex-row justify-between items-center py-6 px-8 gap-6 w-full"
       >
-        <div className="flex items-center gap-4 w-full max-w-6xl mx-auto">
+        <div className="flex items-center gap-8 w-full max-w-6xl mx-auto">
           <motion.div
             className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400"
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
             <Link to="/" className="cursor-pointer flex items-center">
-              <img src={logo} alt="Logo" className="w-12 h-12" />
+              <img src={logo} alt="Logo" className="w-16 h-16" />
             </Link>
           </motion.div>
-          <div className="hidden sm:flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-6">
             <Link
               to="/shadow-fun"
               className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-lg font-bold px-3 py-2 group"
