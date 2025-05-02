@@ -1237,12 +1237,34 @@ export default function ShadowFun() {
                         <label className="block text-gray-400 mb-3 text-lg">Token Image</label>
                         <div className="flex items-center gap-4">
                           <label className="flex-1 flex items-center justify-center px-6 py-4 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50">
-                            <div className="flex items-center gap-3">
-                              <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                              <span className="text-base text-gray-400">Click to upload image</span>
-                            </div>
+                            {formData.tokenImage ? (
+                              <div className="relative w-full h-32">
+                                <img 
+                                  src={URL.createObjectURL(formData.tokenImage)} 
+                                  alt="Token preview" 
+                                  className="w-full h-full object-contain rounded-lg"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setFormData({...formData, tokenImage: null});
+                                  }}
+                                  className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-red-500/50 transition-colors"
+                                >
+                                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-3">
+                                <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span className="text-base text-gray-400">Click to upload image</span>
+                              </div>
+                            )}
                             <input 
                               type="file" 
                               className="hidden" 
@@ -1250,9 +1272,6 @@ export default function ShadowFun() {
                               onChange={(e) => setFormData({...formData, tokenImage: e.target.files[0]})}
                             />
                           </label>
-                          {formData.tokenImage && (
-                            <span className="text-base text-gray-400">{formData.tokenImage.name}</span>
-                          )}
                         </div>
                       </div>
 
@@ -1260,7 +1279,7 @@ export default function ShadowFun() {
                         <label className="block text-gray-400 mb-3 text-lg">Token Name</label>
                         <input
                           type="text"
-                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
+                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.name}
                           onChange={(e) => setFormData({...formData, name: e.target.value})}
                           placeholder="Enter token name"
@@ -1271,7 +1290,7 @@ export default function ShadowFun() {
                         <label className="block text-gray-400 mb-3 text-lg">Token Symbol</label>
                         <input
                           type="text"
-                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
+                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.symbol}
                           onChange={(e) => setFormData({...formData, symbol: e.target.value})}
                           placeholder="Enter token symbol"
@@ -1282,7 +1301,7 @@ export default function ShadowFun() {
                         <label className="block text-gray-400 mb-3 text-lg">Website URL</label>
                         <input
                           type="text"
-                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
+                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.websiteUrl}
                           onChange={(e) => setFormData({...formData, websiteUrl: e.target.value})}
                           placeholder="Enter website URL"
@@ -1296,7 +1315,7 @@ export default function ShadowFun() {
                         <label className="block text-gray-400 mb-3 text-lg">Total Supply</label>
                         <input
                           type="number"
-                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
+                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.totalSupply}
                           onChange={(e) => setFormData({...formData, totalSupply: e.target.value})}
                           placeholder={`Enter total supply (${NETWORK_LIMITS[selectedChain].minSupply} - ${NETWORK_LIMITS[selectedChain].maxSupply})`}
@@ -1310,7 +1329,7 @@ export default function ShadowFun() {
                         <label className="block text-gray-400 mb-3 text-lg">Initial Liquidity ({getNetworkData(selectedChain).nativeCurrency.symbol})</label>
                         <input
                           type="number"
-                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
+                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.liquidity}
                           onChange={(e) => setFormData({...formData, liquidity: e.target.value})}
                           placeholder={`Enter initial liquidity (${NETWORK_LIMITS[selectedChain].minLiquidity} - ${NETWORK_LIMITS[selectedChain].maxLiquidity} ${getNetworkData(selectedChain).nativeCurrency.symbol})`}
@@ -1324,7 +1343,7 @@ export default function ShadowFun() {
                         <label className="block text-gray-400 mb-3 text-lg">Max Wallet Percentage</label>
                         <input
                           type="number"
-                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
+                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.maxWalletPercentage}
                           onChange={(e) => setFormData({...formData, maxWalletPercentage: e.target.value})}
                           placeholder={`Enter max wallet percentage (0% - 100%)`}
@@ -1338,7 +1357,7 @@ export default function ShadowFun() {
                         <label className="block text-gray-400 mb-3 text-lg">First Buy Amount</label>
                         <input
                           type="number"
-                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
+                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.firstBuyAmount}
                           onChange={(e) => setFormData({...formData, firstBuyAmount: e.target.value})}
                           placeholder={`Enter first buy amount (0 - ${calculateMaxBuyAmount(formData.liquidity)})`}
