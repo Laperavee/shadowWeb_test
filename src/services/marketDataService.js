@@ -1,13 +1,3 @@
-import { API_URL, CACHE_DURATION } from '../utils/constants';
-import { priceService } from './priceService';
-
-// Cache pour les requêtes
-const cache = new Map();
-
-// En production, on utilise le chemin relatif pour les fonctions Netlify
-const isProduction = import.meta.env.PROD;
-const API_BASE_URL = isProduction ? '/api' : 'http://localhost:3002/api';
-
 class MarketDataService {
   constructor() {
     this.cache = new Map();
@@ -78,9 +68,9 @@ class MarketDataService {
         return null;
       }
       const cacheKey = `market-data-${tokenAddress}`;
-      const cached = cache.get(cacheKey);
+      const cached = this.cache.get(cacheKey);
       
-      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
         return cached.data;
       }
 
@@ -101,7 +91,7 @@ class MarketDataService {
       const result = await response.json();
       
       if (result.success && result.data) {
-        cache.set(cacheKey, {
+        this.cache.set(cacheKey, {
           data: result.data,
           timestamp: Date.now()
         });
@@ -139,7 +129,7 @@ class MarketDataService {
       
       if (result.success && result.data) {
         console.debug('[Market Data] Successfully refreshed data for:', tokenAddress);
-        cache.set(`market-data-${tokenAddress}`, {
+        this.cache.set(`market-data-${tokenAddress}`, {
           data: result.data,
           timestamp: Date.now()
         });
@@ -175,7 +165,7 @@ class MarketDataService {
       
       if (result.success && result.data) {
         console.debug('[Market Data] Successfully updated data for:', tokenAddress);
-        cache.set(`market-data-${tokenAddress}`, {
+        this.cache.set(`market-data-${tokenAddress}`, {
           data: result.data,
           timestamp: Date.now()
         });

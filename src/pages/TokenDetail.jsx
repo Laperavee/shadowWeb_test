@@ -467,18 +467,18 @@ const TokenDetail = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`flex items-center gap-1.5 px-2 py-1 rounded-full ${
-                        token.website_url && token.website_url !== 'empty'
+                        token.website_url && token.website_url !== 'empty' && token.website_url !== 'Created on X'
                           ? 'bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 cursor-pointer'
                           : 'bg-gray-800/50'
                       }`}
                     >
                       <div className={`w-2.5 h-2.5 rounded-full ${
-                        token.website_url && token.website_url !== 'empty'
+                        token.website_url && token.website_url !== 'empty' && token.website_url !== 'Created on X'
                           ? 'bg-green-500 animate-pulse'
                           : 'bg-gray-500'
                       }`} />
                       <svg className={`w-4 h-4 ${
-                        token.website_url && token.website_url !== 'empty'
+                        token.website_url && token.website_url !== 'empty' && token.website_url !== 'Created on X'
                           ? 'text-green-400'
                           : 'text-gray-400'
                       }`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
