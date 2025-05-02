@@ -108,6 +108,58 @@ const TOKENS_PER_PAGE = 8;
 const getNetworkData = (network) =>
   NETWORKS[network?.toUpperCase()] || NETWORKS[network?.toLowerCase()];
 
+const NetworkSelector = ({ selectedChain, onChange }) => {
+  const { playSound } = useSound();
+  const navigate = useNavigate();
+  const location = window.location.pathname;
+
+  const handleNetworkChange = async (chain) => {
+    try {
+      if (location !== '/shadow-fun') {
+        navigate('/shadow-fun');
+        setTimeout(() => {
+          onChange(chain);
+          playSound('click');
+        }, 100);
+      } else {
+        onChange(chain);
+        playSound('click');
+      }
+    } catch (error) {
+      console.error('Error changing network:', error);
+    }
+  };
+
+  return (
+    <div className="flex items-center">
+      <div className="flex rounded-lg border border-white/10">
+        <button
+          onClick={() => handleNetworkChange('AVAX')}
+          className={`flex items-center space-x-2 px-4 py-2 transition-all duration-300 ${
+            selectedChain === 'AVAX'
+              ? 'bg-fuchsia-500/20 text-white rounded-l-lg'
+              : 'bg-black/20 text-white/50 hover:bg-black/30'
+          }`}
+        >
+          <img src={NETWORKS.AVAX.logo} alt="AVAX" className="w-6 h-6" />
+          <span>AVAX</span>
+        </button>
+        <button
+          onClick={() => handleNetworkChange('BASE')}
+          className={`flex items-center space-x-2 px-4 py-2 transition-all duration-300 ${
+            selectedChain === 'BASE'
+              ? 'bg-fuchsia-500/20 text-white rounded-r-lg'
+              : 'bg-black/20 text-white/50 hover:bg-black/30'
+          }`}
+        >
+          <img src={NETWORKS.BASE.logo} alt="BASE" className="w-6 h-6" />
+          <span>BASE</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function ShadowFun() {
   const navigate = useNavigate();
   const { selectedChain, setSelectedChain } = useNetwork();

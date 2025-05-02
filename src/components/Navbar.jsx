@@ -1,101 +1,16 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useSound } from '../context/SoundContext';
 import { useWallet } from '../context/WalletContext';
-import { useNetwork } from '../context/NetworkContext';
 import { supabase } from '../lib/supabase';
-import avaxLogo from '../../dist/assets/avax_logo.png';
-import baseLogo from '../../dist/assets/base_logo.png';
 import logo from '../../image1.png';
-
-const NETWORKS = {
-  AVAX: {
-    chainId: "0xa86a",
-    chainName: "Avalanche",
-    logo: avaxLogo,
-    disabled: false,
-    nativeCurrency: {
-      name: "AVAX",
-      symbol: "AVAX",
-      decimals: 18
-    },
-    rpcUrls: ["https://api.avax.network/ext/bc/C/rpc"],
-    blockExplorerUrls: ["https://snowtrace.io"]
-  },
-  BASE: {
-    chainId: "0x2105",
-    chainName: "Base",
-    logo: baseLogo,
-    disabled: false,
-    nativeCurrency: {
-      name: "ETH",
-      symbol: "ETH",
-      decimals: 18
-    },
-    rpcUrls: ["https://mainnet.base.org"],
-    blockExplorerUrls: ["https://basescan.org"]
-  }
-};
-
-export const NetworkSelector = ({ selectedChain, onChange }) => {
-  const { playSound } = useSound();
-  const navigate = useNavigate();
-  const location = window.location.pathname;
-
-  const handleNetworkChange = async (chain) => {
-    try {
-      if (location !== '/shadow-fun') {
-        navigate('/shadow-fun');
-        setTimeout(() => {
-          onChange(chain);
-          playSound('click');
-        }, 100);
-      } else {
-        onChange(chain);
-        playSound('click');
-      }
-    } catch (error) {
-      console.error('Error changing network:', error);
-    }
-  };
-
-  return (
-    <div className="flex items-center">
-      <div className="flex rounded-lg border border-white/10">
-        <button
-          onClick={() => handleNetworkChange('AVAX')}
-          className={`flex items-center space-x-2 px-4 py-2 transition-all duration-300 ${
-            selectedChain === 'AVAX'
-              ? 'bg-fuchsia-500/20 text-white rounded-l-lg'
-              : 'bg-black/20 text-white/50 hover:bg-black/30'
-          }`}
-        >
-          <img src={NETWORKS.AVAX.logo} alt="AVAX" className="w-6 h-6" />
-          <span>AVAX</span>
-        </button>
-        <button
-          onClick={() => handleNetworkChange('BASE')}
-          className={`flex items-center space-x-2 px-4 py-2 transition-all duration-300 ${
-            selectedChain === 'BASE'
-              ? 'bg-fuchsia-500/20 text-white rounded-r-lg'
-              : 'bg-black/20 text-white/50 hover:bg-black/30'
-          }`}
-        >
-          <img src={NETWORKS.BASE.logo} alt="BASE" className="w-6 h-6" />
-          <span>BASE</span>
-        </button>
-      </div>
-    </div>
-  );
-};
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isConnectMenuOpen, setIsConnectMenuOpen] = useState(false);
   const [twitterHandle, setTwitterHandle] = useState(null);
-  const { selectedChain, setSelectedChain } = useNetwork();
   const { isWalletConnected, userAddress, connectWallet, disconnectWallet } = useWallet();
   const { playSound } = useSound();
   const location = useLocation();
@@ -160,11 +75,6 @@ export default function Navbar() {
     }
   };
 
-  const handleChainChange = (chain) => {
-    setSelectedChain(chain);
-    playSound('click');
-  };
-
   const handleNavigation = useCallback((path) => {
     navigate(path);
     playSound('click');
@@ -223,7 +133,6 @@ export default function Navbar() {
           </div>
         </div>
         <div className="flex items-center gap-4 ml-auto w-full max-w-6xl mx-auto justify-end">
-          <NetworkSelector selectedChain={selectedChain} onChange={handleChainChange} />
           <Link
             to="/staking"
             className="relative px-6 py-2.5 rounded-xl group"
