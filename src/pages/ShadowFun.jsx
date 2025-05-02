@@ -1233,7 +1233,7 @@ export default function ShadowFun() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                     {/* Left Column - ID Card Style */}
                     <div className="md:col-span-1 space-y-6">
-                      <div className="h-48 w-full">
+                      <div className="h-42 w-full">
                         <label className="block text-gray-400 mb-3 text-lg">Token Image</label>
                         <label className="flex items-center justify-center w-full h-full border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50 bg-black/30">
                           {formData.tokenImage ? (
@@ -1333,7 +1333,7 @@ export default function ShadowFun() {
                           className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.maxWalletPercentage}
                           onChange={(e) => setFormData({...formData, maxWalletPercentage: e.target.value})}
-                          placeholder={`Enter max wallet percentage (0% - 100%)`}
+                          placeholder={`Enter max wallet percentage (0% - 10%)`}
                         />
                         {formErrors.maxWalletPercentage && (
                           <p className="mt-2 text-sm text-red-500">{formErrors.maxWalletPercentage}</p>
