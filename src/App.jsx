@@ -43,7 +43,7 @@ function AppContent() {
         <main className="flex-grow">
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
-              <Route path="/" element={<Navigate to="/shadow-fun" replace />} />
+              <Route path="/" element={<Home />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/features" element={<Features />} />
               <Route path="/shadow-fun" element={<ShadowFun />} />
