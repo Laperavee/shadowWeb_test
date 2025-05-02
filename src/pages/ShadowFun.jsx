@@ -1079,7 +1079,7 @@ export default function ShadowFun() {
                         if (!token.is_fresh) {
                           score += 40;
                         }
-                        const opacity = (100 - score) / 100;
+                        const opacity =  score / 100;
                         return score > 0 
                           ? `rgba(16, 185, 129, ${opacity})` // emerald-500 color
                           : '#1f2937'; // gray-800 color
