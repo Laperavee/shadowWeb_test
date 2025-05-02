@@ -1079,8 +1079,9 @@ export default function ShadowFun() {
                         if (!token.is_fresh) {
                           score += 40;
                         }
+                        const opacity = Math.floor((100 - score) / 100 * 100);
                         return score > 0 
-                          ? `border-green-500/` + Math.floor((100 - score) / 100 * 100)
+                          ? `border-emerald-500/` + opacity
                           : 'border-gray-800';
                       })()
                     } hover:border-fuchsia-500/30`}
