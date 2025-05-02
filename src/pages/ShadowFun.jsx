@@ -805,32 +805,6 @@ export default function ShadowFun() {
 
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
-      {/* Network Selection Buttons */}
-      <div className="fixed top-24 right-4 z-50 flex gap-2">
-        <button
-          onClick={() => handleNetworkChange('AVAX')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
-            selectedChain === 'AVAX'
-              ? 'bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-400'
-              : 'bg-black/40 border-gray-700/50 text-gray-400 hover:border-fuchsia-500/30'
-          }`}
-        >
-          <img src={avaxLogo} alt="AVAX" className="w-5 h-5" />
-          <span className="font-medium">AVAX</span>
-        </button>
-        <button
-          onClick={() => handleNetworkChange('BASE')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
-            selectedChain === 'BASE'
-              ? 'bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-400'
-              : 'bg-black/40 border-gray-700/50 text-gray-400 hover:border-fuchsia-500/30'
-          }`}
-        >
-          <img src={baseLogo} alt="BASE" className="w-5 h-5" />
-          <span className="font-medium">BASE</span>
-        </button>
-      </div>
-
       {/* Animated background effects */}
       <div className="fixed inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)] animate-pulse-slow" />
