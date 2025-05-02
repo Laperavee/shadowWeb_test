@@ -71,12 +71,6 @@ export default function Navbar() {
     }
   };
 
-  const handleNavigation = useCallback((path) => {
-    navigate(path);
-    playSound('click');
-    setIsMobileMenuOpen(false);
-  }, [navigate, playSound]);
-
   return (
     <header className="fixed top-0 left-0 right-0 z-[9999] bg-black/50 backdrop-blur-xl border-b border-fuchsia-500/20 shadow-lg h-24 flex items-center">
       <motion.div 
