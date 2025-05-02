@@ -1339,4 +1339,57 @@ export default function ShadowFun() {
                           className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
                           value={formData.maxWalletPercentage}
                           onChange={(e) => setFormData({...formData, maxWalletPercentage: e.target.value})}
-                          placeholder={`
+                          placeholder={`Enter max wallet percentage (0% - 100%)`}
+                        />
+                        {formErrors.maxWalletPercentage && (
+                          <p className="mt-1 text-sm text-red-500">{formErrors.maxWalletPercentage}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-gray-400 mb-2">First Buy Amount</label>
+                        <input
+                          type="number"
+                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          value={formData.firstBuyAmount}
+                          onChange={(e) => setFormData({...formData, firstBuyAmount: e.target.value})}
+                          placeholder={`Enter first buy amount (0 - ${calculateMaxBuyAmount(formData.liquidity)})`}
+                        />
+                        {formErrors.firstBuyAmount && (
+                          <p className="mt-1 text-sm text-red-500">{formErrors.firstBuyAmount}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-gray-400 mb-2">Website URL</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          value={formData.websiteUrl}
+                          onChange={(e) => setFormData({...formData, websiteUrl: e.target.value})}
+                          placeholder="Enter website URL"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <motion.button
+                      type="submit"
+                      className="px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-semibold hover:from-fuchsia-600 hover:to-cyan-600 transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Create Token
+                    </motion.button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

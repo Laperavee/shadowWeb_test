@@ -40,10 +40,24 @@ const NETWORKS = {
 
 const NetworkSelector = ({ selectedChain, onChange }) => {
   const { playSound } = useSound();
+  const navigate = useNavigate();
+  const location = window.location.pathname;
 
-  const handleNetworkChange = (chain) => {
-    onChange(chain);
-    playSound('click');
+  const handleNetworkChange = async (chain) => {
+    try {
+      if (location !== '/shadow-fun') {
+        navigate('/shadow-fun');
+        setTimeout(() => {
+          onChange(chain);
+          playSound('click');
+        }, 100);
+      } else {
+        onChange(chain);
+        playSound('click');
+      }
+    } catch (error) {
+      console.error('Error changing network:', error);
+    }
   };
 
   return (
