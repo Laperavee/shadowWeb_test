@@ -1210,11 +1210,11 @@ export default function ShadowFun() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="max-w-2xl w-full mx-6 my-10"
+              className="max-w-5xl w-full mx-6 my-10"
             >
-              <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-8 shadow-[0_0_25px_rgba(255,0,255,0.1)] hover:shadow-[0_0_35px_rgba(255,0,255,0.2)] transition-all">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400">
+              <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-gray-800 rounded-xl p-12 shadow-[0_0_25px_rgba(255,0,255,0.1)] hover:shadow-[0_0_35px_rgba(255,0,255,0.2)] transition-all">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400">
                     Create New Token
                   </h2>
                   <motion.button 
@@ -1229,19 +1229,19 @@ export default function ShadowFun() {
                   </motion.button>
                 </div>
                 
-                <form onSubmit={handleCreateToken} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <form onSubmit={handleCreateToken} className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                     {/* Left Column */}
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                       <div>
-                        <label className="block text-gray-400 mb-2">Token Image</label>
+                        <label className="block text-gray-400 mb-3 text-lg">Token Image</label>
                         <div className="flex items-center gap-4">
-                          <label className="flex-1 flex items-center justify-center px-4 py-2 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50">
-                            <div className="flex items-center gap-2">
-                              <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <label className="flex-1 flex items-center justify-center px-6 py-4 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50">
+                            <div className="flex items-center gap-3">
+                              <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
-                              <span className="text-sm text-gray-400">Click to upload image</span>
+                              <span className="text-base text-gray-400">Click to upload image</span>
                             </div>
                             <input 
                               type="file" 
@@ -1251,16 +1251,16 @@ export default function ShadowFun() {
                             />
                           </label>
                           {formData.tokenImage && (
-                            <span className="text-sm text-gray-400">{formData.tokenImage.name}</span>
+                            <span className="text-base text-gray-400">{formData.tokenImage.name}</span>
                           )}
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-gray-400 mb-2">Token Name</label>
+                        <label className="block text-gray-400 mb-3 text-lg">Token Name</label>
                         <input
                           type="text"
-                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.name}
                           onChange={(e) => setFormData({...formData, name: e.target.value})}
                           placeholder="Enter token name"
@@ -1268,10 +1268,10 @@ export default function ShadowFun() {
                       </div>
 
                       <div>
-                        <label className="block text-gray-400 mb-2">Token Symbol</label>
+                        <label className="block text-gray-400 mb-3 text-lg">Token Symbol</label>
                         <input
                           type="text"
-                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.symbol}
                           onChange={(e) => setFormData({...formData, symbol: e.target.value})}
                           placeholder="Enter token symbol"
@@ -1279,10 +1279,10 @@ export default function ShadowFun() {
                       </div>
 
                       <div>
-                        <label className="block text-gray-400 mb-2">Website URL</label>
+                        <label className="block text-gray-400 mb-3 text-lg">Website URL</label>
                         <input
                           type="text"
-                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.websiteUrl}
                           onChange={(e) => setFormData({...formData, websiteUrl: e.target.value})}
                           placeholder="Enter website URL"
@@ -1291,69 +1291,69 @@ export default function ShadowFun() {
                     </div>
 
                     {/* Right Column */}
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                       <div>
-                        <label className="block text-gray-400 mb-2">Total Supply</label>
+                        <label className="block text-gray-400 mb-3 text-lg">Total Supply</label>
                         <input
                           type="number"
-                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.totalSupply}
                           onChange={(e) => setFormData({...formData, totalSupply: e.target.value})}
                           placeholder={`Enter total supply (${NETWORK_LIMITS[selectedChain].minSupply} - ${NETWORK_LIMITS[selectedChain].maxSupply})`}
                         />
                         {formErrors.totalSupply && (
-                          <p className="mt-1 text-sm text-red-500">{formErrors.totalSupply}</p>
+                          <p className="mt-2 text-sm text-red-500">{formErrors.totalSupply}</p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-gray-400 mb-2">Initial Liquidity ({getNetworkData(selectedChain).nativeCurrency.symbol})</label>
+                        <label className="block text-gray-400 mb-3 text-lg">Initial Liquidity ({getNetworkData(selectedChain).nativeCurrency.symbol})</label>
                         <input
                           type="number"
-                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.liquidity}
                           onChange={(e) => setFormData({...formData, liquidity: e.target.value})}
                           placeholder={`Enter initial liquidity (${NETWORK_LIMITS[selectedChain].minLiquidity} - ${NETWORK_LIMITS[selectedChain].maxLiquidity} ${getNetworkData(selectedChain).nativeCurrency.symbol})`}
                         />
                         {formErrors.liquidity && (
-                          <p className="mt-1 text-sm text-red-500">{formErrors.liquidity}</p>
+                          <p className="mt-2 text-sm text-red-500">{formErrors.liquidity}</p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-gray-400 mb-2">Max Wallet Percentage</label>
+                        <label className="block text-gray-400 mb-3 text-lg">Max Wallet Percentage</label>
                         <input
                           type="number"
-                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.maxWalletPercentage}
                           onChange={(e) => setFormData({...formData, maxWalletPercentage: e.target.value})}
                           placeholder={`Enter max wallet percentage (0% - 100%)`}
                         />
                         {formErrors.maxWalletPercentage && (
-                          <p className="mt-1 text-sm text-red-500">{formErrors.maxWalletPercentage}</p>
+                          <p className="mt-2 text-sm text-red-500">{formErrors.maxWalletPercentage}</p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-gray-400 mb-2">First Buy Amount</label>
+                        <label className="block text-gray-400 mb-3 text-lg">First Buy Amount</label>
                         <input
                           type="number"
-                          className="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white"
+                          className="w-full px-6 py-3 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
                           value={formData.firstBuyAmount}
                           onChange={(e) => setFormData({...formData, firstBuyAmount: e.target.value})}
                           placeholder={`Enter first buy amount (0 - ${calculateMaxBuyAmount(formData.liquidity)})`}
                         />
                         {formErrors.firstBuyAmount && (
-                          <p className="mt-1 text-sm text-red-500">{formErrors.firstBuyAmount}</p>
+                          <p className="mt-2 text-sm text-red-500">{formErrors.firstBuyAmount}</p>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-center pt-6">
+                  <div className="flex justify-center pt-8">
                     <motion.button
                       type="submit"
-                      className="px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-semibold hover:from-fuchsia-600 hover:to-cyan-600 transition-colors"
+                      className="px-12 py-4 rounded-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white text-lg font-semibold hover:from-fuchsia-600 hover:to-cyan-600 transition-colors"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
