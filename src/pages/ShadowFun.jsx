@@ -898,7 +898,7 @@ export default function ShadowFun() {
           </motion.div>
 
           {/* Ajouter le sélecteur de tri avant la grille de tokens */}
-          <div className="flex justify-end mb-6">
+          <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2 bg-black/50 backdrop-blur-xl border border-gray-800 rounded-xl p-1">
               <button
                 onClick={() => handleSortChange('created_at')}
@@ -941,6 +941,65 @@ export default function ShadowFun() {
                 Volume {sortBy === 'volume' && (sortDirection === 'asc' ? '↑' : '↓')}
               </button>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="inline-flex items-center gap-2 p-1.5 rounded-xl bg-black/50 backdrop-blur-xl border border-gray-800">
+                <motion.button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`relative px-4 py-2 rounded-xl ${
+                    currentPage === 1 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:bg-fuchsia-500/10'
+                  }`}
+                  whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
+                  whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
+                >
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </motion.button>
+                
+                <div className="flex gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <motion.button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`relative w-10 h-10 rounded-xl ${
+                        currentPage === page
+                          ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20'
+                          : 'hover:bg-fuchsia-500/10'
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <span className={`text-sm font-medium ${
+                        currentPage === page ? 'text-white' : 'text-gray-400'
+                      }`}>
+                        {page}
+                      </span>
+                    </motion.button>
+                  ))}
+                </div>
+                
+                <motion.button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className={`relative px-4 py-2 rounded-xl ${
+                    currentPage === totalPages
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-fuchsia-500/10'
+                  }`}
+                  whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
+                  whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
+                >
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </motion.button>
+              </div>
+            )}
           </div>
 
           {/* Enhanced loading state */}
@@ -1142,72 +1201,6 @@ export default function ShadowFun() {
                   );
                 })}
               </motion.div>
-
-              {/* Enhanced pagination */}
-              {totalPages > 1 && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="flex justify-center mt-12"
-                >
-                  <div className="inline-flex items-center gap-2 p-1.5 rounded-2xl bg-black/50 backdrop-blur-xl border border-fuchsia-500/20">
-                    <motion.button
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                      className={`relative px-4 py-2 rounded-xl ${
-                        currentPage === 1 
-                          ? 'opacity-50 cursor-not-allowed' 
-                          : 'hover:bg-fuchsia-500/10'
-                      }`}
-                      whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
-                      whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
-                    >
-                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </motion.button>
-                    
-                    <div className="flex gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                        <motion.button
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={`relative w-10 h-10 rounded-xl ${
-                            currentPage === page
-                              ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20'
-                              : 'hover:bg-fuchsia-500/10'
-                          }`}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <span className={`text-sm font-medium ${
-                            currentPage === page ? 'text-white' : 'text-gray-400'
-                          }`}>
-                            {page}
-                          </span>
-                        </motion.button>
-                      ))}
-                    </div>
-                    
-                    <motion.button
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                      className={`relative px-4 py-2 rounded-xl ${
-                        currentPage === totalPages
-                          ? 'opacity-50 cursor-not-allowed'
-                          : 'hover:bg-fuchsia-500/10'
-                      }`}
-                      whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
-                      whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
-                    >
-                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </motion.button>
-                  </div>
-                </motion.div>
-              )}
             </>
           )}
         </div>
