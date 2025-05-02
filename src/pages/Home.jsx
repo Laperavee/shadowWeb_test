@@ -27,7 +27,6 @@ export default function Home() {
 
   return (
     <main ref={containerRef} className="min-h-screen bg-black overflow-x-hidden">
-      <Navbar />
       {/* Animated background effects */}
       <div className="fixed inset-0">
         {/* Gradient background */}

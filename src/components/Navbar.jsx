@@ -158,12 +158,12 @@ export default function Navbar() {
   }, [navigate, playSound]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[9999] bg-black/50 backdrop-blur-xl border-b border-fuchsia-500/20 shadow-lg">
+    <header className="fixed top-0 left-0 right-0 z-[9999] bg-black/50 backdrop-blur-xl border-b border-fuchsia-500/20 shadow-lg h-24 flex items-center">
       <motion.div 
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 100 }}
-        className="flex flex-col sm:flex-row justify-between items-center py-6 px-8 gap-6 w-full"
+        className="flex flex-col sm:flex-row justify-between items-center py-0 px-8 gap-6 w-full h-full"
       >
         <div className="flex items-center gap-8 w-full max-w-6xl mx-auto">
           <motion.div
