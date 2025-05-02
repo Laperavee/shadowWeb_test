@@ -84,13 +84,24 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { setSelectedChain } = useNetwork();
+  const location = window.location.pathname;
 
   const handleNetworkChange = async (chain) => {
     try {
-      await setSelectedChain(chain);
-      onChange(chain);
+      // Si nous ne sommes pas sur shadow-fun, rediriger d'abord
+      if (location !== '/shadow-fun') {
+        navigate('/shadow-fun');
+        // Attendre un court instant pour que la redirection soit effectuée
+        setTimeout(() => {
+          setSelectedChain(chain);
+          onChange(chain);
+        }, 100);
+      } else {
+        // Si nous sommes déjà sur shadow-fun, juste changer le réseau
+        await setSelectedChain(chain);
+        onChange(chain);
+      }
       setIsOpen(false);
-      navigate('/shadow-fun', { replace: true });
     } catch (error) {
       console.error('Error changing network:', error);
     }
