@@ -7,6 +7,7 @@ import { useNetwork } from '../context/NetworkContext';
 import { supabase } from '../lib/supabase';
 import avaxLogo from '../../dist/assets/avax_logo.png';
 import baseLogo from '../../dist/assets/base_logo.png';
+import logo from '../../image1.png';
 
 const NETWORKS = {
   AVAX: {
@@ -170,8 +171,8 @@ export default function Navbar() {
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
-            <Link to="/" className="cursor-pointer">
-              Shadow Protocol
+            <Link to="/" className="cursor-pointer flex items-center">
+              <img src={logo} alt="Logo" className="w-12 h-12" />
             </Link>
           </motion.div>
           <div className="hidden sm:flex items-center gap-4">
