@@ -872,6 +872,32 @@ export default function ShadowFun() {
               </motion.p>
             </div>
             <div className="flex gap-4">
+              {/* Network Selection Buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleNetworkChange('AVAX')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
+                    selectedChain === 'AVAX'
+                      ? 'bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-400'
+                      : 'bg-black/40 border-gray-700/50 text-gray-400 hover:border-fuchsia-500/30'
+                  }`}
+                >
+                  <img src={avaxLogo} alt="AVAX" className="w-5 h-5" />
+                  <span className="font-medium">AVAX</span>
+                </button>
+                <button
+                  onClick={() => handleNetworkChange('BASE')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
+                    selectedChain === 'BASE'
+                      ? 'bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-400'
+                      : 'bg-black/40 border-gray-700/50 text-gray-400 hover:border-fuchsia-500/30'
+                  }`}
+                >
+                  <img src={baseLogo} alt="BASE" className="w-5 h-5" />
+                  <span className="font-medium">BASE</span>
+                </button>
+              </div>
+
               <motion.button
                 onClick={() => setActiveTab('create')}
                 className="relative px-4 py-2.5 rounded-xl group/button"
@@ -936,92 +962,64 @@ export default function ShadowFun() {
               </button>
             </div>
 
-            <div className="flex items-center gap-4">
-              {/* Network Selection Buttons */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleNetworkChange('AVAX')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
-                    selectedChain === 'AVAX'
-                      ? 'bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-400'
-                      : 'bg-black/40 border-gray-700/50 text-gray-400 hover:border-fuchsia-500/30'
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="inline-flex items-center gap-2 p-1.5 rounded-xl bg-black/50 backdrop-blur-xl border border-gray-800">
+                <motion.button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`relative px-4 py-2 rounded-xl ${
+                    currentPage === 1 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:bg-fuchsia-500/10'
                   }`}
+                  whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
+                  whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
                 >
-                  <img src={avaxLogo} alt="AVAX" className="w-5 h-5" />
-                  <span className="font-medium">AVAX</span>
-                </button>
-                <button
-                  onClick={() => handleNetworkChange('BASE')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
-                    selectedChain === 'BASE'
-                      ? 'bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-400'
-                      : 'bg-black/40 border-gray-700/50 text-gray-400 hover:border-fuchsia-500/30'
-                  }`}
-                >
-                  <img src={baseLogo} alt="BASE" className="w-5 h-5" />
-                  <span className="font-medium">BASE</span>
-                </button>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="inline-flex items-center gap-2 p-1.5 rounded-xl bg-black/50 backdrop-blur-xl border border-gray-800">
-                  <motion.button
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className={`relative px-4 py-2 rounded-xl ${
-                      currentPage === 1 
-                        ? 'opacity-50 cursor-not-allowed' 
-                        : 'hover:bg-fuchsia-500/10'
-                    }`}
-                    whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
-                    whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
-                  >
-                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </motion.button>
-                  
-                  <div className="flex gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <motion.button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`relative w-10 h-10 rounded-xl ${
-                          currentPage === page
-                            ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20'
-                            : 'hover:bg-fuchsia-500/10'
-                        }`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <span className={`text-sm font-medium ${
-                          currentPage === page ? 'text-white' : 'text-gray-400'
-                        }`}>
-                          {page}
-                        </span>
-                      </motion.button>
-                    ))}
-                  </div>
-                  
-                  <motion.button
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className={`relative px-4 py-2 rounded-xl ${
-                      currentPage === totalPages
-                        ? 'opacity-50 cursor-not-allowed'
-                        : 'hover:bg-fuchsia-500/10'
-                    }`}
-                    whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
-                    whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
-                  >
-                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </motion.button>
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </motion.button>
+                
+                <div className="flex gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <motion.button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`relative w-10 h-10 rounded-xl ${
+                        currentPage === page
+                          ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20'
+                          : 'hover:bg-fuchsia-500/10'
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <span className={`text-sm font-medium ${
+                        currentPage === page ? 'text-white' : 'text-gray-400'
+                      }`}>
+                        {page}
+                      </span>
+                    </motion.button>
+                  ))}
                 </div>
-              )}
-            </div>
+                
+                <motion.button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className={`relative px-4 py-2 rounded-xl ${
+                    currentPage === totalPages
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-fuchsia-500/10'
+                  }`}
+                  whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
+                  whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
+                >
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </motion.button>
+              </div>
+            )}
           </div>
 
           {/* Enhanced loading state */}
