@@ -1274,7 +1274,7 @@ export default function ShadowFun() {
                       </div>
 
                       <div className="pt-5">
-                        <div className="mt-6">
+                        <div className="mt-5">
                           <label className="block text-gray-400 mb-2 text-lg">Token Name</label>
                           <input
                             type="text"
@@ -1285,7 +1285,7 @@ export default function ShadowFun() {
                           />
                         </div>
 
-                        <div className="mt-6">
+                        <div className="mt-7">
                           <label className="block text-gray-400 mb-2 text-lg">Token Symbol</label>
                           <input
                             type="text"
