@@ -1081,11 +1081,21 @@ export default function ShadowFun() {
                         }
                         const opacity = score / 100;
                         return score > 0 
-                          ? `linear-gradient(to right, rgba(236, 72, 153, ${opacity}), rgba(6, 182, 212, ${opacity})) 1` // fuchsia-500 to cyan-500
+                          ? `linear-gradient(45deg, rgba(236, 72, 153, ${opacity}), rgba(6, 182, 212, ${opacity})) 1` // fuchsia-500 to cyan-500
                           : 'none';
                       })(),
                       borderStyle: 'solid',
-                      borderWidth: '2px'
+                      borderWidth: '2px',
+                      borderColor: (() => {
+                        let score = 0;
+                        if (token.twitter_handle && token.twitter_handle !== 'empty' && token.twitter_handle !== '@empty') {
+                          score += 60;
+                        }
+                        if (!token.is_fresh) {
+                          score += 40;
+                        }
+                        return score > 0 ? 'transparent' : '#1f2937'; // gray-800
+                      })()
                     }}
                     className="group relative bg-black/50 backdrop-blur-xl rounded-2xl p-6 transition-all duration-300 cursor-pointer hover:border-fuchsia-500/30"
                     onClick={() => navigate(`/token/${token.token_address}`)}
