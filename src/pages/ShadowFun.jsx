@@ -15,6 +15,8 @@ import { useWallet } from '../context/WalletContext';
 import { useSound } from '../context/SoundContext';
 import { useNotification } from '../context/NotificationContext';
 import { useNetwork } from '../context/NetworkContext';
+import definedLogo from '../../defined_logo.png';
+import dexscreenerLogo from '../../dexscreener_logo.png';
 
 const SHADOW_CREATOR_ABI = {
   BASE: ShadowBaseArtifact.abi,
@@ -943,14 +945,28 @@ export default function ShadowFun() {
                       </div>
 
                       <div className="flex gap-2">
-                        <motion.a
-                            href={definedLink}
+                        <a
+                          href={`https://www.defined.fi/${getNetworkData(token.network)?.chainName?.toLowerCase() || token.network}/${token.token_address}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                            className="text-fuchsia-400 hover:text-fuchsia-300 transition-colors"
-                          >
-                            View on Defined
-                        </motion.a>
+                          className="flex items-center gap-1 px-3 py-2 rounded-lg bg-black/40 hover:bg-fuchsia-500/10 border border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors"
+                          title="View on Defined"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <img src={definedLogo} alt="Defined" className="w-5 h-5" />
+                          <span className="text-xs text-white font-semibold">Defined</span>
+                        </a>
+                        <a
+                          href={`https://dexscreener.com/${getNetworkData(token.network)?.chainName?.toLowerCase() || token.network}/${token.token_address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 px-3 py-2 rounded-lg bg-black/40 hover:bg-cyan-500/10 border border-cyan-500/10 hover:border-cyan-500/30 transition-colors"
+                          title="View on Dexscreener"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <img src={dexscreenerLogo} alt="Dexscreener" className="w-5 h-5" />
+                          <span className="text-xs text-white font-semibold">Dexscreener</span>
+                        </a>
                       </div>
                     </div>
                   </motion.div>
