@@ -397,7 +397,7 @@ const TokenDetail = () => {
     >
       <BackgroundEffects />
       
-      <div className="relative z-10 max-w-6xl mx-auto">        
+      <div className="relative z-10 max-w-7xl mx-auto">        
         {/* Rest of the content */}
         <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
           {/* Token header with glass effect */}
