@@ -1272,27 +1272,28 @@ export default function ShadowFun() {
                           />
                         </label>
                       </div>
+                      <div className="h-[calc(2*3rem+2*1.5rem+2*0.75rem)] w-full">
+                        <div>
+                          <label className="block text-gray-400 mb-3 text-lg">Token Name</label>
+                          <input
+                            type="text"
+                            className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
+                            value={formData.name}
+                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            placeholder="Enter token name"
+                          />
+                        </div>
 
-                      <div>
-                        <label className="block text-gray-400 mb-3 text-lg">Token Name</label>
-                        <input
-                          type="text"
-                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
-                          value={formData.name}
-                          onChange={(e) => setFormData({...formData, name: e.target.value})}
-                          placeholder="Enter token name"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-400 mb-3 text-lg">Token Symbol</label>
-                        <input
-                          type="text"
-                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
-                          value={formData.symbol}
-                          onChange={(e) => setFormData({...formData, symbol: e.target.value})}
-                          placeholder="Enter token symbol"
-                        />
+                        <div>
+                          <label className="block text-gray-400 mb-3 text-lg">Token Symbol</label>
+                          <input
+                            type="text"
+                            className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
+                            value={formData.symbol}
+                            onChange={(e) => setFormData({...formData, symbol: e.target.value})}
+                            placeholder="Enter token symbol"
+                          />
+                        </div>
                       </div>
                     </div>
 
