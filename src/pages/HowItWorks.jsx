@@ -18,11 +18,11 @@ export default function HowItWorks() {
 
       <div className="relative z-10 pt-24 container mx-auto px-4 sm:px-6 py-12 sm:py-20">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12 sm:mb-20"
-        >
+                  <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col sm:flex-row justify-between items-center gap-6 mb-12"
+          >
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-500 to-cyan-400 mb-4 sm:mb-6">
             How Shadow Protocol Works
           </h1>
