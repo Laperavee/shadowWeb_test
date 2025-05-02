@@ -38,10 +38,6 @@ export default function Navbar() {
     checkTwitterAuth();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('selectedChain', selectedChain);
-  }, [selectedChain]);
-
   const handleTwitterConnect = async (e) => {
     e.preventDefault();
     try {
