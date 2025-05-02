@@ -1233,7 +1233,7 @@ export default function ShadowFun() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                     {/* Left Column - ID Card Style */}
                     <div className="md:col-span-1 space-y-6">
-                      <div className="h-42 w-full">
+                      <div className="h-46 w-full">
                         <label className="block text-gray-400 mb-3 text-lg">Token Image</label>
                         <label className="flex items-center justify-center w-full h-full border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50 bg-black/30">
                           {formData.tokenImage ? (
