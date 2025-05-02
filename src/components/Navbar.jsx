@@ -38,7 +38,7 @@ const NETWORKS = {
   }
 };
 
-const NetworkSelector = ({ selectedChain, onChange }) => {
+export const NetworkSelector = ({ selectedChain, onChange }) => {
   const { playSound } = useSound();
   const navigate = useNavigate();
   const location = window.location.pathname;
