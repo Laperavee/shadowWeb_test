@@ -1071,7 +1071,7 @@ export default function ShadowFun() {
                       visible: { opacity: 1, y: 0 }
                     }}
                     style={{
-                      borderColor: (() => {
+                      borderImage: (() => {
                         let score = 0;
                         if (token.twitter_handle && token.twitter_handle !== 'empty' && token.twitter_handle !== '@empty') {
                           score += 60;
@@ -1079,13 +1079,15 @@ export default function ShadowFun() {
                         if (!token.is_fresh) {
                           score += 40;
                         }
-                        const opacity =  score / 100;
+                        const opacity = score / 100;
                         return score > 0 
-                          ? `rgba(16, 185, 129, ${opacity})` // emerald-500 color
-                          : '#1f2937'; // gray-800 color
-                      })()
+                          ? `linear-gradient(to right, rgba(236, 72, 153, ${opacity}), rgba(6, 182, 212, ${opacity})) 1` // fuchsia-500 to cyan-500
+                          : 'none';
+                      })(),
+                      borderStyle: 'solid',
+                      borderWidth: '2px'
                     }}
-                    className="group relative bg-black/50 backdrop-blur-xl border-2 rounded-2xl p-6 transition-all duration-300 cursor-pointer hover:border-fuchsia-500/30"
+                    className="group relative bg-black/50 backdrop-blur-xl rounded-2xl p-6 transition-all duration-300 cursor-pointer hover:border-fuchsia-500/30"
                     onClick={() => navigate(`/token/${token.token_address}`)}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 to-cyan-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
