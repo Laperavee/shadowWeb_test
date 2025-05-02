@@ -82,6 +82,15 @@ const NETWORK_LIMITS = {
 
 const NetworkSelector = ({ selectedChain, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const { setSelectedChain } = useNetwork();
+
+  const handleNetworkChange = (chain) => {
+    setSelectedChain(chain);
+    onChange(chain);
+    setIsOpen(false);
+    navigate('/shadow-fun');
+  };
 
   return (
     <div className="relative">
@@ -101,10 +110,7 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
           {Object.entries(NETWORKS).map(([key, network], index, array) => (
             <button
               key={key}
-              onClick={() => {
-                onChange(key);
-                setIsOpen(false);
-              }}
+              onClick={() => handleNetworkChange(key)}
               className={`w-full px-4 py-2 text-left flex items-center space-x-2 ${
                 key === selectedChain
                   ? "bg-white/10"
