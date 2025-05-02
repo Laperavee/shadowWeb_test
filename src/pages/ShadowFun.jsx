@@ -26,7 +26,7 @@ const SHADOW_CREATOR_ABI = {
 const NETWORKS = {
   AVAX: {
     chainId: "0xa86a",
-    chainName: "Avalanche C-Chain",
+    chainName: "Avalanche",
     logo: avaxLogo,
     disabled: false,
     nativeCurrency: {
