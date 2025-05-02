@@ -330,7 +330,18 @@ export default function ShadowFun() {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(newSortBy);
-      setSortDirection('desc');
+      // Définir la direction par défaut selon le critère
+      switch (newSortBy) {
+        case 'name':
+          setSortDirection('asc'); // A-Z par défaut
+          break;
+        case 'marketCap':
+        case 'volume':
+          setSortDirection('desc'); // Plus grand au plus petit par défaut
+          break;
+        default:
+          setSortDirection('desc'); // Plus récent au plus ancien par défaut
+      }
     }
   };
 
@@ -897,7 +908,7 @@ export default function ShadowFun() {
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                Latest
+                Latest {sortBy === 'created_at' && (sortDirection === 'asc' ? '↑' : '↓')}
               </button>
               <button
                 onClick={() => handleSortChange('name')}
@@ -907,7 +918,7 @@ export default function ShadowFun() {
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                Name
+                Name {sortBy === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
               </button>
               <button
                 onClick={() => handleSortChange('marketCap')}
@@ -917,7 +928,7 @@ export default function ShadowFun() {
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                Market Cap
+                Market Cap {sortBy === 'marketCap' && (sortDirection === 'asc' ? '↑' : '↓')}
               </button>
               <button
                 onClick={() => handleSortChange('volume')}
@@ -927,20 +938,7 @@ export default function ShadowFun() {
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                Volume
-              </button>
-              <button
-                onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-white transition-colors"
-              >
-                <svg 
-                  className={`w-4 h-4 transform ${sortDirection === 'asc' ? 'rotate-180' : ''}`} 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                Volume {sortBy === 'volume' && (sortDirection === 'asc' ? '↑' : '↓')}
               </button>
             </div>
           </div>
