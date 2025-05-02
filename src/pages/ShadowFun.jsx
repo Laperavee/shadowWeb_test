@@ -1230,49 +1230,47 @@ export default function ShadowFun() {
                 </div>
                 
                 <form onSubmit={handleCreateToken} className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    {/* Left Column */}
-                    <div className="space-y-8">
-                      <div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    {/* Left Column - ID Card Style */}
+                    <div className="md:col-span-1 space-y-6">
+                      <div className="aspect-square w-full">
                         <label className="block text-gray-400 mb-3 text-lg">Token Image</label>
-                        <div className="flex items-center gap-4">
-                          <label className="flex-1 flex items-center justify-center px-6 py-4 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50">
-                            {formData.tokenImage ? (
-                              <div className="relative w-full h-32">
-                                <img 
-                                  src={URL.createObjectURL(formData.tokenImage)} 
-                                  alt="Token preview" 
-                                  className="w-full h-full object-contain rounded-lg"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setFormData({...formData, tokenImage: null});
-                                  }}
-                                  className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-red-500/50 transition-colors"
-                                >
-                                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-3">
-                                <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <label className="flex items-center justify-center w-full h-full border-2 border-gray-700 border-dashed rounded-lg cursor-pointer hover:border-fuchsia-500/50 bg-black/30">
+                          {formData.tokenImage ? (
+                            <div className="relative w-full h-full">
+                              <img 
+                                src={URL.createObjectURL(formData.tokenImage)} 
+                                alt="Token preview" 
+                                className="w-full h-full object-contain rounded-lg"
+                              />
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFormData({...formData, tokenImage: null});
+                                }}
+                                className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-red-500/50 transition-colors"
+                              >
+                                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                                <span className="text-base text-gray-400">Click to upload image</span>
-                              </div>
-                            )}
-                            <input 
-                              type="file" 
-                              className="hidden" 
-                              accept="image/*"
-                              onChange={(e) => setFormData({...formData, tokenImage: e.target.files[0]})}
-                            />
-                          </label>
-                        </div>
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center gap-3">
+                              <svg className="w-12 h-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              <span className="text-base text-gray-400">Click to upload image</span>
+                            </div>
+                          )}
+                          <input 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/*"
+                            onChange={(e) => setFormData({...formData, tokenImage: e.target.files[0]})}
+                          />
+                        </label>
                       </div>
 
                       <div>
@@ -1296,21 +1294,10 @@ export default function ShadowFun() {
                           placeholder="Enter token symbol"
                         />
                       </div>
-
-                      <div>
-                        <label className="block text-gray-400 mb-3 text-lg">Website URL</label>
-                        <input
-                          type="text"
-                          className="w-full px-6 py-2 rounded-lg bg-black/50 border border-gray-700 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 text-white text-lg"
-                          value={formData.websiteUrl}
-                          onChange={(e) => setFormData({...formData, websiteUrl: e.target.value})}
-                          placeholder="Enter website URL"
-                        />
-                      </div>
                     </div>
 
-                    {/* Right Column */}
-                    <div className="space-y-8">
+                    {/* Right Column - Technical Parameters */}
+                    <div className="md:col-span-2 space-y-6">
                       <div>
                         <label className="block text-gray-400 mb-3 text-lg">Total Supply</label>
                         <input
