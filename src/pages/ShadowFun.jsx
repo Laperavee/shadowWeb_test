@@ -85,11 +85,15 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
   const navigate = useNavigate();
   const { setSelectedChain } = useNetwork();
 
-  const handleNetworkChange = (chain) => {
-    setSelectedChain(chain);
-    onChange(chain);
-    setIsOpen(false);
-    navigate('/shadow-fun');
+  const handleNetworkChange = async (chain) => {
+    try {
+      await setSelectedChain(chain);
+      onChange(chain);
+      setIsOpen(false);
+      navigate('/shadow-fun', { replace: true });
+    } catch (error) {
+      console.error('Error changing network:', error);
+    }
   };
 
   return (
@@ -106,7 +110,7 @@ const NetworkSelector = ({ selectedChain, onChange }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 min-w-[160px] rounded-lg bg-black/20 backdrop-blur-sm border border-white/10">
+        <div className="absolute right-0 mt-2 min-w-[160px] rounded-lg bg-black/20 backdrop-blur-sm border border-white/10 z-50">
           {Object.entries(NETWORKS).map(([key, network], index, array) => (
             <button
               key={key}
