@@ -13,13 +13,13 @@ class MarketDataService {
     }
 
     try {
-      const definedNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
-      const response = await fetch(`https://api.defined.fi/v1/tokens/${tokenAddress}`);
+      const dexscreenerNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
+      const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
       const data = await response.json();
       
       if (data && data.pairs && data.pairs.length > 0) {
         const sortedPairs = data.pairs.sort((a, b) => 
-          parseFloat(b.volumeUsd24h || 0) - parseFloat(a.volumeUsd24h || 0)
+          parseFloat(b.volume.h24 || 0) - parseFloat(a.volume.h24 || 0)
         );
         
         const mainPair = sortedPairs[0];
@@ -28,9 +28,9 @@ class MarketDataService {
           const marketData = {
             price: parseFloat(mainPair.priceUsd || 0),
             marketCap: parseFloat(mainPair.fdv || 0),
-            priceChange24h: parseFloat(mainPair.priceChange?.h24 || 0),
-            volume24h: parseFloat(mainPair.volume?.h24 || 0),
-            liquidity: parseFloat(mainPair.liquidity?.usd || 0) / 1000
+            priceChange24h: parseFloat(mainPair.priceChange.h24 || 0),
+            volume24h: parseFloat(mainPair.volume.h24 || 0),
+            liquidity: parseFloat(mainPair.liquidity.usd || 0)
           };
 
           this.cache.set(cacheKey, {
