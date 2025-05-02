@@ -143,6 +143,8 @@ const getErrorMessage = (field, chain) => {
   }
 };
 
+const TOKENS_PER_PAGE = 8;
+
 export default function ShadowFun() {
   const navigate = useNavigate();
   const { selectedChain } = useNetwork();
@@ -193,7 +195,7 @@ export default function ShadowFun() {
       setLoading(true);
       const data = await tokenService.getTokens(selectedChain);
       setTokens(data);
-      setTotalPages(Math.ceil(data.length / 10));
+      setTotalPages(Math.ceil(data.length / TOKENS_PER_PAGE));
       setCurrentPage(1);
     } catch (error) {
       console.error('Error loading tokens:', error);
@@ -276,8 +278,8 @@ export default function ShadowFun() {
 
   // Calculer les tokens à afficher pour la page courante
   const getCurrentPageTokens = () => {
-    const startIndex = (currentPage - 1) * 10;
-    const endIndex = startIndex + 10;
+    const startIndex = (currentPage - 1) * TOKENS_PER_PAGE;
+    const endIndex = startIndex + TOKENS_PER_PAGE;
     return tokens.slice(startIndex, endIndex);
   };
 
