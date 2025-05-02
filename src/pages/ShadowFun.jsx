@@ -1108,7 +1108,7 @@ export default function ShadowFun() {
                             inset: 0,
                             padding: '2px',
                             borderRadius: '1rem',
-                            background: `linear-gradient(45deg, rgba(236, 72, 153, ${opacity}), rgba(6, 182, 212, ${opacity}))`,
+                            background: `linear-gradient(45deg, rgba(192, 38, 211, ${opacity}), rgba(8, 145, 178, ${opacity}))`,
                             WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
                             WebkitMaskComposite: 'xor',
                             maskComposite: 'exclude'
