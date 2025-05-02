@@ -1040,9 +1040,6 @@ export default function ShadowFun() {
                             {token.token_name}
                           </h3>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="px-3 py-1 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400 text-sm font-medium">
-                              ${token.token_symbol}
-                            </span>
                             {/* Twitter Status Indicator */}
                             <a 
                               href={token.twitter_handle && token.twitter_handle !== 'empty' && token.twitter_handle !== '@empty' 
