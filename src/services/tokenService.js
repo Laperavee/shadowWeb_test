@@ -37,30 +37,30 @@ const getApiUrl = (endpoint) => {
   return url;
 };
 
-async function uploadTokenImage(file) {
-  if (!file) return null;
+export const tokenService = {
+  async uploadTokenImage(file) {
+    if (!file) return null;
 
-  try {
-    const fileName = `${Date.now()}_${file.name}`; 
-    const { data, error } = await supabase.storage.from('images').upload(fileName, file);
+    try {
+      const fileName = `${Date.now()}_${file.name}`; 
+      const { data, error } = await supabase.storage.from('images').upload(fileName, file);
 
-    if (error) {
-      console.error('Error uploading image:', error);
+      if (error) {
+        console.error('Error uploading image:', error);
+        return null;
+      }
+
+      const { data: { signedUrl } } = await supabase.storage
+        .from('images')
+        .createSignedUrl(fileName, 365 * 24 * 60 * 60); 
+
+      return signedUrl;
+    } catch (error) {
+      console.error('Error in uploadTokenImage:', error);
       return null;
     }
+  },
 
-    const { data: { signedUrl } } = await supabase.storage
-      .from('images')
-      .createSignedUrl(fileName, 365 * 24 * 60 * 60); 
-
-    return signedUrl;
-  } catch (error) {
-    console.error('Error in uploadTokenImage:', error);
-    return null;
-  }
-}
-
-export const tokenService = {
   async getTokens(network) {
     try {
       const url = getApiUrl(`/tokens?network=${network}`);      

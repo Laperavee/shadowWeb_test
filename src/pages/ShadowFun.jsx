@@ -690,7 +690,7 @@ export default function ShadowFun() {
       }
       
       // Ne pas rediriger automatiquement
-      // window.location.href = `/token/${tokenAddress}`;
+      window.location.href = `/token/${tokenAddress}`;
     } catch (error) {
       console.error('Error saving token:', error);
       console.error('Error details:', {
