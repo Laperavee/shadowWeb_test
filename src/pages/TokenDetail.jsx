@@ -589,7 +589,9 @@ const TokenDetail = () => {
                 <div className="bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-xl rounded-xl border border-gray-800 p-4 hover:border-fuchsia-500/30 transition-all duration-300">
                   <p className="text-gray-400 text-sm mb-1">Market Cap</p>
                   <p className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-200">
-                    ${parseInt(token.market_data.marketCap || 0).toLocaleString()}
+                    {token.market_data.marketCap > 0 
+                      ? `$${parseInt(token.market_data.marketCap).toLocaleString()}`
+                      : 'N/A'}
                   </p>
                 </div>
               )}
@@ -615,7 +617,9 @@ const TokenDetail = () => {
                 <div className="flex justify-between items-center py-3 border-b border-gray-800/50 group hover:border-fuchsia-500/20 transition-colors">
                   <span className="text-gray-400 group-hover:text-gray-300 transition-colors">Market Cap</span>
                   <span className="font-bold group-hover:text-white transition-colors">
-                    ${parseInt(token.market_data?.marketCap || 0).toLocaleString()}
+                    {token.market_data?.marketCap > 0 
+                      ? `$${parseInt(token.market_data.marketCap).toLocaleString()}`
+                      : 'N/A'}
                   </span>
                 </div>
                 

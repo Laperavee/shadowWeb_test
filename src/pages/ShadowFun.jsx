@@ -957,7 +957,9 @@ export default function ShadowFun() {
                         <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
                           <span className="text-gray-400">Market Cap</span>
                           <span className="font-medium text-white">
-                            ${token.market_data?.marketCap ? parseInt(token.market_data.marketCap).toLocaleString() : '0'}
+                            {token.market_data?.marketCap && token.market_data.marketCap > 0 
+                              ? `$${parseInt(token.market_data.marketCap).toLocaleString()}`
+                              : 'N/A'}
                           </span>
                         </div>
                       </div>
