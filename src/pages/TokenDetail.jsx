@@ -461,7 +461,7 @@ const TokenDetail = () => {
                     </a>
                     {/* Website Status Indicator */}
                     <a 
-                      href={token.website_url && token.website_url !== 'empty' ? token.website_url : '#'}
+                      href={token.website_url && token.website_url !== 'empty' && token.website_url !== 'Created on X' ? token.website_url : '#'}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`flex items-center gap-1.5 px-2 py-1 rounded-full ${
