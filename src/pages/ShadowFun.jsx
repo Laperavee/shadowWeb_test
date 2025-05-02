@@ -18,6 +18,7 @@ import { useNetwork } from '../context/NetworkContext';
 import definedLogo from '../../defined_logo.png';
 import dexscreenerLogo from '../../dexscreener_logo.png';
 import { marketDataService } from '../services/marketDataService';
+import NetworkSelector from '../components/NetworkSelector';
 
 const SHADOW_CREATOR_ABI = {
   BASE: ShadowBaseArtifact.abi,
@@ -80,79 +81,6 @@ const NETWORK_LIMITS = {
   }
 };
 
-const NetworkButtons = ({ selectedChain, onChange }) => {
-  const navigate = useNavigate();
-  const { setSelectedChain } = useNetwork();
-  const location = window.location.pathname;
-
-  const handleNetworkChange = async (chain) => {
-    try {
-      if (location !== '/shadow-fun') {
-        navigate('/shadow-fun');
-        setTimeout(() => {
-          setSelectedChain(chain);
-          onChange(chain);
-        }, 100);
-      } else {
-        await setSelectedChain(chain);
-        onChange(chain);
-      }
-    } catch (error) {
-      console.error('Error changing network:', error);
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <button
-        onClick={() => handleNetworkChange('AVAX')}
-        className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 ${
-          selectedChain === 'AVAX'
-            ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/30 shadow-[0_0_15px_rgba(255,0,255,0.2)]'
-            : 'bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-black/30'
-        }`}
-      >
-        {selectedChain === 'AVAX' && (
-          <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 rounded-lg animate-pulse-slow" />
-        )}
-        <div className="relative flex items-center space-x-2">
-          <img src={NETWORKS.AVAX.logo} alt={NETWORKS.AVAX.chainName} className="w-6 h-6" />
-          <span className={`text-sm font-medium ${
-            selectedChain === 'AVAX'
-              ? 'text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400'
-              : 'text-white'
-          }`}>
-            {NETWORKS.AVAX.chainName}
-          </span>
-        </div>
-      </button>
-
-      <button
-        onClick={() => handleNetworkChange('BASE')}
-        className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 ${
-          selectedChain === 'BASE'
-            ? 'bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/30 shadow-[0_0_15px_rgba(255,0,255,0.2)]'
-            : 'bg-black/20 backdrop-blur-sm border border-white/10 hover:bg-black/30'
-        }`}
-      >
-        {selectedChain === 'BASE' && (
-          <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-cyan-500/10 rounded-lg animate-pulse-slow" />
-        )}
-        <div className="relative flex items-center space-x-2">
-          <img src={NETWORKS.BASE.logo} alt={NETWORKS.BASE.chainName} className="w-6 h-6" />
-          <span className={`text-sm font-medium ${
-            selectedChain === 'BASE'
-              ? 'text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400'
-              : 'text-white'
-          }`}>
-            {NETWORKS.BASE.chainName}
-          </span>
-        </div>
-      </button>
-    </div>
-  );
-};
-
 const validateText = (value, field) => {
   const patterns = {
     name: /^[a-zA-Z0-9\s]{1,50}$/,
@@ -182,7 +110,7 @@ const getNetworkData = (network) =>
 
 export default function ShadowFun() {
   const navigate = useNavigate();
-  const { selectedChain } = useNetwork();
+  const { selectedChain, setSelectedChain } = useNetwork();
   const { isWalletConnected, userAddress, connectWallet } = useWallet();
   const { playSound } = useSound();
   const { showNotification } = useNotification();
@@ -907,7 +835,7 @@ export default function ShadowFun() {
               </motion.p>
             </div>
             <div className="flex gap-4">
-              <NetworkButtons selectedChain={selectedChain} onChange={onChange} />
+              <NetworkSelector selectedChain={selectedChain} onChange={setSelectedChain} />
               <motion.button
                 onClick={() => setActiveTab('create')}
                 className="relative px-4 py-2.5 rounded-xl group/button"
