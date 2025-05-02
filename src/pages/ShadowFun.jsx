@@ -17,6 +17,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useNetwork } from '../context/NetworkContext';
 import definedLogo from '../../defined_logo.png';
 import dexscreenerLogo from '../../dexscreener_logo.png';
+import { marketDataService } from '../services/marketDataService';
 
 const SHADOW_CREATOR_ABI = {
   BASE: ShadowBaseArtifact.abi,
@@ -199,8 +200,10 @@ export default function ShadowFun() {
     try {
       setLoading(true);
       const data = await tokenService.getTokens(selectedChain);
-      setTokens(data);
-      setTotalPages(Math.ceil(data.length / TOKENS_PER_PAGE));
+      // Récupérer les données de marché pour tous les tokens
+      const tokensWithMarketData = await marketDataService.getBatchMarketData(data);
+      setTokens(tokensWithMarketData);
+      setTotalPages(Math.ceil(tokensWithMarketData.length / TOKENS_PER_PAGE));
       setCurrentPage(1);
     } catch (error) {
       console.error('Error loading tokens:', error);
@@ -765,6 +768,19 @@ export default function ShadowFun() {
     setDefinedLink(`https://www.defined.fi/${definedNetwork}/${tokens[0].token_address}?embedded=1&hideTxTable=1&hideSidebar=1&hideChart=0&hideChartEmptyBars=1&chartSmoothing=0&embedColorMode=DEFAULT&interval=${timeframeParam}&hideVolume=1`);
   }, [timeframe, selectedChain, tokens]);
 
+  // Ajouter un intervalle pour rafraîchir les données de marché
+  useEffect(() => {
+    const refreshMarketData = async () => {
+      if (tokens.length > 0) {
+        const updatedTokens = await marketDataService.getBatchMarketData(tokens);
+        setTokens(updatedTokens);
+      }
+    };
+
+    const interval = setInterval(refreshMarketData, 60000); // Rafraîchir toutes les minutes
+    return () => clearInterval(interval);
+  }, [tokens]);
+
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
       {/* Animated background effects */}
@@ -933,13 +949,15 @@ export default function ShadowFun() {
 
                       <div className="space-y-3 mb-6">
                         <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
-                          <span className="text-gray-400">Supply</span>
-                          <span className="font-medium text-white">{parseInt(token.supply).toLocaleString()}</span>
+                          <span className="text-gray-400">Volume 24h</span>
+                          <span className="font-medium text-white">
+                            ${token.market_data?.volume24h ? parseInt(token.market_data.volume24h).toLocaleString() : '0'}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
-                          <span className="text-gray-400">Liquidity</span>
+                          <span className="text-gray-400">Market Cap</span>
                           <span className="font-medium text-white">
-                            {token.liquidity} {getNetworkData(token.network)?.nativeCurrency?.symbol || ''}
+                            ${token.market_data?.marketCap ? parseInt(token.market_data.marketCap).toLocaleString() : '0'}
                           </span>
                         </div>
                       </div>

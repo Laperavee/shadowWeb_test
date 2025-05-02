@@ -1,4 +1,5 @@
 import { API_URL, CACHE_DURATION } from '../utils/constants';
+import { priceService } from './priceService';
 
 // Cache pour les requêtes
 const cache = new Map();
@@ -8,6 +9,68 @@ const isProduction = import.meta.env.PROD;
 const API_BASE_URL = isProduction ? '/api' : 'http://localhost:3002/api';
 
 class MarketDataService {
+  constructor() {
+    this.cache = new Map();
+    this.cacheTimeout = 60000; // 1 minute en millisecondes
+  }
+
+  async getTokenMarketData(tokenAddress, network) {
+    const cacheKey = `${network}-${tokenAddress}`;
+    const cachedData = this.cache.get(cacheKey);
+
+    if (cachedData && Date.now() - cachedData.timestamp < this.cacheTimeout) {
+      return cachedData.data;
+    }
+
+    try {
+      const definedNetwork = network?.toUpperCase() === 'AVAX' ? 'avalanche' : network?.toLowerCase();
+      const response = await fetch(`https://api.defined.fi/v1/tokens/${tokenAddress}`);
+      const data = await response.json();
+      
+      if (data && data.pairs && data.pairs.length > 0) {
+        const sortedPairs = data.pairs.sort((a, b) => 
+          parseFloat(b.volumeUsd24h || 0) - parseFloat(a.volumeUsd24h || 0)
+        );
+        
+        const mainPair = sortedPairs[0];
+        
+        if (mainPair) {
+          const marketData = {
+            price: parseFloat(mainPair.priceUsd || 0),
+            marketCap: parseFloat(mainPair.fdv || 0),
+            priceChange24h: parseFloat(mainPair.priceChange?.h24 || 0),
+            volume24h: parseFloat(mainPair.volume?.h24 || 0),
+            liquidity: parseFloat(mainPair.liquidity?.usd || 0) / 1000
+          };
+
+          this.cache.set(cacheKey, {
+            data: marketData,
+            timestamp: Date.now()
+          });
+
+          return marketData;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching market data:', error);
+      return null;
+    }
+  }
+
+  async getBatchMarketData(tokens) {
+    const promises = tokens.map(token => 
+      this.getTokenMarketData(token.token_address, token.network)
+    );
+    
+    const results = await Promise.all(promises);
+    
+    return tokens.map((token, index) => ({
+      ...token,
+      market_data: results[index]
+    }));
+  }
+
   async getMarketData(tokenAddress, network) {
     try {
       if (!tokenAddress) {
@@ -130,7 +193,7 @@ class MarketDataService {
 
   clearCache() {
     console.debug('[Market Data] Clearing cache');
-    cache.clear();
+    this.cache.clear();
   }
 }
 
