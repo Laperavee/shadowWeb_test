@@ -5,6 +5,8 @@ import { priceService } from '../services/priceService';
 import { realtimeService } from '../services/realtimeService';
 import { motion } from 'framer-motion';
 import BackgroundEffects from '../components/BackgroundEffects';
+import definedLogo from '../../defined_logo.png';
+import dexscreenerLogo from '../../dexscreener_logo.png';
 
 const TokenDetail = () => {
   const { address } = useParams();
@@ -507,41 +509,48 @@ const TokenDetail = () => {
               </div>
               
               <div className="flex flex-wrap gap-3">
-                <a
-                  href={definedLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 rounded-xl border border-fuchsia-500/20 hover:border-fuchsia-500/50 transition-all duration-300 text-sm font-medium group flex items-center gap-2 hover:shadow-[0_0_15px_rgba(255,0,255,0.3)]"
-                >
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
-                    View on Defined
-                  </span>
-                  <svg className="w-4 h-4 text-fuchsia-400 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
-                
-                <a 
-                  href={`https://${token.network === 'AVAX' ? 'snowtrace.io' : 'basescan.org'}/address/${token.token_address}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl border border-gray-700 hover:border-fuchsia-500/30 transition-all duration-300 text-sm font-medium group flex items-center gap-2"
-                >
-                  <span>View on Explorer</span>
-                  <svg className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
-                
-                <button 
-                  onClick={() => copyToClipboard(token.token_address)}
-                  className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl border border-gray-700 hover:border-fuchsia-500/30 transition-all duration-300 text-sm font-medium flex items-center gap-2"
-                >
-                  <span>{copySuccess || 'Copy Address'}</span>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                </button>
+                <div className="flex flex-wrap gap-3">
+                  <a
+                    href={definedLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-4 py-2 rounded-xl bg-black/40 hover:bg-fuchsia-500/10 border border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors text-sm font-medium"
+                    title="View on Defined"
+                  >
+                    <img src={definedLogo} alt="Defined" className="w-5 h-5" />
+                    <span className="text-xs text-white font-semibold">Defined</span>
+                  </a>
+                  <a
+                    href={dexscreenerLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-4 py-2 rounded-xl bg-black/40 hover:bg-cyan-500/10 border border-cyan-500/10 hover:border-cyan-500/30 transition-colors text-sm font-medium"
+                    title="View on Dexscreener"
+                  >
+                    <img src={dexscreenerLogo} alt="Dexscreener" className="w-5 h-5" />
+                    <span className="text-xs text-white font-semibold">Dexscreener</span>
+                  </a>
+                  <a 
+                    href={`https://${token.network === 'AVAX' ? 'snowtrace.io' : 'basescan.org'}/address/${token.token_address}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl border border-gray-700 hover:border-fuchsia-500/30 transition-all duration-300 text-sm font-medium group flex items-center gap-2"
+                  >
+                    <span>View on Explorer</span>
+                    <svg className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                  <button 
+                    onClick={() => copyToClipboard(token.token_address)}
+                    className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl border border-gray-700 hover:border-fuchsia-500/30 transition-all duration-300 text-sm font-medium flex items-center gap-2"
+                  >
+                    <span>{copySuccess || 'Copy Address'}</span>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
             
