@@ -1071,9 +1071,18 @@ export default function ShadowFun() {
                       visible: { opacity: 1, y: 0 }
                     }}
                     className={`group relative bg-black/50 backdrop-blur-xl border-2 rounded-2xl p-6 transition-all duration-300 cursor-pointer ${
-                      token.score > 0 
-                        ? `border-green-500/` + Math.floor((100 - token.score) / 100 * 100)
-                        : 'border-gray-800'
+                      (() => {
+                        let score = 0;
+                        if (token.twitter_handle && token.twitter_handle !== 'empty' && token.twitter_handle !== '@empty') {
+                          score += 60;
+                        }
+                        if (!token.is_fresh) {
+                          score += 40;
+                        }
+                        return score > 0 
+                          ? `border-green-500/` + Math.floor((100 - score) / 100 * 100)
+                          : 'border-gray-800';
+                      })()
                     } hover:border-fuchsia-500/30`}
                     onClick={() => navigate(`/token/${token.token_address}`)}
                   >
