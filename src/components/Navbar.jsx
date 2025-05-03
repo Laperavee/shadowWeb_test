@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useSound } from '../context/SoundContext';
 import { useWallet } from '../context/WalletContext';
 import { supabase } from '../lib/supabase';
-import logo from '../../image1.png';
+import logo from '../assets/image1.png';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);

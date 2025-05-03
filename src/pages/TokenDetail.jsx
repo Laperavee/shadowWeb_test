@@ -5,8 +5,8 @@ import { priceService } from '../services/priceService';
 import { realtimeService } from '../services/realtimeService';
 import { motion } from 'framer-motion';
 import BackgroundEffects from '../components/BackgroundEffects';
-import definedLogo from '../../defined_logo.png';
-import dexscreenerLogo from '../../dexscreener_logo.png';
+import definedLogo from '../assets/defined_logo.png';
+import dexscreenerLogo from '../assets/dexscreener_logo.png';
 
 const TokenDetail = () => {
   const { address } = useParams();

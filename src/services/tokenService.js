@@ -1,5 +1,5 @@
 import { supabase } from '../utils/supabase';
-import avaxLogo from '../../dist/assets/avax_logo.png';
+import avaxLogo from '../assets/avax_logo.png';
 
 // En production, on utilise le chemin relatif pour les fonctions Netlify
 const isProduction = import.meta.env.PROD;

@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
-import avaxLogo from '../../dist/assets/avax_logo.png';
-import baseLogo from '../../dist/assets/base_logo.png';
-import sonicLogo from '../../dist/assets/sonic_logo.png';
+import avaxLogo from '../assets/avax_logo.png';
+import baseLogo from '../assets/base_logo.png';
+import sonicLogo from '../assets/sonic_logo.png';
 import { CONTRACTS } from '../config/contracts';
 import { tokenService } from '../services/tokenService';
 import { realtimeService } from '../services/realtimeService';
@@ -16,8 +16,8 @@ import { useWallet } from '../context/WalletContext';
 import { useSound } from '../context/SoundContext';
 import { useNotification } from '../context/NotificationContext';
 import { useNetwork } from '../context/NetworkContext';
-import definedLogo from '../../defined_logo.png';
-import dexscreenerLogo from '../../dexscreener_logo.png';
+import definedLogo from '../assets/defined_logo.png';
+import dexscreenerLogo from '../assets/dexscreener_logo.png';
 import { marketDataService } from '../services/marketDataService';
 
 const SHADOW_CREATOR_ABI = {
