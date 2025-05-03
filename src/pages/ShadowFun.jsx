@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ethers } from 'ethers';
 import avaxLogo from '../assets/avax_logo.png';
 import baseLogo from '../assets/base_logo.png';
@@ -168,6 +168,9 @@ export default function ShadowFun() {
   const [totalPages, setTotalPages] = useState(1);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const loadMoreRef = useRef(null);
 
   const [tokenPrices, setTokenPrices] = useState({
     AVAX: 0,
@@ -835,6 +838,68 @@ export default function ShadowFun() {
     }
   };
 
+  // Add useEffect for mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Add Intersection Observer for infinite scroll
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMoreTokens();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
+  }, [isMobile, hasMore, loading]);
+
+  const loadMoreTokens = async () => {
+    if (loading || !hasMore) return;
+    
+    try {
+      setLoading(true);
+      const nextPage = currentPage + 1;
+      const startIndex = (nextPage - 1) * TOKENS_PER_PAGE;
+      const endIndex = startIndex + TOKENS_PER_PAGE;
+      
+      const sortedTokens = sortTokens(tokens);
+      const newTokens = sortedTokens.slice(startIndex, endIndex);
+      
+      if (newTokens.length === 0) {
+        setHasMore(false);
+        return;
+      }
+      
+      setCurrentPage(nextPage);
+    } catch (error) {
+      console.error('Error loading more tokens:', error);
+      showNotification('Failed to load more tokens', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
       {/* Animated background effects */}
@@ -979,7 +1044,7 @@ export default function ShadowFun() {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {!isMobile && totalPages > 1 && (
               <div className="inline-flex items-center gap-2 p-1.5 rounded-xl bg-black/50 backdrop-blur-xl border border-gray-800">
                 <motion.button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -1034,6 +1099,13 @@ export default function ShadowFun() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </motion.button>
+              </div>
+            )}
+
+            {/* Add loading indicator for infinite scroll */}
+            {isMobile && hasMore && (
+              <div ref={loadMoreRef} className="w-full py-8 flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-fuchsia-500"></div>
               </div>
             )}
           </div>
