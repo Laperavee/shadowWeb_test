@@ -879,7 +879,7 @@ export default function ShadowFun() {
                 </button>
                 
                 {isConnectMenuOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-48 rounded-xl bg-black/90 backdrop-blur-xl border border-gray-800 shadow-lg overflow-hidden z-50">
+                  <div className="absolute top-full left-0 mt-2 w-48 rounded-xl bg-black/90 backdrop-blur-xl border border-gray-800 shadow-lg z-50">
                     {Object.entries(NETWORKS).map(([chain, network]) => (
                       <button
                         key={chain}
