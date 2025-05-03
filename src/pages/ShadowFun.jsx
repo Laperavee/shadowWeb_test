@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import avaxLogo from '../../dist/assets/avax_logo.png';
 import baseLogo from '../../dist/assets/base_logo.png';
+import sonicLogo from '../../dist/assets/sonic_logo.png';
 import { CONTRACTS } from '../config/contracts';
 import { tokenService } from '../services/tokenService';
 import { realtimeService } from '../services/realtimeService';
@@ -50,6 +51,19 @@ const NETWORKS = {
     },
     rpcUrls: ["https://mainnet.base.org"],
     blockExplorerUrls: ["https://basescan.org"]
+  },
+  SONIC: {
+    chainId: "0x92",
+    chainName: "Sonic",
+    logo: sonicLogo,
+    disabled: false,
+    nativeCurrency: {
+      name: "SONIC",
+      symbol: "SONIC",
+      decimals: 18
+    },
+    rpcUrls: ["https://rpc.soniclabs.com"],
+    blockExplorerUrls: ["https://sonicscan.org"]
   }
 };
 
@@ -851,30 +865,40 @@ export default function ShadowFun() {
               </motion.p>
             </div>
             <div className="flex gap-4">
-              {/* Network Selection Buttons */}
-              <div className="flex gap-2">
+              {/* Network Selection Dropdown */}
+              <div className="relative">
                 <button
-                  onClick={() => handleNetworkChange('AVAX')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
-                    selectedChain === 'AVAX'
-                      ? 'bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-400'
-                      : 'bg-black/40 border-gray-700/50 text-gray-400 hover:border-fuchsia-500/30'
-                  }`}
+                  onClick={() => setIsConnectMenuOpen(!isConnectMenuOpen)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 bg-black/40 border-gray-700/50 text-gray-400 hover:border-fuchsia-500/30"
                 >
-                  <img src={avaxLogo} alt="AVAX" className="w-5 h-5" />
-                  <span className="font-medium">AVAX</span>
+                  <img src={NETWORKS[selectedChain].logo} alt={selectedChain} className="w-5 h-5" />
+                  <span className="font-medium">{selectedChain}</span>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
-                <button
-                  onClick={() => handleNetworkChange('BASE')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
-                    selectedChain === 'BASE'
-                      ? 'bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-400'
-                      : 'bg-black/40 border-gray-700/50 text-gray-400 hover:border-fuchsia-500/30'
-                  }`}
-                >
-                  <img src={baseLogo} alt="BASE" className="w-5 h-5" />
-                  <span className="font-medium">BASE</span>
-                </button>
+                
+                {isConnectMenuOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-48 rounded-xl bg-black/90 backdrop-blur-xl border border-gray-800 shadow-lg overflow-hidden z-50">
+                    {Object.entries(NETWORKS).map(([chain, network]) => (
+                      <button
+                        key={chain}
+                        onClick={() => {
+                          handleNetworkChange(chain);
+                          setIsConnectMenuOpen(false);
+                        }}
+                        className={`flex items-center gap-2 w-full px-4 py-3 text-left transition-colors ${
+                          selectedChain === chain
+                            ? 'bg-fuchsia-500/20 text-fuchsia-400'
+                            : 'text-gray-400 hover:bg-fuchsia-500/10 hover:text-white'
+                        }`}
+                      >
+                        <img src={network.logo} alt={chain} className="w-5 h-5" />
+                        <span className="font-medium">{chain}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <motion.button
