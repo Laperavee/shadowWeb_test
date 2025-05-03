@@ -11,6 +11,7 @@ import { priceService } from '../services/priceService';
 import { Link, useNavigate } from 'react-router-dom';
 import ShadowBaseArtifact from '../artifact/ShadowBase.json';
 import ShadowAvaxArtifact from '../artifact/ShadowAvax.json';
+import ShadowSonicArtifact from '../artifact/ShadowSonic.json';
 import { supabase } from '../lib/supabase';
 import { useWallet } from '../context/WalletContext';
 import { useSound } from '../context/SoundContext';
@@ -22,7 +23,8 @@ import { marketDataService } from '../services/marketDataService';
 
 const SHADOW_CREATOR_ABI = {
   BASE: ShadowBaseArtifact.abi,
-  AVAX: ShadowAvaxArtifact.abi
+  AVAX: ShadowAvaxArtifact.abi,
+  SONIC: ShadowSonicArtifact.abi
 };
 
 const NETWORKS = {
@@ -91,6 +93,18 @@ const NETWORK_LIMITS = {
     minFirstBuyAmount: 0.01,
     firstBuyPercentage: 20,
     currency: 'ETH'
+  },
+  SONIC: {
+    minLiquidity: 10000,
+    maxLiquidity: 1000000,
+    minSupply: 1000000,
+    maxSupply: 1000000000,
+    minWalletPercentage: 0.1,
+    maxWalletPercentage: 10,
+    minDeploymentFee: 0.00001,
+    minFirstBuyAmount: 10,
+    firstBuyPercentage: 20,
+    currency: 'SONIC'
   }
 };
 
