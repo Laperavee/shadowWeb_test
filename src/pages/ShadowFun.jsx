@@ -999,7 +999,7 @@ export default function ShadowFun() {
           </motion.div>
 
           {/* Ajouter le sélecteur de tri avant la grille de tokens */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
             <div className="flex items-center gap-2 bg-black/50 backdrop-blur-xl border border-gray-800 rounded-xl p-1">
               <button
                 onClick={() => handleSortChange('created_at')}
@@ -1044,7 +1044,7 @@ export default function ShadowFun() {
             </div>
 
             {/* Pagination */}
-            {!isMobile && totalPages > 1 && (
+            {totalPages > 1 && (
               <div className="inline-flex items-center gap-2 p-1.5 rounded-xl bg-black/50 backdrop-blur-xl border border-gray-800">
                 <motion.button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -1099,13 +1099,6 @@ export default function ShadowFun() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </motion.button>
-              </div>
-            )}
-
-            {/* Add loading indicator for infinite scroll */}
-            {isMobile && hasMore && (
-              <div ref={loadMoreRef} className="w-full py-8 flex justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-fuchsia-500"></div>
               </div>
             )}
           </div>
