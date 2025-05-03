@@ -104,7 +104,7 @@ const NETWORK_LIMITS = {
     minDeploymentFee: 0.00001,
     minFirstBuyAmount: 10,
     firstBuyPercentage: 20,
-    currency: 'SONIC'
+    currency: 'USDC'
   }
 };
 
@@ -192,7 +192,6 @@ export default function ShadowFun() {
     try {
       setLoading(true);
       const data = await tokenService.getTokens(selectedChain);
-      // Récupérer les données de marché pour tous les tokens
       const tokensWithMarketData = await marketDataService.getBatchMarketData(data);
       setTokens(tokensWithMarketData);
       setTotalPages(Math.ceil(tokensWithMarketData.length / TOKENS_PER_PAGE));
