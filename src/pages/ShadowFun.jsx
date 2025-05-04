@@ -1300,7 +1300,7 @@ export default function ShadowFun() {
 
                       <div className="space-y-3 mb-6">
                         <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-900/30 group-hover:bg-fuchsia-500/5 transition-colors">
-                          <span className="text-gray-400">Volume 24h</span>
+                          <span className="text-gray-400">24h Volume</span>
                           <span className="font-medium text-white">
                             ${token.market_data?.volume24h ? parseInt(token.market_data.volume24h).toLocaleString() : '0'}
                           </span>

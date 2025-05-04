@@ -298,7 +298,7 @@ const TokenDetail = () => {
     
     const timeframeParam = timeframe === '24h' ? '1m' : timeframe === '7d' ? '1W' : '1M';
     const dexscreenerNetwork = token.network?.toUpperCase() === 'AVAX' ? 'avalanche' : token.network?.toLowerCase();
-    setDexscreenerLink(`https://dexscreener.com/${dexscreenerNetwork}/${token.token_address}?embed=1&theme=dark&trades=0&info=0&chart=${timeframeParam}`);
+    setDexscreenerLink(`https://dexscreener.com/${dexscreenerNetwork}/${token.token_address}`);
   }, [timeframe, token]);
 
   // Calcul du score
@@ -510,26 +510,22 @@ const TokenDetail = () => {
               
               <div className="flex flex-wrap gap-3">
                 <div className="flex flex-wrap gap-3">
-                  <a
-                    href={definedLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={openDefined}
                     className="flex items-center gap-1 px-4 py-2 rounded-xl bg-black/40 hover:bg-fuchsia-500/10 border border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors text-sm font-medium"
                     title="View on Defined"
                   >
                     <img src={definedLogo} alt="Defined" className="w-5 h-5" />
                     <span className="text-xs text-white font-semibold">Defined</span>
-                  </a>
-                  <a
-                    href={dexscreenerLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  </button>
+                  <button
+                    onClick={openDexscreener}
                     className="flex items-center gap-1 px-4 py-2 rounded-xl bg-black/40 hover:bg-cyan-500/10 border border-cyan-500/10 hover:border-cyan-500/30 transition-colors text-sm font-medium"
                     title="View on Dexscreener"
                   >
                     <img src={dexscreenerLogo} alt="Dexscreener" className="w-5 h-5" />
                     <span className="text-xs text-white font-semibold">Dexscreener</span>
-                  </a>
+                  </button>
                   <a 
                     href={`https://${token.network === 'AVAX' ? 'snowtrace.io' : 'basescan.org'}/address/${token.token_address}`} 
                     target="_blank" 
