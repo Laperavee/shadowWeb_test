@@ -1,9 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { createConfig, configureChains, mainnet } from 'wagmi';
 import { http } from 'wagmi';
-import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
-import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
-import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet';
+import { 
+  metaMaskWallet, 
+  walletConnect, 
+  coinbaseWallet,
+  rabbyWallet,
+  phantomWallet 
+} from 'wagmi/connectors';
 
 const { chains, publicClient } = configureChains(
   [mainnet],
@@ -14,19 +18,21 @@ const config = createConfig({
   autoConnect: true,
   publicClient,
   connectors: [
-    new MetaMaskConnector({ chains }),
-    new WalletConnectConnector({
+    metaMaskWallet({ chains }),
+    walletConnect({
       chains,
       options: {
-        projectId: 'f1ad805003699db13c2091756ea71984', // Vous devrez obtenir un projectId de WalletConnect
+        projectId: 'f1ad805003699db13c2091756ea71984',
       },
     }),
-    new CoinbaseWalletConnector({
+    coinbaseWallet({
       chains,
       options: {
         appName: 'Shadow Web',
       },
     }),
+    rabbyWallet({ chains }),
+    phantomWallet({ chains }),
   ],
 });
 
