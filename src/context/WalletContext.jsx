@@ -8,7 +8,7 @@ import {
   coinbaseWallet
 } from 'wagmi/connectors';
 
-const config = createConfig({
+export const config = createConfig({
   chains: [mainnet],
   transports: {
     [mainnet.id]: http(),
