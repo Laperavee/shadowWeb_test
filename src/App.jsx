@@ -1,6 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -14,8 +13,7 @@ import PostDetail from './pages/PostDetail';
 import { SoundProvider } from './context/SoundContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { NetworkProvider } from './context/NetworkContext';
-import { WagmiConfig } from 'wagmi';
-import { config } from './context/WalletContext';
+import { WalletProvider } from './context/WalletContext';
 
 function AppContent() {
   const location = useLocation();
@@ -24,7 +22,6 @@ function AppContent() {
     <div className="app relative min-h-screen bg-black text-white flex flex-col">
       {/* Background amélioré */}
       <div className="fixed inset-0 pointer-events-none">
-        
         {/* Orbes lumineux */}
         <div className="absolute -top-1/4 -left-1/4 w-[1000px] h-[1000px]">
           <div className="absolute inset-0 bg-fuchsia-500/10 rounded-full blur-[120px] animate-pulse-slow" />
@@ -64,17 +61,17 @@ function AppContent() {
 
 function App() {
   return (
-    <WagmiConfig config={config}>
-      <Router>
-        <SoundProvider>
-          <NotificationProvider>
-            <NetworkProvider>
+    <Router>
+      <SoundProvider>
+        <NotificationProvider>
+          <NetworkProvider>
+            <WalletProvider>
               <AppContent />
-            </NetworkProvider>
-          </NotificationProvider>
-        </SoundProvider>
-      </Router>
-    </WagmiConfig>
+            </WalletProvider>
+          </NetworkProvider>
+        </NotificationProvider>
+      </SoundProvider>
+    </Router>
   );
 }
 
