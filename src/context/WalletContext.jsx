@@ -3,11 +3,11 @@ import { createConfig } from 'wagmi';
 import { http } from 'wagmi';
 import { mainnet } from 'viem/chains';
 import { 
-  metaMaskWallet, 
+  injected, 
   walletConnect, 
   coinbaseWallet,
-  rabbyWallet,
-  phantomWallet 
+  rabby,
+  phantom 
 } from 'wagmi/connectors';
 
 const config = createConfig({
@@ -16,15 +16,15 @@ const config = createConfig({
     [mainnet.id]: http(),
   },
   connectors: [
-    metaMaskWallet(),
+    injected(),
     walletConnect({
       projectId: 'f1ad805003699db13c2091756ea71984',
     }),
     coinbaseWallet({
       appName: 'Shadow Web',
     }),
-    rabbyWallet(),
-    phantomWallet(),
+    rabby(),
+    phantom(),
   ],
 });
 
