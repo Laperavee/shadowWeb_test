@@ -5,9 +5,7 @@ import { mainnet } from 'viem/chains';
 import { 
   injected, 
   walletConnect, 
-  coinbaseWallet,
-  rabby,
-  phantom 
+  coinbaseWallet
 } from 'wagmi/connectors';
 
 const config = createConfig({
@@ -23,8 +21,6 @@ const config = createConfig({
     coinbaseWallet({
       appName: 'Shadow Web',
     }),
-    rabby(),
-    phantom(),
   ],
 });
 
