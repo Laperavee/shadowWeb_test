@@ -1,25 +1,22 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { configureChains, createConfig, WagmiConfig } from 'wagmi';
+import { createConfig, WagmiConfig } from 'wagmi';
 import { mainnet } from 'viem/chains';
-import { publicProvider } from 'wagmi/providers/public';
+import { http } from 'wagmi';
 import '@rainbow-me/rainbowkit/styles.css';
-
-const { chains, publicClient } = configureChains(
-  [mainnet],
-  [publicProvider()]
-);
 
 const { connectors } = getDefaultWallets({
   appName: 'Shadow Web',
   projectId: 'f1ad805003699db13c2091756ea71984',
-  chains
+  chains: [mainnet]
 });
 
 export const config = createConfig({
-  autoConnect: true,
-  connectors,
-  publicClient
+  chains: [mainnet],
+  transports: {
+    [mainnet.id]: http(),
+  },
+  connectors
 });
 
 const WalletContext = createContext();
@@ -64,7 +61,7 @@ export function WalletProvider({ children }) {
 
   return (
     <WagmiConfig config={config}>
-      <RainbowKitProvider chains={chains}>
+      <RainbowKitProvider chains={[mainnet]}>
         <WalletContext.Provider
           value={{
             isWalletConnected,
