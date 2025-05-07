@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { createConfig, mainnet } from 'wagmi';
+import { createConfig } from 'wagmi';
 import { http } from 'wagmi';
+import { mainnet } from 'viem/chains';
 import { 
   metaMaskWallet, 
   walletConnect, 
