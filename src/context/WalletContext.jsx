@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { createConfig, WagmiConfig } from 'wagmi';
+import { createConfig, WagmiProvider } from 'wagmi';
 import { mainnet } from 'viem/chains';
 import { http } from 'wagmi';
 import '@rainbow-me/rainbowkit/styles.css';
@@ -60,7 +60,7 @@ export function WalletProvider({ children }) {
   }, []);
 
   return (
-    <WagmiConfig config={config}>
+    <WagmiProvider config={config}>
       <RainbowKitProvider chains={[mainnet]}>
         <WalletContext.Provider
           value={{
@@ -73,7 +73,7 @@ export function WalletProvider({ children }) {
           {children}
         </WalletContext.Provider>
       </RainbowKitProvider>
-    </WagmiConfig>
+    </WagmiProvider>
   );
 }
 

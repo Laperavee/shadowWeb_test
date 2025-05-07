@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -14,6 +15,8 @@ import { SoundProvider } from './context/SoundContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { NetworkProvider } from './context/NetworkContext';
 import { WalletProvider } from './context/WalletContext';
+
+const queryClient = new QueryClient();
 
 function AppContent() {
   const location = useLocation();
@@ -61,17 +64,19 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <SoundProvider>
-        <NotificationProvider>
-          <NetworkProvider>
-            <WalletProvider>
-              <AppContent />
-            </WalletProvider>
-          </NetworkProvider>
-        </NotificationProvider>
-      </SoundProvider>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <SoundProvider>
+          <NotificationProvider>
+            <NetworkProvider>
+              <WalletProvider>
+                <AppContent />
+              </WalletProvider>
+            </NetworkProvider>
+          </NotificationProvider>
+        </SoundProvider>
+      </Router>
+    </QueryClientProvider>
   );
 }
 
