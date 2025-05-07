@@ -3,7 +3,10 @@ import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { createConfig, WagmiProvider } from 'wagmi';
 import { mainnet } from 'viem/chains';
 import { http } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@rainbow-me/rainbowkit/styles.css';
+
+const queryClient = new QueryClient();
 
 const { connectors } = getDefaultWallets({
   appName: 'Shadow Web',
@@ -60,20 +63,22 @@ export function WalletProvider({ children }) {
   }, []);
 
   return (
-    <WagmiProvider config={config}>
-      <RainbowKitProvider chains={[mainnet]}>
-        <WalletContext.Provider
-          value={{
-            isWalletConnected,
-            userAddress,
-            connectWallet,
-            disconnectWallet,
-          }}
-        >
-          {children}
-        </WalletContext.Provider>
-      </RainbowKitProvider>
-    </WagmiProvider>
+    <QueryClientProvider client={queryClient}>
+      <WagmiProvider config={config}>
+        <RainbowKitProvider chains={[mainnet]}>
+          <WalletContext.Provider
+            value={{
+              isWalletConnected,
+              userAddress,
+              connectWallet,
+              disconnectWallet,
+            }}
+          >
+            {children}
+          </WalletContext.Provider>
+        </RainbowKitProvider>
+      </WagmiProvider>
+    </QueryClientProvider>
   );
 }
 
