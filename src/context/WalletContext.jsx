@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { createConfig, configureChains, mainnet } from 'wagmi';
-import { publicProvider } from 'wagmi/providers/public';
+import { http } from 'wagmi';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet';
 
 const { chains, publicClient } = configureChains(
   [mainnet],
-  [publicProvider()]
+  [http()]
 );
 
 const config = createConfig({
