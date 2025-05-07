@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { createConfig, configureChains, mainnet } from 'wagmi';
+import { createConfig, mainnet } from 'wagmi';
 import { http } from 'wagmi';
 import { 
   metaMaskWallet, 
@@ -9,30 +9,21 @@ import {
   phantomWallet 
 } from 'wagmi/connectors';
 
-const { chains, publicClient } = configureChains(
-  [mainnet],
-  [http()]
-);
-
 const config = createConfig({
-  autoConnect: true,
-  publicClient,
+  chains: [mainnet],
+  transports: {
+    [mainnet.id]: http(),
+  },
   connectors: [
-    metaMaskWallet({ chains }),
+    metaMaskWallet(),
     walletConnect({
-      chains,
-      options: {
-        projectId: 'f1ad805003699db13c2091756ea71984',
-      },
+      projectId: 'f1ad805003699db13c2091756ea71984',
     }),
     coinbaseWallet({
-      chains,
-      options: {
-        appName: 'Shadow Web',
-      },
+      appName: 'Shadow Web',
     }),
-    rabbyWallet({ chains }),
-    phantomWallet({ chains }),
+    rabbyWallet(),
+    phantomWallet(),
   ],
 });
 
