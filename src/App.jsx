@@ -14,6 +14,8 @@ import PostDetail from './pages/PostDetail';
 import { SoundProvider } from './context/SoundContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { NetworkProvider } from './context/NetworkContext';
+import { WagmiConfig } from 'wagmi';
+import { config } from './context/WalletContext';
 
 function AppContent() {
   const location = useLocation();
@@ -62,15 +64,17 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <SoundProvider>
-        <NotificationProvider>
-          <NetworkProvider>
-            <AppContent />
-          </NetworkProvider>
-        </NotificationProvider>
-      </SoundProvider>
-    </Router>
+    <WagmiConfig config={config}>
+      <Router>
+        <SoundProvider>
+          <NotificationProvider>
+            <NetworkProvider>
+              <AppContent />
+            </NetworkProvider>
+          </NotificationProvider>
+        </SoundProvider>
+      </Router>
+    </WagmiConfig>
   );
 }
 
