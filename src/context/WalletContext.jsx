@@ -10,9 +10,14 @@ import '@rainbow-me/rainbowkit/styles.css';
 
 const queryClient = new QueryClient();
 
+// Configuration des connecteurs pour supporter à la fois Rabby et MetaMask
 const connectors = [
   injected({
     target: 'rabby',
+    shimDisconnect: true,
+  }),
+  injected({
+    target: 'metaMask',
     shimDisconnect: true,
   }),
 ];
@@ -104,12 +109,20 @@ function WalletProviderContent({ children }) {
       setLoading(true);
       setError(null);
 
-      const rabbyConnector = connectors[0];
-      if (!rabbyConnector) {
-        throw new Error('Rabby wallet not found');
-      }
+      // Essayer d'abord Rabby, puis MetaMask
+      let rabbyConnector = connectors.find(c => c.name === 'Rabby');
+      let metaMaskConnector = connectors.find(c => c.name === 'MetaMask');
 
-      await connect({ connector: rabbyConnector });
+      // Vérifier si Rabby est disponible
+      if (window.rabby) {
+        await connect({ connector: rabbyConnector });
+      } 
+      // Sinon essayer MetaMask
+      else if (window.ethereum) {
+        await connect({ connector: metaMaskConnector });
+      } else {
+        throw new Error('No wallet found. Please install Rabby or MetaMask');
+      }
       
       if (address) {
         const provider = new ethers.BrowserProvider(window.ethereum);
@@ -132,9 +145,10 @@ function WalletProviderContent({ children }) {
       setLoading(true);
       setError(null);
       
-      const rabbyConnector = connectors[0];
-      if (rabbyConnector) {
-        await rabbyConnector.disconnect();
+      // Trouver le connecteur actif
+      const activeConnector = connectors.find(c => c.ready);
+      if (activeConnector) {
+        await activeConnector.disconnect();
       }
       
       // Clear session data
