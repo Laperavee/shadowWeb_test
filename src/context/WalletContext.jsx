@@ -4,6 +4,7 @@ import { createConfig, WagmiProvider, useConnect, useAccount } from 'wagmi';
 import { mainnet } from 'viem/chains';
 import { http } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { rabbyWallet } from '@rainbow-me/rainbowkit/wallets';
 import '@rainbow-me/rainbowkit/styles.css';
 
 const queryClient = new QueryClient();
@@ -11,7 +12,15 @@ const queryClient = new QueryClient();
 const { connectors } = getDefaultWallets({
   appName: 'Shadow Web',
   projectId: 'f1ad805003699db13c2091756ea71984',
-  chains: [mainnet]
+  chains: [mainnet],
+  wallets: [
+    {
+      groupName: 'Popular',
+      wallets: [
+        rabbyWallet({ chains: [mainnet] }),
+      ],
+    },
+  ],
 });
 
 export const config = createConfig({
