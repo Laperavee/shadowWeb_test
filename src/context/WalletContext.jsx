@@ -5,7 +5,6 @@ import { mainnet } from 'viem/chains';
 import { http } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { injected } from 'wagmi/connectors';
-import { ethers } from 'ethers';
 import '@rainbow-me/rainbowkit/styles.css';
 
 const queryClient = new QueryClient();
@@ -65,45 +64,6 @@ function WalletProviderContent({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const loginWithWallet = async (walletAddress, signature) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch('/.netlify/functions/loginwithwallet', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          walletAddress,
-          signature,
-          message: `Sign this message to verify your wallet ownership: ${walletAddress}`
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to login');
-      }
-
-      // Store session data
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('token', data.token);
-      setCookie('token', data.token);
-
-      setUserAddress(walletAddress);
-      setIsWalletConnected(true);
-    } catch (error) {
-      console.error('Login error:', error);
-      setError(error.message || 'Failed to login');
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const connectWallet = async () => {
     try {
       setLoading(true);
@@ -122,15 +82,6 @@ function WalletProviderContent({ children }) {
         await connect({ connector: metaMaskConnector });
       } else {
         throw new Error('No wallet found. Please install Rabby or MetaMask');
-      }
-      
-      if (address) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const message = `Sign this message to verify your wallet ownership: ${address}`;
-        const signature = await signer.signMessage(message);
-        
-        await loginWithWallet(address, signature);
       }
     } catch (error) {
       console.error('Error connecting wallet:', error);
@@ -151,12 +102,8 @@ function WalletProviderContent({ children }) {
         await activeConnector.disconnect();
       }
       
-      // Clear session data
       setUserAddress(null);
       setIsWalletConnected(false);
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-      eraseCookie('token');
     } catch (error) {
       console.error('Error disconnecting wallet:', error);
       setError(error.message || 'Failed to disconnect wallet');
