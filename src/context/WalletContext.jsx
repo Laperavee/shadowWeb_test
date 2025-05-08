@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { createConfig, WagmiProvider } from 'wagmi';
+import { createConfig, WagmiProvider, useConnect, useAccount } from 'wagmi';
 import { mainnet } from 'viem/chains';
 import { http } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -24,16 +24,19 @@ export const config = createConfig({
 
 const WalletContext = createContext();
 
-export function WalletProvider({ children }) {
+function WalletProviderContent({ children }) {
+  const { connect, connectors } = useConnect();
+  const { address, isConnected } = useAccount();
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [userAddress, setUserAddress] = useState(null);
 
   const connectWallet = async () => {
     try {
-      const result = await config.connectors[0].connect();
-      if (result.account) {
-        setUserAddress(result.account);
-        setIsWalletConnected(true);
+      const rabbyConnector = connectors.find(c => c.name === 'Rabby');
+      if (rabbyConnector) {
+        await connect({ connector: rabbyConnector });
+      } else {
+        console.error('Rabby wallet not found');
       }
     } catch (error) {
       console.error('Error connecting wallet:', error);
@@ -42,7 +45,10 @@ export function WalletProvider({ children }) {
 
   const disconnectWallet = async () => {
     try {
-      await config.connectors[0].disconnect();
+      const rabbyConnector = connectors.find(c => c.name === 'Rabby');
+      if (rabbyConnector) {
+        await rabbyConnector.disconnect();
+      }
       setUserAddress(null);
       setIsWalletConnected(false);
     } catch (error) {
@@ -51,31 +57,37 @@ export function WalletProvider({ children }) {
   };
 
   useEffect(() => {
-    const checkConnection = async () => {
-      const isConnected = await config.connectors[0].isAuthorized();
-      if (isConnected) {
-        const account = await config.connectors[0].getAccount();
-        setUserAddress(account);
-        setIsWalletConnected(true);
-      }
-    };
-    checkConnection();
-  }, []);
+    if (isConnected && address) {
+      setUserAddress(address);
+      setIsWalletConnected(true);
+    } else {
+      setUserAddress(null);
+      setIsWalletConnected(false);
+    }
+  }, [isConnected, address]);
 
+  return (
+    <WalletContext.Provider
+      value={{
+        isWalletConnected,
+        userAddress,
+        connectWallet,
+        disconnectWallet,
+      }}
+    >
+      {children}
+    </WalletContext.Provider>
+  );
+}
+
+export function WalletProvider({ children }) {
   return (
     <QueryClientProvider client={queryClient}>
       <WagmiProvider config={config}>
         <RainbowKitProvider chains={[mainnet]}>
-          <WalletContext.Provider
-            value={{
-              isWalletConnected,
-              userAddress,
-              connectWallet,
-              disconnectWallet,
-            }}
-          >
+          <WalletProviderContent>
             {children}
-          </WalletContext.Provider>
+          </WalletProviderContent>
         </RainbowKitProvider>
       </WagmiProvider>
     </QueryClientProvider>
