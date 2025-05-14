@@ -29,7 +29,7 @@ export default function BackgroundEffects() {
   return (
     <div className="fixed inset-0 pointer-events-none">
       {/* Gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/15 via-transparent to-blue-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/15 via-transparent to-indigo-900/10" />
       
       {/* Animated orbs */}
       {isVisible && (
@@ -65,7 +65,7 @@ export default function BackgroundEffects() {
               ease: "easeInOut"
             }}
           >
-            <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-[100px]" />
+            <div className="absolute inset-0 bg-indigo-900/25 rounded-full blur-[100px]" />
           </motion.div>
 
           <motion.div 
@@ -99,7 +99,7 @@ export default function BackgroundEffects() {
               ease: "easeInOut"
             }}
           >
-            <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-[100px]" />
+            <div className="absolute inset-0 bg-indigo-800/20 rounded-full blur-[100px]" />
           </motion.div>
         </>
       )}
@@ -117,7 +117,7 @@ export default function BackgroundEffects() {
           stiffness: 50,
         }}
         style={{
-          background: 'radial-gradient(circle, rgba(139,92,246,0.35) 0%, rgba(30,64,175,0.05) 50%, rgba(0,0,0,0) 70%)',
+          background: 'radial-gradient(circle, rgba(139,92,246,0.35) 0%, rgba(49,46,129,0.08) 50%, rgba(0,0,0,0) 70%)',
         }}
       />
 
