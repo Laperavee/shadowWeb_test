@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { newsService } from '../services/newsService';
-import BackgroundEffects from '../components/BackgroundEffects';
 
 const PostsIndex = () => {
   const [posts, setPosts] = useState([]);
@@ -59,9 +58,7 @@ const PostsIndex = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="min-h-screen p-4 pt-24 relative"
-    >
-      <BackgroundEffects />
-      
+    >      
       <div className="relative z-10 max-w-6xl mx-auto py-8">
         <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-8">Latest News</h1>
         

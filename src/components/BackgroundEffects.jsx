@@ -28,9 +28,6 @@ export default function BackgroundEffects() {
 
   return (
     <div className="fixed inset-0 pointer-events-none">
-      {/* Gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/15 via-transparent to-indigo-900/10" />
-      
       {/* Animated orbs */}
       {isVisible && (
         <>

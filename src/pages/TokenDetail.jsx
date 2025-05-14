@@ -4,7 +4,6 @@ import { tokenService } from '../services/tokenService';
 import { priceService } from '../services/priceService';
 import { realtimeService } from '../services/realtimeService';
 import { motion } from 'framer-motion';
-import BackgroundEffects from '../components/BackgroundEffects';
 import definedLogo from '../assets/defined_logo.png';
 import dexscreenerLogo from '../assets/dexscreener_logo.png';
 
@@ -394,9 +393,7 @@ const TokenDetail = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="min-h-screen p-4 pt-24 relative"
-    >
-      <BackgroundEffects />
-      
+    >      
       <div className="relative z-10 max-w-7xl mx-auto">        
         {/* Rest of the content */}
         <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
