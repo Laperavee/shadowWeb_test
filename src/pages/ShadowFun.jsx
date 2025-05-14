@@ -901,7 +901,7 @@ export default function ShadowFun() {
   };
 
   return (
-    <main className="min-h-screen bg-black overflow-x-hidden">
+    <main className="min-h-screen overflow-x-hidden">
       <div className="relative z-10 pt-24">
         <div className="container mx-auto px-4 sm:px-6 py-8">
           {/* Enhanced section header */}
