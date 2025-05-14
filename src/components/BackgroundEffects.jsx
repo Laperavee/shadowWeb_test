@@ -120,9 +120,6 @@ export default function BackgroundEffects() {
 
       {/* Scanner effect */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,transparent,rgba(255,0,255,0.05),transparent)] animate-scanner-slow" />
-      
-      {/* Noise texture */}
-      <div className="absolute inset-0 bg-noise bg-repeat opacity-[0.05]" />
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/25" />
