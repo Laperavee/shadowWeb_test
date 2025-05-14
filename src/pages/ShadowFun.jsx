@@ -902,19 +902,6 @@ export default function ShadowFun() {
 
   return (
     <main className="min-h-screen bg-black overflow-x-hidden">
-      {/* Animated background effects */}
-      <div className="fixed inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,0,255,0.1),transparent_50%)] animate-pulse-slow" />
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-fuchsia-900/20 to-cyan-900/30 animate-gradient-slow" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.9),transparent_50%,rgba(0,0,0,0.9))]" />
-        <div className="absolute inset-0">
-          <div className="absolute w-96 h-96 -top-48 -left-48 bg-purple-500/30 rounded-full blur-3xl animate-blob" />
-          <div className="absolute w-96 h-96 -top-48 -right-48 bg-cyan-500/30 rounded-full blur-3xl animate-blob animation-delay-2000" />
-          <div className="absolute w-96 h-96 -bottom-48 -left-48 bg-fuchsia-500/30 rounded-full blur-3xl animate-blob animation-delay-4000" />
-          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-purple-500/30 rounded-full blur-3xl animate-blob animation-delay-6000" />
-        </div>
-      </div>
-
       <div className="relative z-10 pt-24">
         <div className="container mx-auto px-4 sm:px-6 py-8">
           {/* Enhanced section header */}
