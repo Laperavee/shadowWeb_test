@@ -29,7 +29,7 @@ export default function BackgroundEffects() {
   return (
     <div className="fixed inset-0 pointer-events-none">
       {/* Gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 via-transparent to-blue-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/15 via-transparent to-blue-500/5" />
       
       {/* Animated orbs */}
       {isVisible && (
@@ -37,7 +37,7 @@ export default function BackgroundEffects() {
           <motion.div 
             className="absolute -top-1/4 left-1/4 w-[800px] h-[800px]"
             animate={{
-              opacity: [0.05, 0.15, 0.05],
+              opacity: [0.08, 0.25, 0.08],
               scale: [1, 1.2, 1],
               x: [0, 50, 0],
               y: [0, 30, 0]
@@ -48,7 +48,7 @@ export default function BackgroundEffects() {
               ease: "easeInOut"
             }}
           >
-            <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-[100px]" />
+            <div className="absolute inset-0 bg-purple-500/30 rounded-full blur-[100px]" />
           </motion.div>
 
           <motion.div 
@@ -71,7 +71,7 @@ export default function BackgroundEffects() {
           <motion.div 
             className="absolute top-1/2 left-1/2 w-[600px] h-[600px]"
             animate={{
-              opacity: [0.03, 0.1, 0.03],
+              opacity: [0.08, 0.25, 0.08],
               scale: [1, 1.3, 1],
               x: [0, 30, 0],
               y: [0, -20, 0]
@@ -82,7 +82,7 @@ export default function BackgroundEffects() {
               ease: "easeInOut"
             }}
           >
-            <div className="absolute inset-0 bg-fuchsia-500/20 rounded-full blur-[100px]" />
+            <div className="absolute inset-0 bg-fuchsia-500/35 rounded-full blur-[100px]" />
           </motion.div>
 
           <motion.div 
@@ -106,7 +106,7 @@ export default function BackgroundEffects() {
 
       {/* Mouse tracking gradient */}
       <motion.div
-        className="absolute w-[800px] h-[800px] rounded-full opacity-20 blur-3xl"
+        className="absolute w-[800px] h-[800px] rounded-full opacity-25 blur-3xl"
         animate={{
           x: mousePosition.x - 400,
           y: mousePosition.y - 400,
@@ -117,18 +117,18 @@ export default function BackgroundEffects() {
           stiffness: 50,
         }}
         style={{
-          background: 'radial-gradient(circle, rgba(139,92,246,0.2) 0%, rgba(30,64,175,0.05) 50%, rgba(0,0,0,0) 70%)',
+          background: 'radial-gradient(circle, rgba(139,92,246,0.35) 0%, rgba(30,64,175,0.05) 50%, rgba(0,0,0,0) 70%)',
         }}
       />
 
       {/* Scanner effect */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,transparent,rgba(255,0,255,0.03),transparent)] animate-scanner-slow" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,transparent,rgba(255,0,255,0.05),transparent)] animate-scanner-slow" />
       
       {/* Noise texture */}
       <div className="absolute inset-0 bg-noise bg-repeat opacity-[0.05]" />
 
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/30" />
+      <div className="absolute inset-0 bg-black/25" />
     </div>
   );
 }
