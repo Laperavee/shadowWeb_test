@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.grid-animation {
+  background-size: 50px 50px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 0, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 0, 255, 0.1) 1px, transparent 1px);
+  animation: grid 20s linear infinite;
+}
+
+@keyframes grid {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(50px);
+  }
+}
+
+.bg-gradient-radial {
+  background: radial-gradient(circle at center, rgba(255, 0, 255, 0.1) 0%, transparent 70%);
+}
+
+/* Animation pour les particules */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+  }
+}
+
+/* Animation pour la vignette */
+.vignette {
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.5) 100%);
+} 
