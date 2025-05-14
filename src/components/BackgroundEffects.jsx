@@ -28,6 +28,11 @@ export default function BackgroundEffects() {
 
   return (
     <div className="fixed inset-0 pointer-events-none">
+      {/* Grid background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.8)_2px,transparent_2px),linear-gradient(to_bottom,rgba(0,0,0,0.8)_2px,transparent_2px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,black,transparent)]" />
+      </div>
+
       {/* Animated orbs */}
       {isVisible && (
         <>
@@ -114,15 +119,18 @@ export default function BackgroundEffects() {
           stiffness: 50,
         }}
         style={{
-          background: 'radial-gradient(circle, rgba(139,92,246,0.35) 0%, rgba(49,46,129,0.08) 50%, rgba(0,0,0,0) 70%)',
+          background: 'radial-gradient(circle, rgba(139,92,246,0.35) 0%, rgba(0,0,0,0) 70%)',
         }}
       />
 
       {/* Scanner effect */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,transparent,rgba(255,0,255,0.05),transparent)] animate-scanner-slow" />
+      
+      {/* Noise texture */}
+      <div className="absolute inset-0 bg-noise bg-repeat opacity-[0.05]" />
 
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/25" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-2xl" />
     </div>
   );
 }
