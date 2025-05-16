@@ -7,8 +7,19 @@ module.exports = defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     emptyOutDir: true,
+    rollupOptions: {
+      external: ['three'],
+      output: {
+        globals: {
+          three: 'THREE'
+        }
+      }
+    }
   },
   define: {
     'process.env': process.env
+  },
+  optimizeDeps: {
+    include: ['three', '@react-three/fiber']
   }
 }) 

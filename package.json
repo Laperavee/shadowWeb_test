@@ -14,6 +14,7 @@
   "dependencies": {
     "@heroicons/react": "^2.1.1",
     "@rainbow-me/rainbowkit": "^2.2.4",
+    "@react-three/fiber": "^9.1.2",
     "@supabase/supabase-js": "^2.49.1",
     "@tanstack/react-query": "^5.75.5",
     "chart.js": "^4.4.8",
@@ -28,6 +29,7 @@
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.2",
+    "three": "^0.176.0",
     "twitter-api-v2": "^1.15.1",
     "viem": "^2.29.0",
     "wagmi": "^2.15.2"
