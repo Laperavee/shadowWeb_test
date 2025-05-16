@@ -8,7 +8,7 @@ exports.handler = async function(event, context) {
 
     // Récupérer l'URL de redirection depuis les paramètres de la requête
     const { redirectTo } = event.queryStringParameters || {};
-    const finalRedirectTo = redirectTo || 'https://test12546158432897.netlify.app/shadow-fun';
+    const finalRedirectTo = redirectTo || 'https://shadowapp.xyz/shadow-fun';
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'twitter',

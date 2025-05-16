@@ -628,25 +628,45 @@ export default function ShadowFun() {
         const predictedTokenAddress = result[1];
 
         setDeploymentStatus('Deploying token...');
-
-        const tx = await shadow.deployToken(
-          formData.name,
-          formData.symbol,
-          ethers.parseEther(formData.totalSupply),
-          ethers.parseEther(formData.liquidity),
-          fee,
-          salt,
-          userAddress,
-          maxWalletPercentage,
-          ethers.parseEther(formData.firstBuyAmount),
-          twitterName,
-          websiteUrl,
-          {
-            value: ethers.parseEther(formData.firstBuyAmount),
-            gasLimit: 8000000
+        if (selectedChain === 'sonic') {
+          const tx = await shadow.deployToken(
+            {
+              name: params.name,
+              symbol: params.symbol,
+              supply: ethers.parseEther(params.totalSupply),
+              liquidity: ethers.parseEther(params.liquidity),
+              fee: 10000, // fee tier 1%
+              salt: salt,
+              deployer: deployer.address,
+              maxWalletPercentage: params.maxWalletPercentage,
+              firstBuyAmount: ethers.parseEther(params.firstBuyAmount),
+              twitterName: params.twitterName,
+              websiteUrl: params.websiteUrl
+          },
+          { 
+              value: ethers.parseEther(params.firstBuyAmount),
+              gasLimit: 64000000
           }
-        );
-
+          );
+        } else {
+          const tx = await shadow.deployToken(
+            formData.name,
+            formData.symbol,
+            ethers.parseEther(formData.totalSupply),
+            ethers.parseEther(formData.liquidity),
+            fee,
+            salt,
+            userAddress,
+            maxWalletPercentage,
+            ethers.parseEther(formData.firstBuyAmount),
+            twitterName,
+            websiteUrl,
+            {
+              value: ethers.parseEther(formData.firstBuyAmount),
+              gasLimit: 8000000
+            }
+          );
+        }
 
         setDeploymentStatus('Waiting for confirmation...');
         const receipt = await tx.wait();
