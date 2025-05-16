@@ -20,6 +20,7 @@ import { useNetwork } from '../context/NetworkContext';
 import definedLogo from '../assets/defined_logo.png';
 import dexscreenerLogo from '../assets/dexscreener_logo.png';
 import { marketDataService } from '../services/marketDataService';
+import { ShadowLogoAnimation } from '../components/ShadowLogoAnimation';
 
 const SHADOW_CREATOR_ABI = {
   BASE: ShadowBaseArtifact.abi,
@@ -1117,15 +1118,7 @@ export default function ShadowFun() {
               animate={{ opacity: 1 }}
               className="flex justify-center items-center py-32"
             >
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 rounded-full blur-xl animate-pulse" />
-                <div className="relative">
-                  <div className="w-20 h-20 border-4 border-fuchsia-500/30 border-t-fuchsia-500 rounded-full animate-spin" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 bg-fuchsia-500/20 rounded-full blur-xl" />
-                  </div>
-                </div>
-              </div>
+              <ShadowLogoAnimation size={120} />
             </motion.div>
           ) : tokens.length === 0 ? (
             <motion.div 
