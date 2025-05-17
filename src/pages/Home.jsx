@@ -26,7 +26,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main ref={containerRef} className="min-h-screen overflow-x-hidden">
+    <main ref={containerRef} className="h-screen overflow-hidden">
       <div className="relative z-10">
         {/* Hero Section */}
         <section className="min-h-screen flex items-center justify-center px-4 py-20">
@@ -85,27 +85,6 @@ export default function Home() {
                 </motion.button>
               </motion.div>
             </motion.div>
-          </div>
-        </section>
-
-        {/* News Section */}
-        <section className="py-20 px-4">
-          <div className="container mx-auto">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-center mb-12"
-            >
-              <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-400 mb-4">
-                Latest News
-              </h2>
-              <p className="text-gray-400">
-                Stay updated with the latest developments in the Shadow Protocol ecosystem
-              </p>
-            </motion.div>
-
-            <NewsCarousel />
           </div>
         </section>
       </div>
