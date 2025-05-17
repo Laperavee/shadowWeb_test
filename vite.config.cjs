@@ -6,15 +6,7 @@ module.exports = defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    emptyOutDir: true,
-    rollupOptions: {
-      external: ['three'],
-      output: {
-        globals: {
-          three: 'THREE'
-        }
-      }
-    }
+    emptyOutDir: true
   },
   define: {
     'process.env': process.env
